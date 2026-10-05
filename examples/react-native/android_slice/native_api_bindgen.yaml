@@ -1,0 +1,34 @@
+# native-api-bindgen configuration for the React Native Android slice.
+platform:
+  android:
+    sdk: auto
+    platform: "36"
+    minApi: 24
+    entries:
+      - android.content.Intent
+      - android.net.Uri
+      - android.os.Bundle
+      - android.content.Context
+      - android.app.Activity
+      - android.os.Handler
+      - android.os.Looper
+      - java.lang.Runnable
+      - android.os.Handler.Callback
+      - android.os.Message
+    depth: 0
+
+targets:
+  flutter: false
+  reactNative: true
+
+generation:
+  typescriptMode: strict-typescript
+  annotations: preserve
+  callbacks: true
+
+output:
+  reactNativeDir: native-api-bindings
+
+distribution:
+  generatedArtifacts: local-only
+  documentationMode: links-only
