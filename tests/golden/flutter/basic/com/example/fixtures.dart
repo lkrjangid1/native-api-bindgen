@@ -335,7 +335,9 @@ extension type CallbackInterface._(jni$.JObject _$CallbackInterface) implements 
         _$impls[$p]!.onEvent(($a![0] as jni$.JString), ($a![1] as jni$.JInteger).toDartInt(releaseOriginal: true));
         return jnii$.nullptr;
       } catch (e, st) {
-        if (rt$.NativeCallbacks.handleVoidCallbackError(e, st, r'com.example.fixtures.CallbackInterface#onEvent(java.lang.String,int)')) return jnii$.nullptr;
+        if (rt$.NativeCallbacks.handleVoidCallbackError(e, st, r'com.example.fixtures.CallbackInterface#onEvent(java.lang.String,int)')) {
+          return jnii$.nullptr;
+        }
         return jnii$.ProtectedJniExtensions.newDartException(e);
       }
     }
@@ -977,7 +979,9 @@ extension type NestedClass_Listener._(jni$.JObject _$NestedClass_Listener) imple
         _$impls[$p]!.onChange(($a![0] as NestedClass?));
         return jnii$.nullptr;
       } catch (e, st) {
-        if (rt$.NativeCallbacks.handleVoidCallbackError(e, st, r'com.example.fixtures.NestedClass$Listener#onChange(com.example.fixtures.NestedClass)')) return jnii$.nullptr;
+        if (rt$.NativeCallbacks.handleVoidCallbackError(e, st, r'com.example.fixtures.NestedClass$Listener#onChange(com.example.fixtures.NestedClass)')) {
+          return jnii$.nullptr;
+        }
         return jnii$.ProtectedJniExtensions.newDartException(e);
       }
     }

@@ -922,9 +922,12 @@ final class DartJniEmitter {
       }
       b.writeln('      } catch (e, st) {');
       if (_isVoid(m)) {
-        b.writeln(
-          "        if (rt\$.NativeCallbacks.handleVoidCallbackError(e, st, r'${m.id}')) return jnii\$.nullptr;",
-        );
+        b
+          ..writeln(
+            "        if (rt\$.NativeCallbacks.handleVoidCallbackError(e, st, r'${m.id}')) {",
+          )
+          ..writeln('          return jnii\$.nullptr;')
+          ..writeln('        }');
       } else {
         b.writeln(
           "        rt\$.NativeCallbacks.reportPropagated(e, st, r'${m.id}');",
