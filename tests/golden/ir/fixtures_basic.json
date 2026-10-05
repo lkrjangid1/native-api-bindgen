@@ -3186,6 +3186,145 @@
       "availability": {
         "introduced": "1"
       },
+      "id": "com.example.fixtures.SuspendShaped",
+      "kind": "classType",
+      "methods": [
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.SuspendShaped#<init>()",
+          "kind": "constructor",
+          "modifiers": [
+            "public"
+          ],
+          "name": "<init>",
+          "nativeDescriptor": "()V",
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "asyncKind": "suspend",
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.SuspendShaped#count(kotlin.coroutines.Continuation)",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "count",
+          "nativeDescriptor": "(Lkotlin/coroutines/Continuation;)Ljava/lang/Object;",
+          "parameters": [
+            {
+              "name": "completion",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "declared",
+                "name": "kotlin.coroutines.Continuation",
+                "nullability": "unknown",
+                "typeArguments": [
+                  {
+                    "bound": {
+                      "kind": "declared",
+                      "name": "java.lang.Integer",
+                      "nullability": "unknown"
+                    },
+                    "kind": "wildcard",
+                    "super": true
+                  }
+                ]
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "declared",
+            "name": "java.lang.Object",
+            "nullability": "unknown"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "asyncKind": "suspend",
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.SuspendShaped#load(java.lang.String,kotlin.coroutines.Continuation)",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "load",
+          "nativeDescriptor": "(Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;",
+          "parameters": [
+            {
+              "name": "key",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "declared",
+                "name": "java.lang.String",
+                "nullability": "unknown"
+              }
+            },
+            {
+              "name": "completion",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "declared",
+                "name": "kotlin.coroutines.Continuation",
+                "nullability": "unknown",
+                "typeArguments": [
+                  {
+                    "bound": {
+                      "kind": "declared",
+                      "name": "java.lang.String",
+                      "nullability": "unknown"
+                    },
+                    "kind": "wildcard",
+                    "super": true
+                  }
+                ]
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "declared",
+            "name": "java.lang.Object",
+            "nullability": "unknown"
+          },
+          "support": "supported",
+          "visibility": "public"
+        }
+      ],
+      "modifiers": [
+        "public"
+      ],
+      "name": "SuspendShaped",
+      "namespace": "com.example.fixtures",
+      "provenance": {
+        "artifactEntry": "com/example/fixtures/SuspendShaped.class",
+        "localArtifact": "fixtures",
+        "platform": "android",
+        "sdkVersion": "fixture",
+        "sourceKind": "fixture"
+      },
+      "superClass": {
+        "kind": "declared",
+        "name": "java.lang.Object",
+        "nullability": "unknown"
+      },
+      "support": "supported",
+      "visibility": "public"
+    },
+    {
+      "availability": {
+        "introduced": "1"
+      },
       "id": "com.example.fixtures.ThrowsClass",
       "kind": "classType",
       "methods": [

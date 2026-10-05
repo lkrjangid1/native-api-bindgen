@@ -61,7 +61,11 @@ final class DartJniOptions {
 final class DartJniEmitter {
   /// Creates an emitter. [module] is planned internally.
   DartJniEmitter(ApiModule module, {this.options = const DartJniOptions()})
-    : module = planJvmTarget(module, callbacks: options.callbacks) {
+    : module = planJvmTarget(
+        module,
+        callbacks: options.callbacks,
+        suspend: true,
+      ) {
     for (final t in this.module.types) {
       if (t.isGeneratable) _types[t.id] = t;
     }
@@ -437,14 +441,19 @@ final class DartJniEmitter {
       if (n.modifiers.contains(Modifier.varargs)) {
         lines.writeln('/// - Varargs: pass the last argument as an array');
       }
-      for (final p in n.parameters) {
+      final suspend = isSuspend(n);
+      for (final p in suspend ? suspendParameters(n) : n.parameters) {
         if (p.type is! PrimitiveTypeRef) {
           lines.writeln(
             '/// - `${Identifiers.dartMember(p.name)}`: `${p.type.display}`, ${_nullText(p.type.nullability)}',
           );
         }
       }
-      if (!n.isConstructor && n.returnType is! PrimitiveTypeRef) {
+      if (suspend) {
+        lines.writeln(
+          '/// - Kotlin `suspend` function: completes with `${suspendResult(n).display}` (nullability not recorded in the JVM signature; treated as nullable)',
+        );
+      } else if (!n.isConstructor && n.returnType is! PrimitiveTypeRef) {
         lines.writeln(
           '/// - Returns `${n.returnType.display}`, ${_nullText(n.returnType.nullability)}',
         );
@@ -608,7 +617,7 @@ final class DartJniEmitter {
     final pre = StringBuffer();
     final post = StringBuffer();
     final used = <String>{};
-    for (final p in m.parameters) {
+    for (final p in isSuspend(m) ? suspendParameters(m) : m.parameters) {
       var n = Identifiers.dartMember(p.name);
       while (!used.add(n)) {
         n = '$n\$';
@@ -685,6 +694,10 @@ final class DartJniEmitter {
     String dart, {
     bool redeclared = false,
   }) {
+    if (isSuspend(m)) {
+      _emitSuspend(b, c, m, dart, redeclared: redeclared);
+      return;
+    }
     final tv = _typeVars(_types[SymbolIds.ownerOf(m.id)] ?? c.type, m);
     final ps = _params(m, c.mapper, tv);
     final ret = c.mapper.map(m.returnType, typeVariableBounds: tv);
@@ -735,6 +748,103 @@ final class DartJniEmitter {
       redeclared
           ? 'package:jni method ID (redeclared)'
           : 'package:jni method ID',
+    );
+  }
+
+  /// Boxed results of suspend functions (generic, hence boxed on the JVM)
+  /// are unboxed to Dart values.
+  static const _boxed = {
+    'java.lang.Integer': (dart: 'int', jni: 'JInteger', toDart: 'toDartInt'),
+    'java.lang.Long': (dart: 'int', jni: 'JLong', toDart: 'toDartInt'),
+    'java.lang.Short': (dart: 'int', jni: 'JShort', toDart: 'toDartInt'),
+    'java.lang.Byte': (dart: 'int', jni: 'JByte', toDart: 'toDartInt'),
+    'java.lang.Character': (
+      dart: 'int',
+      jni: 'JCharacter',
+      toDart: 'toDartInt',
+    ),
+    'java.lang.Boolean': (dart: 'bool', jni: 'JBoolean', toDart: 'toDartBool'),
+    'java.lang.Double': (
+      dart: 'double',
+      jni: 'JDouble',
+      toDart: 'toDartDouble',
+    ),
+    'java.lang.Float': (dart: 'double', jni: 'JFloat', toDart: 'toDartDouble'),
+  };
+
+  /// A Kotlin `suspend` function as a Dart `Future` (see `callSuspend`).
+  void _emitSuspend(
+    StringBuffer b,
+    _MemberContext c,
+    ApiMethod m,
+    String dart, {
+    bool redeclared = false,
+  }) {
+    final tv = _typeVars(_types[SymbolIds.ownerOf(m.id)] ?? c.type, m);
+    final ps = _params(m, c.mapper, tv);
+    final result = suspendResult(m);
+    final unit = isKotlinUnit(result);
+    final boxed = result is DeclaredTypeRef ? _boxed[result.name] : null;
+    final ret = c.mapper.map(result, typeVariableBounds: tv);
+    final dartRet = unit
+        ? 'void'
+        : boxed != null
+        ? '${boxed.dart}?'
+        : ret.ergonomicString
+        ? 'String?'
+        : '${ret.dartType}?';
+    final idName = '_\$m\$$dart';
+    final kind = m.isStatic ? 'staticMethodId' : 'instanceMethodId';
+    final target = m.isStatic ? '_\$class' : 'this';
+    final args = [if (ps.args.isNotEmpty) ps.args, r'$c'].join(', ');
+    final call =
+        'await rt\$.callSuspend((\$c) => $idName.callNullable($target, jni\$.JObject.type, [$args]))';
+    final jType = ret.ergonomicString ? 'jni\$.JString.type' : ret.jniType;
+    final convert = unit
+        ? null
+        : boxed != null
+        ? '\$r?.as(jni\$.${boxed.jni}.type, releaseOriginal: true).${boxed.toDart}(releaseOriginal: true)'
+        : ret.ergonomicString
+        ? '\$r?.as($jType, releaseOriginal: true).toDartString(releaseOriginal: true)'
+        : '\$r?.as($jType, releaseOriginal: true)';
+    b.writeln();
+    b.writeln(
+      "  static final $idName = _\$class.$kind(r'${m.name}', r'${m.nativeDescriptor}');",
+    );
+    final plain = Identifiers.dartMember(m.name);
+    _memberDoc(b, m, generatedAs: dart == plain ? null : '${c.name}.$dart');
+    if (redeclared) {
+      b.writeln('  // Redeclared: inherited from more than one supertype.');
+    }
+    b.writeln(
+      '  ${m.isStatic ? 'static ' : ''}Future<$dartRet> $dart(${ps.params}) async {',
+    );
+    b.write(_guard(m, '    '));
+    b.write(ps.pre);
+    void body(String indent) {
+      b.writeln('${indent}final \$r = $call;');
+      b.writeln(
+        convert == null
+            ? '$indent\$r?.release();'
+            : '${indent}return $convert;',
+      );
+    }
+
+    if (ps.post.isEmpty) {
+      body('    ');
+    } else {
+      b.writeln('    try {');
+      body('      ');
+      b.writeln('    } finally {');
+      b.write(ps.post);
+      b.writeln('    }');
+    }
+    b.writeln('  }');
+    _binding(
+      m.id,
+      '${c.name}.$dart',
+      c.file,
+      'package:jni method ID + Kotlin continuation (Future)',
     );
   }
 

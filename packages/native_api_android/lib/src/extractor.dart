@@ -87,6 +87,56 @@ final class DirectoryClassSource implements ClassSource {
   }
 }
 
+/// Several sources searched in order (the platform first, then libraries).
+final class CompositeClassSource implements ClassSource {
+  /// Creates a composite; the first source providing a class wins.
+  CompositeClassSource(this.sources)
+    : classNames = ({for (final s in sources) ...s.classNames}.toList()
+        ..sort());
+
+  /// Sources in priority order.
+  final List<ClassSource> sources;
+
+  @override
+  String get artifactName => sources.first.artifactName;
+
+  @override
+  final List<String> classNames;
+
+  final _index = <String, ClassSource>{};
+
+  /// The source providing [binaryName], or null.
+  ClassSource? sourceOf(String binaryName) {
+    final cached = _index[binaryName];
+    if (cached != null) return cached;
+    for (final s in sources) {
+      final bytes = s.read(binaryName);
+      if (bytes != null) return _index[binaryName] = s;
+    }
+    return null;
+  }
+
+  @override
+  Uint8List? read(String binaryName) => sourceOf(binaryName)?.read(binaryName);
+}
+
+/// Opens a library artifact: a `.jar`, an `.aar` (its `classes.jar`), or a
+/// directory of class files.
+ClassSource openLibrary(String path) {
+  if (Directory(path).existsSync()) {
+    return DirectoryClassSource(path, artifactName: p.basename(path));
+  }
+  if (path.endsWith('.aar')) {
+    final aar = ZipReader.open(path);
+    final jar = aar.read('classes.jar', maxBytes: 1 << 30);
+    if (jar == null) {
+      throw MalformedInputException('${p.basename(path)} has no classes.jar');
+    }
+    return JarClassSource(ZipReader.fromBytes(jar), p.basename(path));
+  }
+  return JarClassSource.open(path);
+}
+
 /// What to extract.
 final class ExtractionRequest {
   /// Creates a request.
@@ -144,6 +194,7 @@ final class AndroidApiExtractor {
     this.sourceRevision,
     this.sourceKind = 'sdk',
     this.linkOfficialDocs = true,
+    this.libraryClasses = const {},
   }) : annotations = annotations ?? AnnotationsIndex.empty(),
        _known = classes.classNames.toSet();
 
@@ -167,6 +218,10 @@ final class AndroidApiExtractor {
 
   /// Whether to attach developer.android.com reference links.
   final bool linkOfficialDocs;
+
+  /// Classes from library artifacts (not the platform): never classified as
+  /// non-SDK by `api-versions.xml` and never linked to the platform docs.
+  final Set<String> libraryClasses;
 
   final Set<String> _known;
   final _cache = <String, ApiType?>{};
@@ -318,8 +373,9 @@ final class AndroidApiExtractor {
     final simpleName = inner?.simpleName ?? cf.name.substring(slash + 1);
     final enclosing = inner?.outer == null ? null : binaryName(inner!.outer!);
 
-    final versions = apiVersions?.classes[id];
-    final hidden = apiVersions != null && versions == null;
+    final isLibrary = libraryClasses.contains(id);
+    final versions = isLibrary ? null : apiVersions?.classes[id];
+    final hidden = !isLibrary && apiVersions != null && versions == null;
     final diags = <Diagnostic>[];
     if (hidden) {
       diags.add(
@@ -473,9 +529,13 @@ final class AndroidApiExtractor {
       namespace: namespace,
       provenance: Provenance(
         platform: ApiPlatform.android,
-        sourceKind: sourceKind,
+        sourceKind: isLibrary ? 'library' : sourceKind,
         sdkVersion: sdkVersion,
-        localArtifact: classes.artifactName,
+        localArtifact: switch (classes) {
+          final CompositeClassSource c when isLibrary =>
+            c.sourceOf(id)?.artifactName ?? c.artifactName,
+          _ => classes.artifactName,
+        },
         artifactEntry: '${cf.name}.class',
         officialReference: _docLink(id, namespace),
       ),
@@ -686,6 +746,13 @@ final class AndroidApiExtractor {
           );
     final unlisted = versions != null && v == null;
     if (unlisted) diags.add(_unlisted(id));
+    // Kotlin suspend functions compile to a method whose last parameter is a
+    // kotlin.coroutines.Continuation (the result type is its type argument).
+    final lastParam = erased.parameters.isEmpty ? null : erased.parameters.last;
+    final isSuspend =
+        !isCtor &&
+        lastParam is DeclaredTypeRef &&
+        lastParam.name == 'kotlin.coroutines.Continuation';
     final mods = _modifiers(m.accessFlags, isMethod: true);
     if (cf.has(AccessFlags.interface) &&
         !m.has(AccessFlags.abstract_) &&
@@ -705,6 +772,7 @@ final class AndroidApiExtractor {
       throws: throws,
       threading: threadingOf(anns) ?? classThreading,
       permissions: permissionsOf(anns),
+      asyncKind: isSuspend ? AsyncKind.suspend : AsyncKind.none,
       nativeDescriptor: m.descriptor,
       modifiers: mods,
       annotations: anns..sort(),
@@ -821,7 +889,7 @@ final class AndroidApiExtractor {
   }
 
   String? _docLink(String id, String ns, {String? member}) {
-    if (!linkOfficialDocs) return null;
+    if (!linkOfficialDocs || libraryClasses.contains(id)) return null;
     final path =
         '${ns.replaceAll('.', '/')}/${id.substring(ns.length + 1).replaceAll(r'$', '.')}';
     // Spaces in anchors are percent-encoded so links stay valid autolinks.

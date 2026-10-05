@@ -89,6 +89,7 @@ final class AndroidConfig {
     this.classes = const [],
     this.entries = const [],
     this.depth = 1,
+    this.libraries = const [],
   });
 
   /// `auto` or an SDK root path.
@@ -111,6 +112,11 @@ final class AndroidConfig {
 
   /// Dependency depth from entries (0 = entries only).
   final int depth;
+
+  /// Library artifacts (`.jar`, `.aar`, class directories; relative to the
+  /// project) whose classes can be selected like SDK classes, e.g. a Kotlin
+  /// library. Their APIs are library APIs, not platform SDK APIs.
+  final List<String> libraries;
 }
 
 /// Apple (iOS) platform configuration.
@@ -198,6 +204,7 @@ final class BindgenConfig {
       'classes',
       'entries',
       'depth',
+      'libraries',
     });
     final ios = _optMap(platform['ios'], 'platform.ios');
     _keys(ios, 'platform.ios', {
@@ -261,6 +268,7 @@ final class BindgenConfig {
         classes: _names(a['classes'], 'platform.android.classes'),
         entries: _names(a['entries'], 'platform.android.entries'),
         depth: depth,
+        libraries: _paths(a['libraries'], 'platform.android.libraries'),
       ),
       ios: IosConfig(
         sdk: iosSdk,
@@ -355,6 +363,7 @@ final class BindgenConfig {
     android.classes.join(','),
     android.entries.join(','),
     android.depth,
+    android.libraries.join(','),
     mode.key,
     docs.key,
     preserveAnnotations,
@@ -462,6 +471,18 @@ List<String> _names(Object? v, String where) {
         e
       else
         throw ConfigException('$where contains an invalid name: $e'),
+  ];
+}
+
+List<String> _paths(Object? v, String where) {
+  if (v == null) return const [];
+  if (v is! List) throw ConfigException('$where must be a list');
+  return [
+    for (final e in v)
+      if (e is String && e.isNotEmpty && !e.contains('\u0000'))
+        e
+      else
+        throw ConfigException('$where contains an invalid path: $e'),
   ];
 }
 

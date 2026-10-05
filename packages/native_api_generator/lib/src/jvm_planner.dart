@@ -1,5 +1,19 @@
 import 'package:native_api_ir/native_api_ir.dart';
 
+import 'kotlin.dart';
+
+/// Boxed primitives: suspend-function results the Dart target unboxes.
+const _boxedPrimitives = {
+  'java.lang.Integer',
+  'java.lang.Long',
+  'java.lang.Short',
+  'java.lang.Byte',
+  'java.lang.Character',
+  'java.lang.Boolean',
+  'java.lang.Double',
+  'java.lang.Float',
+};
+
 /// Target-capability analysis for JVM-backed targets (Dart over
 /// `package:jni`, TypeScript over JSI + JNI). Both targets call Java through
 /// JNI and share the same constraints.
@@ -8,7 +22,15 @@ import 'package:native_api_ir/native_api_ir.dart';
 /// can only approximately) emit carries a support status and a reason
 /// diagnostic. The emitter only emits generatable symbols; coverage and
 /// `why-skipped` read the same annotated module, so they can never disagree.
-ApiModule planJvmTarget(ApiModule module, {bool callbacks = true}) {
+///
+/// [suspend] says whether the target can call Kotlin `suspend` functions
+/// (Dart can, through `package:jni` continuations); otherwise they are
+/// unsupported (`E004`).
+ApiModule planJvmTarget(
+  ApiModule module, {
+  bool callbacks = true,
+  bool suspend = false,
+}) {
   final generated = {
     for (final t in module.types)
       if (t.isGeneratable && t.kind != TypeKind.annotationType) t.id,
@@ -25,7 +47,11 @@ ApiModule planJvmTarget(ApiModule module, {bool callbacks = true}) {
     final missing = <String>{
       for (final r in refs)
         for (final n in r.referencedTypes)
-          if (!generated.contains(n) && n != 'java.lang.String') n,
+          if (!generated.contains(n) &&
+              n != 'java.lang.String' &&
+              n != 'kotlin.Unit' &&
+              !(suspend && _boxedPrimitives.contains(n)))
+            n,
     }.toList()..sort();
     if (missing.isEmpty) return const [];
     return [
@@ -163,7 +189,17 @@ ApiModule planJvmTarget(ApiModule module, {bool callbacks = true}) {
           Severity.warning,
         );
       }
-      final refs = [m.returnType, for (final p in m.parameters) p.type];
+      if (isSuspend(m) && !suspend && blocked == null) {
+        blocked = d(
+          DiagnosticCode.unsupportedCallback,
+          m.id,
+          'Kotlin suspend functions are not supported by this target yet',
+          Severity.warning,
+        );
+      }
+      final refs = isSuspend(m)
+          ? [suspendResult(m), for (final p in suspendParameters(m)) p.type]
+          : [m.returnType, for (final p in m.parameters) p.type];
       final extra = <Diagnostic>[
         if (m.typeParameters.isNotEmpty || usesTypeVariables(refs))
           d(

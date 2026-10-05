@@ -157,6 +157,10 @@ const MemberSpec k_com_example_fixtures_Sizable[] = {
     {"size()I", "size", "()I", MemberKind::InstanceMethod},
 };
 
+const MemberSpec k_com_example_fixtures_SuspendShaped[] = {
+    {"<init>()V", "<init>", "()V", MemberKind::Constructor},
+};
+
 const MemberSpec k_com_example_fixtures_ThrowsClass[] = {
     {"<init>()V", "<init>", "()V", MemberKind::Constructor},
     {"parse(java.lang.String)I", "parse", "(Ljava/lang/String;)I", MemberKind::StaticMethod},
@@ -184,6 +188,7 @@ const ClassSpec kClasses[] = {
     {"com.example.fixtures.OverloadedClass", "com/example/fixtures/OverloadedClass", k_com_example_fixtures_OverloadedClass, std::size(k_com_example_fixtures_OverloadedClass)},
     {"com.example.fixtures.ReservedWords", "com/example/fixtures/ReservedWords", k_com_example_fixtures_ReservedWords, std::size(k_com_example_fixtures_ReservedWords)},
     {"com.example.fixtures.Sizable", "com/example/fixtures/Sizable", k_com_example_fixtures_Sizable, std::size(k_com_example_fixtures_Sizable)},
+    {"com.example.fixtures.SuspendShaped", "com/example/fixtures/SuspendShaped", k_com_example_fixtures_SuspendShaped, std::size(k_com_example_fixtures_SuspendShaped)},
     {"com.example.fixtures.ThrowsClass", "com/example/fixtures/ThrowsClass", k_com_example_fixtures_ThrowsClass, std::size(k_com_example_fixtures_ThrowsClass)},
 };
 
@@ -191,7 +196,7 @@ const ClassSpec kClasses[] = {
 
 const ClassSpec* lookupClass(const std::string& key) {
   std::size_t lo = 0;
-  std::size_t hi = 20;
+  std::size_t hi = 21;
   while (lo < hi) {
     const std::size_t mid = (lo + hi) / 2;
     const int c = std::strcmp(kClasses[mid].key, key.c_str());

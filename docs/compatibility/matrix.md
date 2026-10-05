@@ -17,6 +17,7 @@ Only versions **actually exercised** are listed. "Tested" means automated tests 
 | Xcode / iOS SDK | 27.0 / iPhoneSimulator 27.0 | libclang extraction; Foundation + UIKit full generation + `dart analyze` |
 | iOS runtime (simulator) | 26.4 (iPhone 17) | 12 Flutter integration tests (`examples/flutter/ios_slice`, deployment target 15.0) |
 | `package:objective_c` | 9.5.0 | generated iOS bindings compile and run |
+| Kotlin (fixture library) | Kotlin 2.4.20, kotlinx-coroutines 1.10.2, Gradle 9.6.0 | suspend functions: 8 host-JVM tests (`tools/run_jvm_runtime_tests.sh`), 2 Flutter integration tests on the API 37 emulator |
 | React Native on iOS | 0.87.1 (New Architecture, Hermes), CocoaPods 1.16.2 | release build for the iOS 26.4 simulator; 12 self-tests (`tools/run_rn_ios_tests.sh`) |
 | React Native on Android | 0.87.1 (New Architecture, Hermes) | RN example release build; 12 on-device self-tests on API 37 emulator; Jest runtime tests |
 | Node / TypeScript | 25.9.0 / 6.0.3 | `tsc --strict` on generated output (fixtures, slice, full android-36 SDK) |

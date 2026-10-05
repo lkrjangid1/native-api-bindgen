@@ -42,3 +42,11 @@ android {
 flutter {
     source = "../.."
 }
+
+dependencies {
+    // Kotlin fixture library bound by native-api-bindgen (platform.android.libraries);
+    // build it first: gradle -p fixtures/kotlin/basic jar
+    implementation(files("../../../../../fixtures/kotlin/basic/build/libs/kfixtures.jar"))
+    // Runtime for Kotlin suspend functions (package:jni's PortContinuation uses it).
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
+}

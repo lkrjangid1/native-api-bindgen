@@ -10,8 +10,20 @@ import 'zip_reader.dart';
 /// extractor. Missing optional inputs (annotations.zip) degrade gracefully;
 /// a missing `api-versions.xml` disables hidden-API detection, which the
 /// caller must surface as a warning.
-AndroidApiExtractor openPlatform(AndroidPlatform platform) {
-  final jar = JarClassSource.open(platform.androidJar);
+///
+/// [libraries] (jars, AARs or class directories, e.g. compiled Kotlin
+/// libraries) are added after the platform; their classes are extracted as
+/// library APIs (see [AndroidApiExtractor.libraryClasses]).
+AndroidApiExtractor openPlatform(
+  AndroidPlatform platform, {
+  List<String> libraries = const [],
+}) {
+  final platformJar = JarClassSource.open(platform.androidJar);
+  final libs = [for (final l in libraries) openLibrary(l)];
+  final ClassSource jar = libs.isEmpty
+      ? platformJar
+      : CompositeClassSource([platformJar, ...libs]);
+  final sdkNames = platformJar.classNames.toSet();
   final versions = platform.hasApiVersions
       ? ApiVersionsIndex.parse(File(platform.apiVersionsXml).readAsStringSync())
       : null;
@@ -28,6 +40,11 @@ AndroidApiExtractor openPlatform(AndroidPlatform platform) {
     sourceRevision: platform.revision,
     apiVersions: versions,
     annotations: annotations,
+    libraryClasses: {
+      for (final l in libs)
+        for (final c in l.classNames)
+          if (!sdkNames.contains(c)) c,
+    },
   );
   return extractor;
 }

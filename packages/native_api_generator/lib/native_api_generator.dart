@@ -4,6 +4,7 @@ library;
 
 export 'src/identifiers.dart';
 export 'src/jvm_planner.dart';
+export 'src/kotlin.dart';
 export 'src/objc_members.dart';
 export 'src/output.dart';
 export 'src/overloads.dart';

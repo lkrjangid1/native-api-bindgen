@@ -11,6 +11,11 @@ coverage/
 # Generated local output (default distribution policy: local-only)
 .native_api_bindgen/
 **/lib/src/generated/
+tests/runtime/jvm_fixtures/lib/src/kotlin_generated/
+
+# Gradle / Kotlin (fixtures/kotlin)
+.gradle/
+.kotlin/
 
 # Platform build outputs
 **/android/.gradle/

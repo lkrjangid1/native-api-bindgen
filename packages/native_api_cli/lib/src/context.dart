@@ -61,6 +61,29 @@ final class CliContext {
 
   BindgenConfig? _config;
 
+  /// Library artifacts added on the command line (`--jar`).
+  List<String> extraLibraries = const [];
+
+  /// Configured + command-line library artifacts as absolute paths; fails
+  /// with E001 when one does not exist.
+  List<String> androidLibraries() {
+    final out = <String>[];
+    for (final l in [...config.android.libraries, ...extraLibraries]) {
+      final path = p.normalize(p.isAbsolute(l) ? l : p.join(projectDir, l));
+      if (!File(path).existsSync() && !Directory(path).existsSync()) {
+        throw CliFailure(
+          Diagnostic(
+            DiagnosticCode.sdkNotFound,
+            'Library artifact not found: $l',
+            severity: Severity.error,
+          ),
+        );
+      }
+      out.add(path);
+    }
+    return out;
+  }
+
   /// Configuration (defaults if the file does not exist).
   BindgenConfig get config {
     try {
@@ -127,7 +150,11 @@ final class CliContext {
       event: 'sdk-detected',
     );
     try {
-      return openPlatform(platform);
+      final libraries = androidLibraries();
+      for (final l in libraries) {
+        logger.info('Library: ${p.basename(l)}', event: 'library');
+      }
+      return openPlatform(platform, libraries: libraries);
     } on MalformedInputException catch (e) {
       throw CliFailure(
         Diagnostic(

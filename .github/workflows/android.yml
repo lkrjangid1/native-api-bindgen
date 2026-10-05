@@ -31,7 +31,6 @@ jobs:
       - name: Generate every android.jar package and analyze the output
         run: |
           mkdir -p /tmp/fullsdk/lib
-          cp examples/flutter/android_slice/native_api_bindgen.yaml /tmp/fullsdk/ 2>/dev/null || true
           ARGS=$(python3 -c "import zipfile,os;z=zipfile.ZipFile(os.environ['ANDROID_HOME']+'/platforms/android-36/android.jar');print(' '.join('--package '+p for p in sorted({n.rsplit('/',1)[0].replace('/','.') for n in z.namelist() if n.endswith('.class') and '/' in n and not n.startswith('META-INF')})))")
           dart run native_api_bindgen --project /tmp/fullsdk generate flutter --platform 36 --depth 0 $ARGS
           printf 'name: fullsdk\npublish_to: none\nenvironment:\n  sdk: ^3.9.0\ndependencies:\n  jni: ^1.0.3\n  native_api_runtime:\n    path: %s/runtimes/dart/native_api_runtime\n' "$PWD" > /tmp/fullsdk/pubspec.yaml

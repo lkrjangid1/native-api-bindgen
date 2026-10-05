@@ -53,6 +53,8 @@ export type OverloadedClass$Like = JavaObject & {readonly __brand_com_example_fi
 export type ReservedWords$Like = JavaObject & {readonly __brand_com_example_fixtures_ReservedWords: true};
 /** Any object that is a `com.example.fixtures.Sizable` (subclasses and implementations included). */
 export type Sizable$Like = JavaObject & {readonly __brand_com_example_fixtures_Sizable: true};
+/** Any object that is a `com.example.fixtures.SuspendShaped` (subclasses and implementations included). */
+export type SuspendShaped$Like = JavaObject & {readonly __brand_com_example_fixtures_SuspendShaped: true};
 /** Any object that is a `com.example.fixtures.ThrowsClass` (subclasses and implementations included). */
 export type ThrowsClass$Like = JavaObject & {readonly __brand_com_example_fixtures_ThrowsClass: true};
 
@@ -1293,6 +1295,27 @@ export class Sizable extends JavaObject {
 export interface Sizable$Impl {
   /** Implements `com.example.fixtures.Sizable#size()`. */
   size(): number;
+}
+
+/**
+ * Native API: `com.example.fixtures.SuspendShaped`
+ * - Android API: 1+
+ * - Kind: class
+ */
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
+export interface SuspendShaped {
+  readonly __brand_com_example_fixtures_SuspendShaped: true;
+}
+export class SuspendShaped extends JavaObject {
+  static readonly javaInternalName: string = 'com/example/fixtures/SuspendShaped';
+  /** @internal */ static readonly $t = $rt.classTable('com.example.fixtures.SuspendShaped');
+  /**
+   * Native API: `com.example.fixtures.SuspendShaped#<init>()`
+   * - Android API: 1+
+   */
+  static new(): SuspendShaped {
+    return $rt.wrapNonNull(SuspendShaped, SuspendShaped.$t()['<init>()V'](false), 'com.example.fixtures.SuspendShaped#<init>()');
+  }
 }
 
 /**

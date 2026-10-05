@@ -7,6 +7,7 @@
 | `platforms/android-N/android.jar` | classes, members, JVM descriptors, generic signatures, modifiers, constants, inheritance, class-file annotations, parameter names (`LocalVariableTable`/`MethodParameters`) |
 | `platforms/android-N/data/api-versions.xml` | introduced / deprecated / removed API levels (including minor levels such as 36.1); ancestor-aware so overrides inherit availability |
 | `platforms/android-N/data/annotations.zip` | external annotations (`IntDef`, `RequiresPermission`, threading, ranges, …) |
+| `platform.android.libraries` / `--jar` | optional library artifacts (`.jar`, `.aar`, class directories), e.g. a Kotlin library; their classes are library APIs (no `api-versions.xml` classification, no platform doc links) |
 
 ## Supported in this version
 
@@ -17,6 +18,7 @@
 - Threading and permission metadata in generated docs
 - Implementing Java interfaces in Dart (callbacks/listeners)
 - Java exceptions surfaced as `NativeJavaException`
+- Kotlin `suspend` functions (Flutter target): detected from the compiled JVM signature (trailing `kotlin.coroutines.Continuation<? super T>`), generated as `Future<T?>` over `package:jni`'s `PortContinuation`; boxed results are unboxed (`Int` → `int?`), `Unit` → `Future<void>`, Kotlin exceptions → `NativeJavaException`. The app needs `kotlinx-coroutines-android` at run time. React Native reports them as unsupported (`E004`).
 
 ## Not yet supported (reported with reason codes)
 
@@ -27,7 +29,7 @@
 | Annotation interfaces | E002 | metadata, not callable |
 | Generic type parameters on generated types | E003 | erased to bounds; values still usable |
 | Types outside the selected closure | E016 | exposed as `JObject`; add with `--entry` |
-| Kotlin-specific constructs (suspend, Flow, properties, default args) | — | android.jar is Java; Kotlin metadata parsing is planned |
+| Kotlin `Flow`, properties, default arguments, nullability of suspend results | — | `kotlin.Metadata` is not parsed yet: suspend results are treated as nullable; `Flow` is an ordinary interface (`E016`/`JObject`) |
 | Native UI (embedding Android `View`s) | — | separate integration layer planned |
 
 ## Hidden / non-SDK APIs

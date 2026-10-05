@@ -24,6 +24,11 @@ jobs:
           channel: stable
       - run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36"
       - run: dart pub get
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "9.6.0"
+      - name: Build the Kotlin fixture library
+        run: gradle -p fixtures/kotlin/basic jar
       - name: Generate bindings for the example
         run: dart run native_api_bindgen --project examples/flutter/android_slice generate flutter
       - working-directory: examples/flutter/android_slice

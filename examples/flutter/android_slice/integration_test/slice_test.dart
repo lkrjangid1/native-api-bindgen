@@ -136,4 +136,20 @@ void main() {
     expect(b.isAlive, isFalse);
     expect(() => b.size(), throwsA(isA<UseAfterReleaseError>()));
   });
+
+  group('Kotlin suspend functions (library jar)', () {
+    test('a suspending call completes the Future', () async {
+      final g = Greeter.create(js('Ada'));
+      expect((await g.greetLater(20))!.toDartString(), 'Later, Ada');
+      expect(await g.immediate(), 3);
+      await g.pause(10);
+    });
+
+    test('a Kotlin exception fails the Future with NativeJavaException', () async {
+      await expectLater(
+        Greeter.create(js('x')).failLater(js('boom')),
+        throwsA(isA<NativeJavaException>().having((e) => e.className, 'className', 'java.lang.IllegalStateException')),
+      );
+    });
+  });
 }

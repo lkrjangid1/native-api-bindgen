@@ -54,15 +54,25 @@ abstract class BindgenCommand extends Command<int> {
         'platform',
         help:
             'Android platform, e.g. 36 or 36.1 (default: config / highest stable).',
+      )
+      ..addMultiOption(
+        'jar',
+        help:
+            'Android library artifact (.jar, .aar or class directory) whose classes can be selected (repeatable).',
       );
   }
 
-  ExtractionRequest _request() => ctx.request(
-    packages: _multi('package'),
-    classes: _multi('class'),
-    entries: _multi('entry'),
-    depth: _intOpt('depth'),
-  );
+  ExtractionRequest _request() {
+    if (argResults!.options.contains('jar')) {
+      ctx.extraLibraries = _multi('jar');
+    }
+    return ctx.request(
+      packages: _multi('package'),
+      classes: _multi('class'),
+      entries: _multi('entry'),
+      depth: _intOpt('depth'),
+    );
+  }
 
   int _notImplemented(String what) {
     final d = Diagnostic(
@@ -444,6 +454,7 @@ final class GenerateCommand extends BindgenCommand {
   Future<int> run() async {
     final rest = argResults!.rest;
     final target = rest.isEmpty ? 'all' : rest.first;
+    ctx.extraLibraries = _multi('jar');
     switch (target) {
       case 'ios':
         return _ios();

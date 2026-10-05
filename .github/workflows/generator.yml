@@ -24,4 +24,9 @@ jobs:
           sdk: stable
       - run: sudo apt-get update && sudo apt-get install -y cmake ninja-build
       - run: dart pub get
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "9.6.0"
       - run: tools/run_jvm_runtime_tests.sh
+        env:
+          NAB_GRADLE: gradle

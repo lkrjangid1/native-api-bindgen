@@ -48,18 +48,45 @@ Directory compileFixtures({String name = 'basic'}) {
       if (f is File && f.path.endsWith('.java')) f.path,
   ]..sort();
   final out = Directory.systemTemp.createTempSync('nab_fixtures_');
+  // Compile-time stubs (kotlin.coroutines.Continuation) live outside the
+  // fixture output so they never shadow the real classes at run time.
+  final stubs = compileKotlinStubs();
+  try {
+    final r = Process.runSync('javac', [
+      '--release',
+      '17',
+      '-g',
+      '-encoding',
+      'UTF-8',
+      '-cp',
+      stubs.path,
+      '-d',
+      out.path,
+      ...files,
+    ]);
+    if (r.exitCode != 0) {
+      throw StateError('javac failed:\n${r.stderr}');
+    }
+  } finally {
+    stubs.deleteSync(recursive: true);
+  }
+  return out;
+}
+
+/// Compiles `fixtures/java/kotlin-stubs` into a fresh temporary directory.
+Directory compileKotlinStubs() {
+  final src = p.join(findRepoRoot(), 'fixtures', 'java', 'kotlin-stubs', 'src');
+  final out = Directory.systemTemp.createTempSync('nab_kotlin_stubs_');
   final r = Process.runSync('javac', [
     '--release',
     '17',
-    '-g',
-    '-encoding',
-    'UTF-8',
     '-d',
     out.path,
-    ...files,
+    for (final f in Directory(src).listSync(recursive: true))
+      if (f is File && f.path.endsWith('.java')) f.path,
   ]);
   if (r.exitCode != 0) {
-    throw StateError('javac failed:\n${r.stderr}');
+    throw StateError('javac failed (stubs):\n${r.stderr}');
   }
   return out;
 }
@@ -138,3 +165,38 @@ const fixturePackages = ['com.example.fixtures'];
 ApiModule extractFixtures(AndroidApiExtractor extractor) => extractor
     .extract(const ExtractionRequest(packages: fixturePackages, depth: 0))
     .module;
+
+/// `fixtures/kotlin/basic/build/libs/kfixtures.jar` if it was built (with
+/// Gradle, see `fixtures/kotlin/basic/build.gradle.kts`), else null.
+String? kotlinFixtureJar() {
+  final jar = p.join(
+    findRepoRoot(),
+    'fixtures',
+    'kotlin',
+    'basic',
+    'build',
+    'libs',
+    'kfixtures.jar',
+  );
+  return File(jar).existsSync() ? jar : null;
+}
+
+/// Extracts the Kotlin fixture classes from [jar] as library APIs.
+ApiModule extractKotlinFixtures(String jar) {
+  final source = JarClassSource.open(jar);
+  final extractor = AndroidApiExtractor(
+    classes: source,
+    sdkVersion: 'fixture',
+    sourceKind: 'fixture',
+    linkOfficialDocs: false,
+    libraryClasses: source.classNames.toSet(),
+  );
+  return extractor
+      .extract(
+        const ExtractionRequest(
+          classes: ['com.example.kfixtures.Greeter'],
+          depth: 0,
+        ),
+      )
+      .module;
+}

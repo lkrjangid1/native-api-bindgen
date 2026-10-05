@@ -1617,6 +1617,58 @@ final class _$Sizable with $Sizable {
 
 }
 
+/// Native API: `com.example.fixtures.SuspendShaped` (class)
+///
+/// - Android API: 1+
+/// - Superclass: `java.lang.Object`
+extension type SuspendShaped._(jni$.JObject _$SuspendShaped) implements jni$.JObject {
+  static final _$class = jni$.JClass.forName(r'com/example/fixtures/SuspendShaped');
+
+  /// `package:jni` type descriptor for `com.example.fixtures.SuspendShaped`.
+  static const jni$.JType<SuspendShaped> type = _$SuspendShaped$Type();
+
+  static final _$c$ = _$class.constructorId(r'()V');
+  /// Native API: `com.example.fixtures.SuspendShaped#<init>()`
+  ///
+  /// - Android API: 1+
+  factory SuspendShaped() {
+    return rt$.guardJni(() => _$c$.call<SuspendShaped>(_$class, []));
+  }
+
+  static final _$m$count = _$class.instanceMethodId(r'count', r'(Lkotlin/coroutines/Continuation;)Ljava/lang/Object;');
+  /// Native API: `com.example.fixtures.SuspendShaped#count(kotlin.coroutines.Continuation)`
+  ///
+  /// - Android API: 1+
+  /// - Kotlin `suspend` function: completes with `java.lang.Integer` (nullability not recorded in the JVM signature; treated as nullable)
+  Future<int?> count() async {
+    final $r = await rt$.callSuspend(($c) => _$m$count.callNullable(this, jni$.JObject.type, [$c]));
+    return $r?.as(jni$.JInteger.type, releaseOriginal: true).toDartInt(releaseOriginal: true);
+  }
+
+  static final _$m$load = _$class.instanceMethodId(r'load', r'(Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;');
+  /// Native API: `com.example.fixtures.SuspendShaped#load(java.lang.String,kotlin.coroutines.Continuation)`
+  ///
+  /// - Android API: 1+
+  /// - `key`: `java.lang.String`, nullability unknown (treated as nullable)
+  /// - Kotlin `suspend` function: completes with `java.lang.String` (nullability not recorded in the JVM signature; treated as nullable)
+  Future<String?> load(String? key) async {
+    final _$key = key?.toJString();
+    try {
+      final $r = await rt$.callSuspend(($c) => _$m$load.callNullable(this, jni$.JObject.type, [_$key, $c]));
+      return $r?.as(jni$.JString.type, releaseOriginal: true).toDartString(releaseOriginal: true);
+    } finally {
+      _$key?.release();
+    }
+  }
+}
+
+final class _$SuspendShaped$Type extends jni$.JType<SuspendShaped> {
+  const _$SuspendShaped$Type();
+
+  @override
+  String get signature => r'Lcom/example/fixtures/SuspendShaped;';
+}
+
 /// Native API: `com.example.fixtures.ThrowsClass` (class)
 ///
 /// - Android API: 1+
