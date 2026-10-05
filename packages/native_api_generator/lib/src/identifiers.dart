@@ -165,6 +165,13 @@ abstract final class Identifiers {
     'type',
     'from',
     'of',
+    'arguments',
+    'eval',
+    'await',
+    'async',
+    'unknown',
+    'never',
+    'undefined',
   };
 
   static final _valid = RegExp(r'^[A-Za-z_$][A-Za-z0-9_$]*$');

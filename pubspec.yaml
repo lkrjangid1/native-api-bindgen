@@ -11,6 +11,7 @@ workspace:
   - packages/native_api_android
   - packages/native_api_generator
   - packages/native_api_flutter_android
+  - packages/native_api_react_native_android
   - packages/native_api_cli
   - runtimes/dart/native_api_runtime
 

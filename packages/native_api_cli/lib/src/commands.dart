@@ -6,6 +6,7 @@ import 'package:native_api_core/native_api_core.dart';
 import 'package:native_api_flutter_android/native_api_flutter_android.dart';
 import 'package:native_api_generator/native_api_generator.dart';
 import 'package:native_api_ir/native_api_ir.dart';
+import 'package:native_api_react_native_android/native_api_react_native_android.dart';
 import 'package:path/path.dart' as p;
 
 import 'context.dart';
@@ -377,7 +378,12 @@ final class GenerateCommand extends BindgenCommand {
       ..addOption(
         'mode',
         allowed: ['strict-native', 'ergonomic-dart'],
-        help: 'Type-mapping mode (default: config).',
+        help: 'Dart type-mapping mode (default: config).',
+      )
+      ..addOption(
+        'ts-mode',
+        allowed: ['strict-typescript', 'ergonomic-typescript'],
+        help: 'TypeScript mode for react-native (default: config).',
       );
   }
 
@@ -386,7 +392,7 @@ final class GenerateCommand extends BindgenCommand {
 
   @override
   String get description =>
-      'Generate IR (android) or bindings (flutter). ios/react-native are not implemented yet.';
+      'Generate IR (android) or bindings (flutter, react-native). iOS is not implemented yet.';
 
   @override
   String get invocation =>
@@ -400,7 +406,7 @@ final class GenerateCommand extends BindgenCommand {
       case 'ios':
         return _notImplemented('iOS generation');
       case 'react-native':
-        return _notImplemented('React Native generation');
+        return _reactNative();
       case 'android':
         final platform = ctx.androidPlatform(
           ctx.androidSdk(),
@@ -420,9 +426,10 @@ final class GenerateCommand extends BindgenCommand {
         );
         return ExitCodes.ok;
       case 'flutter' || 'all':
-        final code = _flutter();
-        if (target == 'all' && ctx.config.reactNative) {
-          _notImplemented('React Native generation');
+        var code = ExitCodes.ok;
+        if (target == 'flutter' || ctx.config.flutter) code = _flutter();
+        if (target == 'all' && ctx.config.reactNative && code == ExitCodes.ok) {
+          code = _reactNative();
         }
         if (target == 'all' && ctx.config.iosFrameworks.isNotEmpty) {
           _notImplemented('iOS generation');
@@ -431,6 +438,47 @@ final class GenerateCommand extends BindgenCommand {
       default:
         throw UsageException('Unknown target "$target"', usage);
     }
+  }
+
+  int _reactNative() {
+    final platform = ctx.androidPlatform(ctx.androidSdk(), _opt('platform'));
+    final mode = switch (_opt('ts-mode')) {
+      'ergonomic-typescript' => TypescriptMode.ergonomic,
+      'strict-typescript' => TypescriptMode.strict,
+      _ => ctx.config.typescriptMode,
+    };
+    final extraction = ctx.openExtractor(platform).extract(_request());
+    for (final d in extraction.diagnostics) {
+      _log.diagnostic(d);
+    }
+    final out = RnJsiEmitter(
+      extraction.module,
+      options: RnJsiOptions(
+        minApi: ApiVersion(ctx.config.android.minApi),
+        mode: mode,
+        callbacks: ctx.config.callbacks,
+      ),
+    ).emit();
+    final outDir = p.normalize(
+      p.join(ctx.projectDir, _opt('output') ?? ctx.config.reactNativeDir),
+    );
+    final written = writeGeneration(OutputGuard(outDir), out);
+    ctx.writeState(out.module, out.bindings, extraction.closureDepth);
+    final cov = CoverageReport.of(out.module);
+    _log.result(
+      'Generated React Native bindings (Android API ${platform.apiLevel}, ${mode.key})\n'
+      '  output: ${p.relative(outDir, from: ctx.projectDir)} (${written.length} files)\n'
+      '  members bound: ${out.bindings.length}\n'
+      '  iOS: not yet implemented (E015)',
+      {
+        'platform': '${platform.apiLevel}',
+        'output': p.relative(outDir, from: ctx.projectDir),
+        'files': written,
+        'bindings': out.bindings.length,
+        'coverage': cov.toJson(),
+      },
+    );
+    return ExitCodes.ok;
   }
 
   int _flutter() {

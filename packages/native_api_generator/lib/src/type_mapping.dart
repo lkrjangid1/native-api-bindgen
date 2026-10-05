@@ -174,3 +174,126 @@ final class DartJniTypeMapper {
   static String dartTypeName(ApiType type) =>
       Identifiers.dartType(type.qualifiedSimpleName);
 }
+
+/// How a native type is represented in TypeScript over JSI (React Native).
+final class TsJsiType {
+  /// Creates a mapping.
+  const TsJsiType({
+    required this.tsType,
+    this.wrapClass,
+    this.isPrimitive = false,
+    this.isLong = false,
+    this.isOpaque = false,
+    this.arrayDepth = 0,
+  });
+
+  /// TypeScript type without `| null`, e.g. `number`, `string`,
+  /// `android_net.Uri`, `number[]`.
+  final String tsType;
+
+  /// TS class used to wrap raw JSI handles returned from native, or null for
+  /// values converted by the runtime (primitives, strings, primitive arrays).
+  /// For object arrays this is the element class.
+  final String? wrapClass;
+
+  /// Whether a JVM primitive (never null).
+  final bool isPrimitive;
+
+  /// Whether a Java `long` (bigint in strict mode).
+  final bool isLong;
+
+  /// Whether outside the generated closure (`JavaObject`, E016).
+  final bool isOpaque;
+
+  /// Array nesting of object arrays (0 for non-arrays and primitive arrays).
+  final int arrayDepth;
+}
+
+/// Resolves the TypeScript name of generated native types.
+abstract interface class TsTypeResolver {
+  /// Qualified TS class name for a generated type, or null.
+  String? qualifiedName(String typeId);
+}
+
+/// Maps IR [TypeRef]s to TypeScript types for the JSI target (TRD §14).
+final class TsJsiTypeMapper {
+  /// Creates a mapper.
+  TsJsiTypeMapper(this.resolver, {this.mode = TypescriptMode.strict});
+
+  /// Generated-type resolver.
+  final TsTypeResolver resolver;
+
+  /// Mapping mode.
+  final TypescriptMode mode;
+
+  /// Maps [t]; type variables are erased to [typeVariableBounds] or Object.
+  TsJsiType map(
+    TypeRef t, {
+    Map<String, TypeRef> typeVariableBounds = const {},
+  }) {
+    switch (t) {
+      case PrimitiveTypeRef(:final kind):
+        return switch (kind) {
+          PrimitiveKind.boolean => const TsJsiType(
+            tsType: 'boolean',
+            isPrimitive: true,
+          ),
+          PrimitiveKind.void_ => const TsJsiType(
+            tsType: 'void',
+            isPrimitive: true,
+          ),
+          PrimitiveKind.long => TsJsiType(
+            tsType: mode == TypescriptMode.strict ? 'bigint' : 'number',
+            isPrimitive: true,
+            isLong: true,
+          ),
+          _ => const TsJsiType(tsType: 'number', isPrimitive: true),
+        };
+      case ArrayTypeRef(:final component):
+        if (component is PrimitiveTypeRef) {
+          final e = map(component);
+          return TsJsiType(tsType: '${e.tsType}[]');
+        }
+        final inner = map(component, typeVariableBounds: typeVariableBounds);
+        if (inner.wrapClass == null) {
+          return TsJsiType(tsType: '(${inner.tsType} | null)[]');
+        }
+        return TsJsiType(
+          tsType: '(${inner.tsType} | null)[]',
+          wrapClass: inner.wrapClass,
+          isOpaque: inner.isOpaque,
+          arrayDepth: inner.arrayDepth + 1,
+        );
+      case DeclaredTypeRef(:final name):
+        return _declared(name);
+      case TypeVariableRef(:final name):
+        final bound = typeVariableBounds[name];
+        if (bound == null || bound is TypeVariableRef) {
+          return _declared('java.lang.Object');
+        }
+        return map(bound);
+      case WildcardTypeRef(:final bound, :final isSuper):
+        if (bound == null || isSuper) return _declared('java.lang.Object');
+        return map(bound, typeVariableBounds: typeVariableBounds);
+    }
+  }
+
+  TsJsiType _declared(String id) {
+    if (id == 'java.lang.String') return const TsJsiType(tsType: 'string');
+    final q = resolver.qualifiedName(id);
+    if (q != null) return TsJsiType(tsType: q, wrapClass: q);
+    return const TsJsiType(
+      tsType: 'JavaObject',
+      wrapClass: 'JavaObject',
+      isOpaque: true,
+    );
+  }
+
+  /// JNI descriptor of the *erased* type, used by the C++ runtime to convert.
+  static String descriptorOf(TypeRef t) => switch (t) {
+    PrimitiveTypeRef(:final kind) => kind.descriptor,
+    ArrayTypeRef(:final component) => '[${descriptorOf(component)}',
+    DeclaredTypeRef(:final name) => 'L${name.replaceAll('.', '/')};',
+    _ => 'Ljava/lang/Object;',
+  };
+}

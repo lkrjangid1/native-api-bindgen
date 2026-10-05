@@ -36,6 +36,20 @@ enum GenerationMode {
   final String key;
 }
 
+/// TypeScript mapping mode for React Native (TRD §14).
+enum TypescriptMode {
+  /// Java `long` → `bigint` (exact). Default.
+  strict('strict-typescript'),
+
+  /// Java `long` → `number` (values beyond ±2^53 lose precision, E011).
+  ergonomic('ergonomic-typescript');
+
+  const TypescriptMode(this.key);
+
+  /// YAML spelling.
+  final String key;
+}
+
 /// Documentation mode.
 enum DocumentationMode {
   /// Only metadata and links to official references. Default.
@@ -112,6 +126,8 @@ final class BindgenConfig {
     this.preserveAnnotations = true,
     this.callbacks = true,
     this.outputDir = 'lib/src/generated',
+    this.reactNativeDir = 'native-api-bindings',
+    this.typescriptMode = TypescriptMode.strict,
     this.generatedArtifacts = GeneratedArtifactsPolicy.localOnly,
   });
 
@@ -151,9 +167,15 @@ final class BindgenConfig {
     final targets = _optMap(root['targets'], 'targets');
     _keys(targets, 'targets', {'flutter', 'reactNative'});
     final gen = _optMap(root['generation'], 'generation');
-    _keys(gen, 'generation', {'mode', 'docs', 'annotations', 'callbacks'});
+    _keys(gen, 'generation', {
+      'mode',
+      'typescriptMode',
+      'docs',
+      'annotations',
+      'callbacks',
+    });
     final output = _optMap(root['output'], 'output');
-    _keys(output, 'output', {'dir'});
+    _keys(output, 'output', {'dir', 'reactNativeDir'});
     final dist = _optMap(root['distribution'], 'distribution');
     _keys(dist, 'distribution', {'generatedArtifacts', 'documentationMode'});
 
@@ -193,6 +215,17 @@ final class BindgenConfig {
       preserveAnnotations: annotations == 'preserve',
       callbacks: _bool(gen['callbacks'], 'generation.callbacks', true),
       outputDir: _str(output['dir'], 'output.dir', 'lib/src/generated'),
+      reactNativeDir: _str(
+        output['reactNativeDir'],
+        'output.reactNativeDir',
+        'native-api-bindings',
+      ),
+      typescriptMode: _enum(
+        gen['typescriptMode'],
+        TypescriptMode.values,
+        (m) => m.key,
+        'typescriptMode',
+      ),
       generatedArtifacts: _enum(
         dist['generatedArtifacts'],
         GeneratedArtifactsPolicy.values,
@@ -237,6 +270,12 @@ final class BindgenConfig {
   /// Output directory, relative to the project root.
   final String outputDir;
 
+  /// React Native bindings library directory, relative to the project root.
+  final String reactNativeDir;
+
+  /// TypeScript mapping mode for React Native output.
+  final TypescriptMode typescriptMode;
+
   /// Distribution policy for generated bindings.
   final GeneratedArtifactsPolicy generatedArtifacts;
 
@@ -252,6 +291,7 @@ final class BindgenConfig {
     docs.key,
     preserveAnnotations,
     callbacks,
+    typescriptMode.key,
   ].join('|');
 
   /// Default configuration file written by `init`.
@@ -280,12 +320,14 @@ targets:
   reactNative: false   # not yet implemented
 
 generation:
-  mode: strict-native
+  mode: strict-native               # Dart: strict-native | ergonomic-dart
+  typescriptMode: strict-typescript # RN: strict-typescript (long = bigint) | ergonomic-typescript
   annotations: preserve
   callbacks: true
 
 output:
-  dir: lib/src/generated
+  dir: lib/src/generated              # Flutter bindings
+  reactNativeDir: native-api-bindings # React Native bindings library
 
 distribution:
   generatedArtifacts: local-only   # safest default; see docs/legal

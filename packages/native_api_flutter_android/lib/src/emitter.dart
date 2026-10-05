@@ -4,8 +4,6 @@ import 'package:native_api_core/native_api_core.dart';
 import 'package:native_api_generator/native_api_generator.dart';
 import 'package:native_api_ir/native_api_ir.dart';
 
-import 'planner.dart';
-
 const _generatorId = 'flutter-android/dart-jni';
 
 /// Lints that generated code intentionally does not follow. Generated code
@@ -62,7 +60,7 @@ final class DartJniOptions {
 final class DartJniEmitter {
   /// Creates an emitter. [module] is planned internally.
   DartJniEmitter(ApiModule module, {this.options = const DartJniOptions()})
-    : module = planDartJni(module, callbacks: options.callbacks) {
+    : module = planJvmTarget(module, callbacks: options.callbacks) {
     for (final t in this.module.types) {
       if (t.isGeneratable) _types[t.id] = t;
     }

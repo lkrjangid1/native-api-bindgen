@@ -1,12 +1,14 @@
 import 'package:native_api_ir/native_api_ir.dart';
 
-/// Target-capability analysis for Dart over `package:jni`.
+/// Target-capability analysis for JVM-backed targets (Dart over
+/// `package:jni`, TypeScript over JSI + JNI). Both targets call Java through
+/// JNI and share the same constraints.
 ///
 /// Returns a copy of [module] in which every symbol this target cannot (or
 /// can only approximately) emit carries a support status and a reason
 /// diagnostic. The emitter only emits generatable symbols; coverage and
 /// `why-skipped` read the same annotated module, so they can never disagree.
-ApiModule planDartJni(ApiModule module, {bool callbacks = true}) {
+ApiModule planJvmTarget(ApiModule module, {bool callbacks = true}) {
   final generated = {
     for (final t in module.types)
       if (t.isGeneratable && t.kind != TypeKind.annotationType) t.id,
