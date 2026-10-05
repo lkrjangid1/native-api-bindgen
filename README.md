@@ -1,8 +1,8 @@
 # native-api-bindgen
 
-**Automatically generated bindings for supported public platform SDK APIs** — for Flutter/Dart today, React Native/TypeScript next.
+**Automatically generated bindings for supported public platform SDK APIs** — for Flutter/Dart and React Native/TypeScript (Android today; iOS next).
 
-> Project status: **Experimental (pre-alpha).** Only the Android → Flutter vertical slice is implemented. Nothing here is production-ready, and no API is advertised as supported until a test proves it.
+> Project status: **Experimental (pre-alpha).** The Android → Flutter and Android → React Native vertical slices are implemented. Nothing here is production-ready, and no API is advertised as supported until a test proves it.
 
 ## What it is
 
@@ -17,7 +17,7 @@ Calling a single platform API from Flutter or React Native usually means writing
 | Source platform | Target | Status |
 |---|---|---|
 | Android (Java APIs from `android.jar`) | Flutter / Dart via `package:jni` | Experimental — vertical slice (see [docs/android](docs/android/README.md)) |
-| Android | React Native (JSI/TurboModules) | Not yet implemented |
+| Android | React Native (New Architecture: TypeScript + JSI + JNI) | Experimental — vertical slice (see [docs/react-native](docs/react-native/README.md)) |
 | iOS (Objective-C headers) | Flutter / React Native | Not yet implemented |
 | Swift-only APIs | any | Not yet implemented |
 

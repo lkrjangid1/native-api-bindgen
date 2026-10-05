@@ -4,22 +4,70 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_call:
 
 permissions:
   contents: read
 
 jobs:
-  limitation:
-    name: Documented React Native limitation
+  generator:
+    name: RN goldens, tsc, clang, Jest
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
       - uses: dart-lang/setup-dart@v1
         with:
           sdk: stable
       - run: dart pub get
-      - name: React Native generation must report E015 (not implemented) with exit code 2
+      - working-directory: examples/react-native/android_slice
+        run: npm ci
+      - name: RN goldens + tsc + clang++ syntax check
+        run: dart test packages/native_api_react_native_android
+      - name: Jest (TypeScript runtime)
+        working-directory: examples/react-native/android_slice
+        run: npx jest
+      - name: iOS generation must report E015 (exit code 2)
         run: |
           set +e
-          dart run native_api_bindgen generate react-native
+          dart run native_api_bindgen generate ios
           test $? -eq 2
+
+  device:
+    name: RN example self-tests on an Android emulator
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+      - run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36"
+      - run: dart pub get
+      - working-directory: examples/react-native/android_slice
+        run: npm ci
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+      - name: Build x86_64 and run self-tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          script: |
+            sed -i 's/reactNativeArchitectures=arm64-v8a/reactNativeArchitectures=x86_64/' examples/react-native/android_slice/android/gradle.properties
+            tools/run_rn_device_tests.sh

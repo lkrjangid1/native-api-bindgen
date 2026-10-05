@@ -118,10 +118,68 @@ final class RnJsiEmitter {
 
   // ------------------------------------------------------------------ names
 
+  /// JavaScript/TypeScript globals and runtime names a generated class must
+  /// not shadow inside the bindings module.
+  static const _tsGlobals = {
+    'Error',
+    'TypeError',
+    'RangeError',
+    'Array',
+    'Number',
+    'Boolean',
+    'Symbol',
+    'Set',
+    'Map',
+    'WeakMap',
+    'WeakSet',
+    'WeakRef',
+    'Promise',
+    'Date',
+    'Math',
+    'JSON',
+    'RegExp',
+    'Proxy',
+    'Reflect',
+    'Iterator',
+    'Iterable',
+    'Record',
+    'Readonly',
+    'Partial',
+    'Pick',
+    'Required',
+    'ArrayBuffer',
+    'DataView',
+    'BigInt',
+    'Intl',
+    'String',
+    'Object',
+    'Function',
+    'Infinity',
+    'NaN',
+    'Handle',
+    'JavaObject',
+    'Atomics',
+    'Buffer',
+    'Event',
+    'Element',
+    'Node',
+    'Uint8Array',
+    'Int8Array',
+    'Uint16Array',
+    'Int16Array',
+    'Uint32Array',
+    'Int32Array',
+    'Float32Array',
+    'Float64Array',
+    'BigInt64Array',
+  };
+
   void _assignTypeNames() {
     final bySimple = <String, List<ApiType>>{};
     for (final t in _types.values) {
-      (bySimple[Identifiers.dartType(t.qualifiedSimpleName)] ??= []).add(t);
+      var simple = Identifiers.dartType(t.qualifiedSimpleName);
+      if (_tsGlobals.contains(simple)) simple = '$simple\$';
+      (bySimple[simple] ??= []).add(t);
     }
     bySimple.forEach((simple, list) {
       for (final t in list) {
@@ -158,32 +216,6 @@ final class RnJsiEmitter {
   static String _key(ApiMethod m) =>
       '${m.name}${m.id.substring(m.id.indexOf('('))}';
 
-  /// Visible instance methods: declared + inherited (most-derived wins),
-  /// each paired with its declaring type.
-  List<(ApiMethod, ApiType)> _instanceMethods(ApiType t) {
-    final seen = <String>{};
-    final out = <(ApiMethod, ApiType)>[];
-    for (final owner in [t, ..._ancestors(t)]) {
-      for (final m in owner.methods) {
-        if (!m.isGeneratable || m.isStatic || m.isConstructor) continue;
-        if (seen.add(_key(m))) out.add((m, owner));
-      }
-    }
-    return out;
-  }
-
-  List<(ApiField, ApiType)> _instanceFields(ApiType t) {
-    final seen = <String>{};
-    final out = <(ApiField, ApiType)>[];
-    for (final owner in [t, ..._ancestors(t)]) {
-      for (final f in owner.fields) {
-        if (!f.isGeneratable || f.isStatic) continue;
-        if (seen.add(f.name)) out.add((f, owner));
-      }
-    }
-    return out;
-  }
-
   static String _escape(String n, Set<String> reserved) =>
       reserved.contains(n) ? '$n\$' : n;
 
@@ -214,6 +246,17 @@ final class RnJsiEmitter {
     for (final t in _types.values) {
       _emitClass(b, t);
     }
+    b.writeln(
+      '// Inherited members: copied from ancestors (nearest first) at load time.',
+    );
+    for (final t in _types.values) {
+      final anc = _ancestors(t);
+      if (anc.isEmpty) continue;
+      b.writeln(
+        '\$rt.inherit(${_tsName(t)}, [${anc.map(_tsName).join(', ')}]);',
+      );
+    }
+    b.writeln();
     if (_types.containsKey('android.content.Context')) {
       final n = _tsName(_types['android.content.Context']!);
       b
@@ -364,11 +407,150 @@ final class RnJsiEmitter {
     b.writeln('$indent */');
   }
 
+  final _namesCache = <String, _RnNames>{};
+
+  /// Instance member names for [t]: declared members get names over the
+  /// visible overload set; overrides keep the ancestor's name so prototype
+  /// inheritance (see `$rt.inherit`) overrides correctly.
+  _RnNames _names(ApiType t) {
+    final cached = _namesCache[t.id];
+    if (cached != null) return cached;
+    final r = _RnNames();
+    final inheritedName = <String, String>{};
+    final inheritedAsync = <String, String>{};
+    final mergeOrder = <String>[];
+    for (final s in [?t.superClass, ...t.interfaces]) {
+      final st = _types[(s as DeclaredTypeRef).name];
+      if (st == null) continue;
+      final sn = _names(st);
+      for (final e in sn.visibleMethods.entries) {
+        if (r.visibleMethods.containsKey(e.key)) continue;
+        r.visibleMethods[e.key] = e.value;
+        inheritedName[e.key] = sn.keyToName[e.key]!;
+        final a = sn.keyToAsync[e.key];
+        if (a != null) inheritedAsync[e.key] = a;
+        mergeOrder.add(e.key);
+      }
+      sn.visibleFields.forEach(
+        (k, v) => r.visibleFields.putIfAbsent(k, () => v),
+      );
+      sn.fieldToName.forEach((k, v) => r.fieldToName.putIfAbsent(k, () => v));
+    }
+    final declared =
+        t.methods
+            .where((m) => m.isGeneratable && !m.isStatic && !m.isConstructor)
+            .toList()
+          ..sort((a, b) => a.id.compareTo(b.id));
+    final declaredKeys = {for (final m in declared) _key(m)};
+    for (final m in declared) {
+      r.visibleMethods[_key(m)] = (m, t);
+    }
+
+    // Candidate names: overrides keep the inherited name.
+    final candidate = <String, String>{...inheritedName};
+    final fresh = declared
+        .where((m) => !inheritedName.containsKey(_key(m)))
+        .toList();
+    final assigned = OverloadNamer.assign(
+      r.visibleMethods.values.map((e) => e.$1),
+    );
+
+    // Resolve name collisions between different keys (multiple inheritance
+    // can bring different overloads under one name). Declared keys win, then
+    // merge order; losers are renamed and forwarded explicitly.
+    final taken = <String>{};
+    final byName = <String, List<String>>{};
+    for (final k in [
+      ...declaredKeys.where(inheritedName.containsKey),
+      ...mergeOrder,
+    ]) {
+      (byName[candidate[k]!] ??= []).add(k);
+    }
+    final ordered = byName.keys.toList()..sort();
+    for (final name in ordered) {
+      final keys = byName[name]!.toSet().toList();
+      final winner = keys.first;
+      r.keyToName[winner] = name;
+      taken.add(name);
+      if (keys.length > 1 && !declaredKeys.contains(winner)) {
+        r.forwarded.add(winner);
+      }
+      for (final loser in keys.skip(1)) {
+        final m = r.visibleMethods[loser]!.$1;
+        var renamed = _escape(
+          '${Identifiers.dartMember(m.name)}\$${OverloadNamer.suffix(m)}',
+          _instanceReserved,
+        );
+        while (taken.contains(renamed) || byName.containsKey(renamed)) {
+          renamed = '$renamed\$';
+        }
+        taken.add(renamed);
+        r.keyToName[loser] = renamed;
+        if (!declaredKeys.contains(loser)) r.forwarded.add(loser);
+      }
+    }
+    for (final m in fresh) {
+      var name = _escape(assigned[m.id]!, _instanceReserved);
+      while (!taken.add(name)) {
+        name = '$name\$';
+      }
+      r.keyToName[_key(m)] = name;
+    }
+    // Promise variants.
+    for (final k in r.keyToName.keys.toList()..sort()) {
+      final m = r.visibleMethods[k]!.$1;
+      if (!_asyncAllowed(m)) continue;
+      final inherited = inheritedAsync[k];
+      if (inherited != null && inheritedName[k] == r.keyToName[k]) {
+        r.keyToAsync[k] = inherited;
+        taken.add(inherited);
+      }
+    }
+    for (final k in r.keyToName.keys.toList()..sort()) {
+      final m = r.visibleMethods[k]!.$1;
+      if (!_asyncAllowed(m) || r.keyToAsync.containsKey(k)) continue;
+      var a = '${r.keyToName[k]}Async';
+      while (!taken.add(a)) {
+        a = '$a\$';
+      }
+      r.keyToAsync[k] = a;
+    }
+    for (final m in declared) {
+      r.declaredMethods[m.id] = r.keyToName[_key(m)]!;
+      final a = r.keyToAsync[_key(m)];
+      if (a != null) r.declaredAsync[m.id] = a;
+    }
+    final methodNames = r.keyToName.values.toSet();
+    for (final f
+        in t.fields.where((f) => f.isGeneratable && !f.isStatic).toList()
+          ..sort((a, b) => a.name.compareTo(b.name))) {
+      final inherited = r.fieldToName[f.name];
+      var name =
+          inherited ??
+          _escape(
+            methodNames.contains(f.name) ? '${f.name}\$field' : f.name,
+            _instanceReserved,
+          );
+      if (inherited == null) {
+        while (!taken.add(name)) {
+          name = '$name\$';
+        }
+      }
+      r.fieldToName[f.name] = name;
+      r.visibleFields[f.name] = (f, t);
+      r.declaredFields[f.id] = name;
+    }
+    return _namesCache[t.id] = r;
+  }
+
   void _emitClass(StringBuffer b, ApiType t) {
     final n = _tsName(t);
+    final names = _names(t);
     _doc(b, t, '', note: 'Kind: ${t.kind.name.replaceAll('Type', '')}');
-    // Brands are added via class/interface declaration merging: type-only,
-    // nothing is emitted (React Native's Babel preset rejects `declare` fields).
+    // Type-only declaration merging: brands for nominal-ish typing plus the
+    // signatures of inherited members, which are copied onto the prototype
+    // at load time by `$rt.inherit` (nothing here is emitted as code; React
+    // Native's Babel preset rejects `declare` fields).
     b.writeln(
       '// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging',
     );
@@ -378,6 +560,46 @@ final class RnJsiEmitter {
       ..._ancestors(t).map((a) => a.id),
     }.toList()..sort()) {
       b.writeln('  readonly ${_brand(id)}: true;');
+    }
+    final declaredKeys = {
+      for (final m in t.methods.where(
+        (m) => m.isGeneratable && !m.isStatic && !m.isConstructor,
+      ))
+        _key(m),
+    };
+    final inheritedMethods =
+        names.visibleMethods.entries
+            .where((e) => !declaredKeys.contains(e.key))
+            .toList()
+          ..sort(
+            (a, b) =>
+                names.keyToName[a.key]!.compareTo(names.keyToName[b.key]!),
+          );
+    for (final e in inheritedMethods) {
+      final (m, owner) = e.value;
+      final sig = _signature(owner, m);
+      b.writeln('  /** Inherited from `${owner.id}`: `${m.id}` */');
+      b.writeln('  ${names.keyToName[e.key]}${sig.params}: ${sig.ret};');
+      final asyncName = names.keyToAsync[e.key];
+      if (asyncName != null) {
+        b.writeln('  $asyncName${sig.params}: Promise<${sig.ret}>;');
+      }
+    }
+    final declaredFieldNames = {
+      for (final f in t.fields.where((f) => f.isGeneratable && !f.isStatic))
+        f.name,
+    };
+    for (final e
+        in names.visibleFields.entries
+            .where((e) => !declaredFieldNames.contains(e.key))
+            .toList()
+          ..sort((a, b) => a.key.compareTo(b.key))) {
+      final (f, owner) = e.value;
+      final m = _mapper.map(f.type, typeVariableBounds: _typeVars(owner, null));
+      b.writeln('  /** Inherited from `${owner.id}`: `${f.id}` */');
+      b.writeln(
+        '  ${f.isFinal ? 'readonly ' : ''}${names.fieldToName[e.key]}: ${_returnType(f.type, m)};',
+      );
     }
     b.writeln('}');
     b.writeln('export class $n extends JavaObject {');
@@ -397,31 +619,20 @@ final class RnJsiEmitter {
       ),
     );
 
-    final instance = _instanceMethods(t);
-    final names = OverloadNamer.assign([
-      ...instance.map((e) => e.$1),
-      ...t.methods.where((m) => m.isGeneratable && m.isStatic),
-    ]);
-    final instanceNames = <String>{};
-    final used = <String>{};
-    String unique(String base, Set<String> reserved) {
-      var x = _escape(base, reserved);
-      while (!used.add(x)) {
-        x = '$x\$';
-      }
-      return x;
-    }
-
     // Static fields and constants.
     final staticUsed = <String>{};
-    for (final f
-        in t.fields.where((f) => f.isGeneratable && f.isStatic).toList()
-          ..sort((a, b) => a.name.compareTo(b.name))) {
-      var name = _escape(f.name, _staticReserved);
+    String staticName(String base) {
+      var name = _escape(base, _staticReserved);
       while (!staticUsed.add(name)) {
         name = '$name\$';
       }
-      _emitStaticField(b, t, f, name);
+      return name;
+    }
+
+    for (final f
+        in t.fields.where((f) => f.isGeneratable && f.isStatic).toList()
+          ..sort((a, b) => a.name.compareTo(b.name))) {
+      _emitStaticField(b, t, f, staticName(f.name));
     }
     // Constructors.
     final ctors = t.methods
@@ -429,59 +640,109 @@ final class RnJsiEmitter {
         .toList();
     final ctorNames = OverloadNamer.assign(ctors);
     for (final m in ctors..sort((a, b) => a.id.compareTo(b.id))) {
-      var name = ctorNames[m.id]!.isEmpty ? 'new' : ctorNames[m.id]!;
-      while (!staticUsed.add(name)) {
-        name = '$name\$';
-      }
-      _emitMethod(b, t, t, m, name, isStatic: true, ctor: true);
+      _emitMethod(
+        b,
+        t,
+        t,
+        m,
+        staticName(ctorNames[m.id]!.isEmpty ? 'new' : ctorNames[m.id]!),
+        isStatic: true,
+        ctor: true,
+      );
     }
     // Static methods.
+    final statics = t.methods
+        .where((m) => m.isGeneratable && m.isStatic)
+        .toList();
+    final staticNames = OverloadNamer.assign(statics);
     for (final m
-        in t.methods.where((m) => m.isGeneratable && m.isStatic).toList()
-          ..sort((a, b) => names[a.id]!.compareTo(names[b.id]!))) {
-      var name = _escape(names[m.id]!, _staticReserved);
-      while (!staticUsed.add(name)) {
-        name = '$name\$';
-      }
+        in statics
+          ..sort((a, b) => staticNames[a.id]!.compareTo(staticNames[b.id]!))) {
+      final name = staticName(staticNames[m.id]!);
       _emitMethod(b, t, t, m, name, isStatic: true);
-      final asyncName = '${name}Async';
-      if (_asyncAllowed(m) && staticUsed.add(asyncName)) {
-        _emitMethod(b, t, t, m, asyncName, isStatic: true, async: true);
+      if (_asyncAllowed(m)) {
+        _emitMethod(
+          b,
+          t,
+          t,
+          m,
+          staticName('${name}Async'),
+          isStatic: true,
+          async: true,
+        );
       }
     }
-    // Instance fields (declared + inherited).
-    final methodNameSet = instance.map((e) => names[e.$1.id]!).toSet();
-    for (final (f, owner) in _instanceFields(
-      t,
-    )..sort((a, b) => a.$1.name.compareTo(b.$1.name))) {
-      var base = f.name;
-      if (methodNameSet.contains(base)) base = '$base\$field';
-      final name = unique(base, _instanceReserved);
-      instanceNames.add(name);
-      _emitInstanceField(b, t, owner, f, name);
+    // Declared instance fields.
+    for (final f
+        in t.fields.where((f) => f.isGeneratable && !f.isStatic).toList()
+          ..sort((a, b) => a.name.compareTo(b.name))) {
+      _emitInstanceField(b, t, t, f, names.declaredFields[f.id]!);
     }
-    // Instance methods (declared + inherited).
-    final ordered = instance.toList()
-      ..sort((a, b) => names[a.$1.id]!.compareTo(names[b.$1.id]!));
-    final asyncPending = <(ApiMethod, ApiType, String)>[];
-    for (final (m, owner) in ordered) {
-      final name = unique(names[m.id]!, _instanceReserved);
-      _emitMethod(b, t, owner, m, name, isStatic: false);
-      if (_asyncAllowed(m)) asyncPending.add((m, owner, '${name}Async'));
+    // Declared instance methods (+ Promise variants).
+    final declared =
+        t.methods
+            .where((m) => m.isGeneratable && !m.isStatic && !m.isConstructor)
+            .toList()
+          ..sort(
+            (a, b) => names.declaredMethods[a.id]!.compareTo(
+              names.declaredMethods[b.id]!,
+            ),
+          );
+    for (final m in declared) {
+      _emitMethod(b, t, t, m, names.declaredMethods[m.id]!, isStatic: false);
+      final a = names.declaredAsync[m.id];
+      if (a != null) _emitMethod(b, t, t, m, a, isStatic: false, async: true);
     }
-    for (final (m, owner, asyncName) in asyncPending) {
-      if (used.add(asyncName)) {
-        _emitMethod(b, t, owner, m, asyncName, isStatic: false, async: true);
+    // Inherited members whose name collides across supertypes are forwarded
+    // explicitly (own properties win over prototype copies).
+    for (final k in names.forwarded.toList()..sort()) {
+      final (m, owner) = names.visibleMethods[k]!;
+      _emitMethod(b, t, owner, m, names.keyToName[k]!, isStatic: false);
+      final a = names.keyToAsync[k];
+      if (a != null) {
+        _emitMethod(b, t, owner, m, a, isStatic: false, async: true);
       }
     }
-    if (options.callbacks && t.isInterface && instance.isNotEmpty) {
-      _emitImplement(b, t, instance, names);
+    final visible = [
+      for (final e in names.visibleMethods.entries) (e.value.$1, e.value.$2),
+    ]..sort((x, y) => x.$1.id.compareTo(y.$1.id));
+    final visibleNames = {
+      for (final e in names.visibleMethods.entries)
+        e.value.$1.id: names.keyToName[e.key]!,
+    };
+    if (options.callbacks && t.isInterface && visible.isNotEmpty) {
+      _emitImplement(b, t, visible, visibleNames);
     }
     b.writeln('}');
     b.writeln();
-    if (options.callbacks && t.isInterface && instance.isNotEmpty) {
-      _emitImplInterface(b, t, instance, names);
+    if (options.callbacks && t.isInterface && visible.isNotEmpty) {
+      _emitImplInterface(b, t, visible, visibleNames);
     }
+  }
+
+  ({String params, String ret}) _signature(ApiType owner, ApiMethod m) {
+    final tv = _typeVars(owner, m);
+    final used = <String>{};
+    final params = <String>[];
+    for (final p in m.parameters) {
+      var pn = Identifiers.typescript(p.name);
+      while (!used.add(pn)) {
+        pn = '$pn\$';
+      }
+      params.add(
+        '$pn: ${_paramType(p.type, _mapper.map(p.type, typeVariableBounds: tv))}',
+      );
+    }
+    final isVoid =
+        m.returnType is PrimitiveTypeRef &&
+        (m.returnType as PrimitiveTypeRef).kind == PrimitiveKind.void_;
+    final ret = isVoid
+        ? 'void'
+        : _returnType(
+            m.returnType,
+            _mapper.map(m.returnType, typeVariableBounds: tv),
+          );
+    return (params: '(${params.join(', ')})', ret: ret);
   }
 
   bool _asyncAllowed(ApiMethod m) =>
@@ -548,16 +809,18 @@ final class RnJsiEmitter {
           ? (r) => r
           : (r) => _convertReturn(r, m.returnType, rt, m.id);
     }
-    _doc(
-      b,
-      m,
-      '  ',
-      note: [
-        if (owner.id != t.id) 'Inherited from `${owner.id}`',
-        if (async)
-          'Runs the JNI call on a background thread; resolves on the JS thread',
-      ].join('; ').let((s) => s.isEmpty ? null : s),
-    );
+    if (async) {
+      b.writeln(
+        '  /** Promise variant of `${m.id}`: the JNI call runs on a background thread. */',
+      );
+    } else {
+      _doc(
+        b,
+        m,
+        '  ',
+        note: owner.id != t.id ? 'Inherited from `${owner.id}`' : null,
+      );
+    }
     final sig = '${isStatic ? 'static ' : ''}$name(${params.join(', ')})';
     if (async) {
       b.writeln('  $sig: Promise<$retType> {');
@@ -1016,8 +1279,29 @@ final class RnJsiEmitter {
       'Then `import {Intent, applicationContext} from \'<this dir>\';`\n';
 }
 
-extension on String {
-  T let<T>(T Function(String) f) => f(this);
+final class _RnNames {
+  /// Visible instance methods by key (declared + inherited), with owner.
+  final visibleMethods = <String, (ApiMethod, ApiType)>{};
+
+  /// Method key -> TS name (consistent across the hierarchy).
+  final keyToName = <String, String>{};
+
+  /// Method key -> Promise-variant name.
+  final keyToAsync = <String, String>{};
+
+  /// Visible instance fields by Java name.
+  final visibleFields = <String, (ApiField, ApiType)>{};
+
+  /// Java field name -> TS name.
+  final fieldToName = <String, String>{};
+
+  /// Inherited keys re-declared in the class because of name conflicts.
+  final forwarded = <String>{};
+
+  /// Declared method id -> name / async name; declared field id -> name.
+  final declaredMethods = <String, String>{};
+  final declaredAsync = <String, String>{};
+  final declaredFields = <String, String>{};
 }
 
 final class _Resolver implements TsTypeResolver {

@@ -14,6 +14,12 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 - CLI: init, detect, doctor, inspect, generate, update, diff, coverage, graph, explain, why-generated, why-skipped, audit-license, verify-reproducible, clean.
 - Release-APK size benchmark (`tools/measure_size.py`, `docs/benchmarks/size.md`).
 
+- React Native (Android, New Architecture): TypeScript bindings over a JSI/JNI runtime installed by one pure C++ Turbo Module; Promise variants; Java interfaces implemented in JS; `generate react-native`; RN example with on-device self-tests; `tools/run_rn_device_tests.sh`, `tools/measure_rn_size.py`.
+
+### Changed
+- The JVM-target planner moved to `native_api_generator` (shared by Flutter and React Native).
+- Configuration: `generation.typescriptMode`, `output.reactNativeDir`.
+
 ### Fixed
 - Same-thread synchronous callbacks now wake the Dart event loop so awaiting code resumes promptly.
 

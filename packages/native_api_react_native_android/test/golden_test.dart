@@ -49,8 +49,9 @@ void main() {
         .where((f) => !runtimeSources.containsKey(f.path))
         .toList();
     if (Platform.environment['UPDATE_GOLDENS'] == '1') {
-      if (Directory(dir).existsSync())
+      if (Directory(dir).existsSync()) {
         Directory(dir).deleteSync(recursive: true);
+      }
       for (final f in files) {
         File(p.join(dir, f.path))
           ..createSync(recursive: true)

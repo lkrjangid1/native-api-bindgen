@@ -214,6 +214,23 @@ export function valueCallback<T>(symbol: string, body: () => T): T {
   }
 }
 
+/**
+ * @internal Copies inherited members from [ancestors] (nearest first) onto
+ * [target]'s prototype. Generated classes declare only their own members;
+ * this keeps output linear in the API size instead of duplicating every
+ * inherited member into each subclass.
+ */
+export function inherit(target: {prototype: object}, ancestors: Array<{prototype: object}>): void {
+  const own = target.prototype;
+  for (const a of ancestors) {
+    for (const key of Object.getOwnPropertyNames(a.prototype)) {
+      if (key === 'constructor' || Object.prototype.hasOwnProperty.call(own, key)) continue;
+      const d = Object.getOwnPropertyDescriptor(a.prototype, key);
+      if (d !== undefined) Object.defineProperty(own, key, d);
+    }
+  }
+}
+
 /** @internal */
 export function h(o: JavaObject | null | undefined): Handle | null {
   return o === null || o === undefined ? null : o.$h;

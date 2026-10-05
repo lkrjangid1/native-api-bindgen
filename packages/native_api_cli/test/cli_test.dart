@@ -65,15 +65,13 @@ void main() {
     );
   });
 
-  test('ios and react-native report E015 with a distinct exit code', () async {
-    for (final target in ['ios', 'react-native']) {
-      final r = await cli(['--json', 'generate', target], cwd: project.path);
-      expect(r.code, ExitCodes.notImplemented);
-      expect(
-        (jsonDecode(r.out) as Map)['diagnostic'],
-        containsPair('code', 'E015'),
-      );
-    }
+  test('iOS reports E015 with a distinct exit code', () async {
+    final r = await cli(['--json', 'generate', 'ios'], cwd: project.path);
+    expect(r.code, ExitCodes.notImplemented);
+    expect(
+      (jsonDecode(r.out) as Map)['diagnostic'],
+      containsPair('code', 'E015'),
+    );
     expect(
       (await cli(['inspect', 'ios'], cwd: project.path)).code,
       ExitCodes.notImplemented,
@@ -221,6 +219,32 @@ void main() {
       skip: skip,
       timeout: const Timeout(Duration(minutes: 2)),
     );
+
+    test('generate react-native writes TS, C++ tables and runtime', () async {
+      final r = await cli([
+        '--json',
+        'generate',
+        'react-native',
+        ...sel,
+      ], cwd: project.path);
+      expect(r.code, ExitCodes.ok, reason: r.err);
+      final files = ((jsonDecode(r.out) as Map)['files'] as List)
+          .cast<String>();
+      expect(
+        files,
+        containsAll([
+          'src/generated/bindings.ts',
+          'cpp/generated/NabBindings.cpp',
+          'cpp/runtime/NabRuntime.cpp',
+          'specs/NativeApiBindgen.ts',
+        ]),
+      );
+      final ts = File(
+        p.join(project.path, 'native-api-bindings/src/generated/bindings.ts'),
+      ).readAsStringSync();
+      expect(ts, contains('export class Handler extends JavaObject'));
+      expect(ts, contains('static getMainLooper()'));
+    }, skip: skip);
 
     test('verify-reproducible', () async {
       final r = await cli([

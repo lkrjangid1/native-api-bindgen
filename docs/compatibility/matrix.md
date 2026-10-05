@@ -15,7 +15,8 @@ Only versions **actually exercised** are listed. "Tested" means automated tests 
 | JDK | OpenJDK 25.0.2 (fixtures compiled with `--release 17`) | fixture, golden, host-JVM runtime tests |
 | CMake (host JNI helper) | 3.22.1 (from Android SDK) | `tools/run_jvm_runtime_tests.sh` |
 | Xcode / iOS SDK | 27.0 / 27.0 | **detected only** (`doctor`); generation not implemented |
-| React Native / Node | — | not implemented |
+| React Native | 0.87.1 (New Architecture, Hermes) | RN example release build; 12 on-device self-tests on API 37 emulator; Jest runtime tests |
+| Node / TypeScript | 25.9.0 / 6.0.3 | `tsc --strict` on generated output (fixtures, slice, full android-36 SDK) |
 
 ## Known constraints
 

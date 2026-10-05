@@ -140,6 +140,10 @@ export class AnnotatedClass extends JavaObject {
   capture(mode: number): void {
     AnnotatedClass.$t()['capture(int)V'](false, this.$h, mode);
   }
+  /** Promise variant of `com.example.fixtures.AnnotatedClass#capture(int)`: the JNI call runs on a background thread. */
+  captureAsync(mode: number): Promise<void> {
+    return (AnnotatedClass.$t()['capture(int)V'](true, this.$h, mode) as Promise<unknown>).then(r => undefined);
+  }
   /**
    * Native API: `com.example.fixtures.AnnotatedClass#old()`
    * - Android API: 1+
@@ -149,6 +153,10 @@ export class AnnotatedClass extends JavaObject {
   old(): void {
     AnnotatedClass.$t()['old()V'](false, this.$h);
   }
+  /** Promise variant of `com.example.fixtures.AnnotatedClass#old()`: the JNI call runs on a background thread. */
+  oldAsync(): Promise<void> {
+    return (AnnotatedClass.$t()['old()V'](true, this.$h) as Promise<unknown>).then(r => undefined);
+  }
   /**
    * Native API: `com.example.fixtures.AnnotatedClass#render()`
    * - Android API: 1+
@@ -156,26 +164,6 @@ export class AnnotatedClass extends JavaObject {
    */
   render(): void {
     AnnotatedClass.$t()['render()V'](false, this.$h);
-  }
-  /**
-   * Native API: `com.example.fixtures.AnnotatedClass#capture(int)`
-   * - Android API: 23+
-   * - Threading: workerThread
-   * - Permissions: anyOf:android.permission.CAMERA, anyOf:android.permission.RECORD_AUDIO
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
-  captureAsync(mode: number): Promise<void> {
-    return (AnnotatedClass.$t()['capture(int)V'](true, this.$h, mode) as Promise<unknown>).then(r => undefined);
-  }
-  /**
-   * Native API: `com.example.fixtures.AnnotatedClass#old()`
-   * - Android API: 1+
-   * - Deprecated in Android API 30
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   * @deprecated Deprecated in Android API 30
-   */
-  oldAsync(): Promise<void> {
-    return (AnnotatedClass.$t()['old()V'](true, this.$h) as Promise<unknown>).then(r => undefined);
   }
 }
 
@@ -205,6 +193,10 @@ export class ApiLevelClass extends JavaObject {
   since1(): void {
     ApiLevelClass.$t()['since1()V'](false, this.$h);
   }
+  /** Promise variant of `com.example.fixtures.ApiLevelClass#since1()`: the JNI call runs on a background thread. */
+  since1Async(): Promise<void> {
+    return (ApiLevelClass.$t()['since1()V'](true, this.$h) as Promise<unknown>).then(r => undefined);
+  }
   /**
    * Native API: `com.example.fixtures.ApiLevelClass#since30()`
    * - Android API: 30+ (guarded at runtime)
@@ -215,6 +207,11 @@ export class ApiLevelClass extends JavaObject {
     $rt.AndroidApi.require(30, 0, 'com.example.fixtures.ApiLevelClass#since30()');
     ApiLevelClass.$t()['since30()V'](false, this.$h);
   }
+  /** Promise variant of `com.example.fixtures.ApiLevelClass#since30()`: the JNI call runs on a background thread. */
+  since30Async(): Promise<void> {
+    $rt.AndroidApi.require(30, 0, 'com.example.fixtures.ApiLevelClass#since30()');
+    return (ApiLevelClass.$t()['since30()V'](true, this.$h) as Promise<unknown>).then(r => undefined);
+  }
   /**
    * Native API: `com.example.fixtures.ApiLevelClass#since36minor()`
    * - Android API: 36.1+ (guarded at runtime)
@@ -222,6 +219,11 @@ export class ApiLevelClass extends JavaObject {
   since36minor(): void {
     $rt.AndroidApi.require(36, 1, 'com.example.fixtures.ApiLevelClass#since36minor()');
     ApiLevelClass.$t()['since36minor()V'](false, this.$h);
+  }
+  /** Promise variant of `com.example.fixtures.ApiLevelClass#since36minor()`: the JNI call runs on a background thread. */
+  since36minorAsync(): Promise<void> {
+    $rt.AndroidApi.require(36, 1, 'com.example.fixtures.ApiLevelClass#since36minor()');
+    return (ApiLevelClass.$t()['since36minor()V'](true, this.$h) as Promise<unknown>).then(r => undefined);
   }
   /**
    * Native API: `com.example.fixtures.ApiLevelClass#unlisted()`
@@ -231,40 +233,7 @@ export class ApiLevelClass extends JavaObject {
   unlisted(): void {
     ApiLevelClass.$t()['unlisted()V'](false, this.$h);
   }
-  /**
-   * Native API: `com.example.fixtures.ApiLevelClass#since1()`
-   * - Android API: 5+
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
-  since1Async(): Promise<void> {
-    return (ApiLevelClass.$t()['since1()V'](true, this.$h) as Promise<unknown>).then(r => undefined);
-  }
-  /**
-   * Native API: `com.example.fixtures.ApiLevelClass#since30()`
-   * - Android API: 30+ (guarded at runtime)
-   * - Deprecated in Android API 35
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   * @deprecated Deprecated in Android API 35
-   */
-  since30Async(): Promise<void> {
-    $rt.AndroidApi.require(30, 0, 'com.example.fixtures.ApiLevelClass#since30()');
-    return (ApiLevelClass.$t()['since30()V'](true, this.$h) as Promise<unknown>).then(r => undefined);
-  }
-  /**
-   * Native API: `com.example.fixtures.ApiLevelClass#since36minor()`
-   * - Android API: 36.1+ (guarded at runtime)
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
-  since36minorAsync(): Promise<void> {
-    $rt.AndroidApi.require(36, 1, 'com.example.fixtures.ApiLevelClass#since36minor()');
-    return (ApiLevelClass.$t()['since36minor()V'](true, this.$h) as Promise<unknown>).then(r => undefined);
-  }
-  /**
-   * Native API: `com.example.fixtures.ApiLevelClass#unlisted()`
-   * - Android API: 5+
-   * - Note E012 AVAILABILITY_MISMATCH: Not listed in api-versions.xml (inherited from a non-public superclass); availability inferred from the declaring class
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
+  /** Promise variant of `com.example.fixtures.ApiLevelClass#unlisted()`: the JNI call runs on a background thread. */
   unlistedAsync(): Promise<void> {
     return (ApiLevelClass.$t()['unlisted()V'](true, this.$h) as Promise<unknown>).then(r => undefined);
   }
@@ -296,6 +265,10 @@ export class AsyncClass extends JavaObject {
   ask(callback: CallbackInterface$Like | null): boolean {
     return AsyncClass.$t()['ask(com.example.fixtures.CallbackInterface)Z'](false, this.$h, $rt.h(callback)) as boolean;
   }
+  /** Promise variant of `com.example.fixtures.AsyncClass#ask(com.example.fixtures.CallbackInterface)`: the JNI call runs on a background thread. */
+  askAsync(callback: CallbackInterface$Like | null): Promise<boolean> {
+    return (AsyncClass.$t()['ask(com.example.fixtures.CallbackInterface)Z'](true, this.$h, $rt.h(callback)) as Promise<unknown>).then(r => r as boolean);
+  }
   /**
    * Native API: `com.example.fixtures.AsyncClass#labelOf(com.example.fixtures.CallbackInterface)`
    * - Android API: 1+
@@ -303,12 +276,20 @@ export class AsyncClass extends JavaObject {
   labelOf(callback: CallbackInterface$Like | null): string | null {
     return AsyncClass.$t()['labelOf(com.example.fixtures.CallbackInterface)Ljava/lang/String;'](false, this.$h, $rt.h(callback)) as string | null;
   }
+  /** Promise variant of `com.example.fixtures.AsyncClass#labelOf(com.example.fixtures.CallbackInterface)`: the JNI call runs on a background thread. */
+  labelOfAsync(callback: CallbackInterface$Like | null): Promise<string | null> {
+    return (AsyncClass.$t()['labelOf(com.example.fixtures.CallbackInterface)Ljava/lang/String;'](true, this.$h, $rt.h(callback)) as Promise<unknown>).then(r => r as string | null);
+  }
   /**
    * Native API: `com.example.fixtures.AsyncClass#load(java.lang.String,com.example.fixtures.CallbackInterface)`
    * - Android API: 1+
    */
   load(key: string | null, callback: CallbackInterface$Like | null): void {
     AsyncClass.$t()['load(java.lang.String,com.example.fixtures.CallbackInterface)V'](false, this.$h, key, $rt.h(callback));
+  }
+  /** Promise variant of `com.example.fixtures.AsyncClass#load(java.lang.String,com.example.fixtures.CallbackInterface)`: the JNI call runs on a background thread. */
+  loadAsync(key: string | null, callback: CallbackInterface$Like | null): Promise<void> {
+    return (AsyncClass.$t()['load(java.lang.String,com.example.fixtures.CallbackInterface)V'](true, this.$h, key, $rt.h(callback)) as Promise<unknown>).then(r => undefined);
   }
   /**
    * Native API: `com.example.fixtures.AsyncClass#loadOnThread(java.lang.String,com.example.fixtures.CallbackInterface)`
@@ -318,36 +299,7 @@ export class AsyncClass extends JavaObject {
   loadOnThread(key: string | null, callback: CallbackInterface$Like | null): void {
     AsyncClass.$t()['loadOnThread(java.lang.String,com.example.fixtures.CallbackInterface)V'](false, this.$h, key, $rt.h(callback));
   }
-  /**
-   * Native API: `com.example.fixtures.AsyncClass#ask(com.example.fixtures.CallbackInterface)`
-   * - Android API: 1+
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
-  askAsync(callback: CallbackInterface$Like | null): Promise<boolean> {
-    return (AsyncClass.$t()['ask(com.example.fixtures.CallbackInterface)Z'](true, this.$h, $rt.h(callback)) as Promise<unknown>).then(r => r as boolean);
-  }
-  /**
-   * Native API: `com.example.fixtures.AsyncClass#labelOf(com.example.fixtures.CallbackInterface)`
-   * - Android API: 1+
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
-  labelOfAsync(callback: CallbackInterface$Like | null): Promise<string | null> {
-    return (AsyncClass.$t()['labelOf(com.example.fixtures.CallbackInterface)Ljava/lang/String;'](true, this.$h, $rt.h(callback)) as Promise<unknown>).then(r => r as string | null);
-  }
-  /**
-   * Native API: `com.example.fixtures.AsyncClass#load(java.lang.String,com.example.fixtures.CallbackInterface)`
-   * - Android API: 1+
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
-  loadAsync(key: string | null, callback: CallbackInterface$Like | null): Promise<void> {
-    return (AsyncClass.$t()['load(java.lang.String,com.example.fixtures.CallbackInterface)V'](true, this.$h, key, $rt.h(callback)) as Promise<unknown>).then(r => undefined);
-  }
-  /**
-   * Native API: `com.example.fixtures.AsyncClass#loadOnThread(java.lang.String,com.example.fixtures.CallbackInterface)`
-   * - Android API: 1+
-   * - Throws (Java): java.lang.InterruptedException; surfaced as NativeJavaError
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
+  /** Promise variant of `com.example.fixtures.AsyncClass#loadOnThread(java.lang.String,com.example.fixtures.CallbackInterface)`: the JNI call runs on a background thread. */
   loadOnThreadAsync(key: string | null, callback: CallbackInterface$Like | null): Promise<void> {
     return (AsyncClass.$t()['loadOnThread(java.lang.String,com.example.fixtures.CallbackInterface)V'](true, this.$h, key, $rt.h(callback)) as Promise<unknown>).then(r => undefined);
   }
@@ -372,11 +324,7 @@ export class CallbackInterface extends JavaObject {
   static noop(): CallbackInterface | null {
     return $rt.wrap(CallbackInterface, CallbackInterface.$t()['noop()Lcom/example/fixtures/CallbackInterface;'](false));
   }
-  /**
-   * Native API: `com.example.fixtures.CallbackInterface#noop()`
-   * - Android API: 1+
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
+  /** Promise variant of `com.example.fixtures.CallbackInterface#noop()`: the JNI call runs on a background thread. */
   static noopAsync(): Promise<CallbackInterface | null> {
     return (CallbackInterface.$t()['noop()Lcom/example/fixtures/CallbackInterface;'](true) as Promise<unknown>).then(r => $rt.wrap(CallbackInterface, r));
   }
@@ -387,12 +335,20 @@ export class CallbackInterface extends JavaObject {
   label(): string | null {
     return CallbackInterface.$t()['label()Ljava/lang/String;'](false, this.$h) as string | null;
   }
+  /** Promise variant of `com.example.fixtures.CallbackInterface#label()`: the JNI call runs on a background thread. */
+  labelAsync(): Promise<string | null> {
+    return (CallbackInterface.$t()['label()Ljava/lang/String;'](true, this.$h) as Promise<unknown>).then(r => r as string | null);
+  }
   /**
    * Native API: `com.example.fixtures.CallbackInterface#onEvent(java.lang.String,int)`
    * - Android API: 1+
    */
   onEvent(p0: string, p1: number): void {
     CallbackInterface.$t()['onEvent(java.lang.String,int)V'](false, this.$h, p0, p1);
+  }
+  /** Promise variant of `com.example.fixtures.CallbackInterface#onEvent(java.lang.String,int)`: the JNI call runs on a background thread. */
+  onEventAsync(p0: string, p1: number): Promise<void> {
+    return (CallbackInterface.$t()['onEvent(java.lang.String,int)V'](true, this.$h, p0, p1) as Promise<unknown>).then(r => undefined);
   }
   /**
    * Native API: `com.example.fixtures.CallbackInterface#shouldContinue()`
@@ -401,27 +357,7 @@ export class CallbackInterface extends JavaObject {
   shouldContinue(): boolean {
     return CallbackInterface.$t()['shouldContinue()Z'](false, this.$h) as boolean;
   }
-  /**
-   * Native API: `com.example.fixtures.CallbackInterface#label()`
-   * - Android API: 1+
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
-  labelAsync(): Promise<string | null> {
-    return (CallbackInterface.$t()['label()Ljava/lang/String;'](true, this.$h) as Promise<unknown>).then(r => r as string | null);
-  }
-  /**
-   * Native API: `com.example.fixtures.CallbackInterface#onEvent(java.lang.String,int)`
-   * - Android API: 1+
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
-  onEventAsync(p0: string, p1: number): Promise<void> {
-    return (CallbackInterface.$t()['onEvent(java.lang.String,int)V'](true, this.$h, p0, p1) as Promise<unknown>).then(r => undefined);
-  }
-  /**
-   * Native API: `com.example.fixtures.CallbackInterface#shouldContinue()`
-   * - Android API: 1+
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
+  /** Promise variant of `com.example.fixtures.CallbackInterface#shouldContinue()`: the JNI call runs on a background thread. */
   shouldContinueAsync(): Promise<boolean> {
     return (CallbackInterface.$t()['shouldContinue()Z'](true, this.$h) as Promise<unknown>).then(r => r as boolean);
   }
@@ -432,17 +368,17 @@ export class CallbackInterface extends JavaObject {
    */
   static implement(impl: CallbackInterface$Impl, options: {async?: Array<keyof CallbackInterface$Impl>} = {}): CallbackInterface {
     const dispatcher: Record<string, (...args: unknown[]) => unknown> = {
+      'label()Ljava/lang/String;': () =>
+        $rt.valueCallback('com.example.fixtures.CallbackInterface#label()', () => impl.label()),
       'onEvent(Ljava/lang/String;I)V': (a0: unknown, a1: unknown) =>
         $rt.voidCallback('com.example.fixtures.CallbackInterface#onEvent(java.lang.String,int)', () => impl.onEvent(a0 as string, a1 as number)),
       'shouldContinue()Z': () =>
         $rt.valueCallback('com.example.fixtures.CallbackInterface#shouldContinue()', () => impl.shouldContinue()),
-      'label()Ljava/lang/String;': () =>
-        $rt.valueCallback('com.example.fixtures.CallbackInterface#label()', () => impl.label()),
     };
     const descriptors: Record<string, string> = {
+      "label": 'label()Ljava/lang/String;',
       "onEvent": 'onEvent(Ljava/lang/String;I)V',
       "shouldContinue": 'shouldContinue()Z',
-      "label": 'label()Ljava/lang/String;',
     };
     const asyncDescriptors = (options.async ?? []).map(k => descriptors[k as string]);
     return new CallbackInterface($rt.nab().implement('com/example/fixtures/CallbackInterface', dispatcher, asyncDescriptors) as Handle);
@@ -451,12 +387,12 @@ export class CallbackInterface extends JavaObject {
 
 /** JavaScript implementation of `com.example.fixtures.CallbackInterface`; see [CallbackInterface.implement]. */
 export interface CallbackInterface$Impl {
+  /** Implements `com.example.fixtures.CallbackInterface#label()`. */
+  label(): string | null;
   /** Implements `com.example.fixtures.CallbackInterface#onEvent(java.lang.String,int)`. */
   onEvent(p0: string, p1: number): void;
   /** Implements `com.example.fixtures.CallbackInterface#shouldContinue()`. */
   shouldContinue(): boolean;
-  /** Implements `com.example.fixtures.CallbackInterface#label()`. */
-  label(): string | null;
 }
 
 /**
@@ -478,11 +414,7 @@ export class Countable extends JavaObject {
   size(): number {
     return Countable.$t()['size()I'](false, this.$h) as number;
   }
-  /**
-   * Native API: `com.example.fixtures.Countable#size()`
-   * - Android API: 1+
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
+  /** Promise variant of `com.example.fixtures.Countable#size()`: the JNI call runs on a background thread. */
   sizeAsync(): Promise<number> {
     return (Countable.$t()['size()I'](true, this.$h) as Promise<unknown>).then(r => r as number);
   }
@@ -537,11 +469,7 @@ export class DeprecatedClass extends JavaObject {
   run(): void {
     DeprecatedClass.$t()['run()V'](false, this.$h);
   }
-  /**
-   * Native API: `com.example.fixtures.DeprecatedClass#run()`
-   * - Android API: 1+
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
+  /** Promise variant of `com.example.fixtures.DeprecatedClass#run()`: the JNI call runs on a background thread. */
   runAsync(): Promise<void> {
     return (DeprecatedClass.$t()['run()V'](true, this.$h) as Promise<unknown>).then(r => undefined);
   }
@@ -558,6 +486,9 @@ export interface DualImpl {
   readonly __brand_com_example_fixtures_DualImpl: true;
   readonly __brand_com_example_fixtures_Marker: true;
   readonly __brand_com_example_fixtures_Sizable: true;
+  /** Inherited from `com.example.fixtures.Sizable`: `com.example.fixtures.Sizable#size()` */
+  size(): number;
+  sizeAsync(): Promise<number>;
 }
 export class DualImpl extends JavaObject {
   static readonly javaInternalName: string = 'com/example/fixtures/DualImpl';
@@ -569,29 +500,9 @@ export class DualImpl extends JavaObject {
   static create(n: number): DualImpl | null {
     return $rt.wrap(DualImpl, DualImpl.$t()['create(int)Lcom/example/fixtures/DualImpl;'](false, n));
   }
-  /**
-   * Native API: `com.example.fixtures.DualImpl#create(int)`
-   * - Android API: 1+
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
+  /** Promise variant of `com.example.fixtures.DualImpl#create(int)`: the JNI call runs on a background thread. */
   static createAsync(n: number): Promise<DualImpl | null> {
     return (DualImpl.$t()['create(int)Lcom/example/fixtures/DualImpl;'](true, n) as Promise<unknown>).then(r => $rt.wrap(DualImpl, r));
-  }
-  /**
-   * Native API: `com.example.fixtures.Sizable#size()`
-   * - Android API: 1+
-   * - Inherited from `com.example.fixtures.Sizable`
-   */
-  size(): number {
-    return Sizable.$t()['size()I'](false, this.$h) as number;
-  }
-  /**
-   * Native API: `com.example.fixtures.Sizable#size()`
-   * - Android API: 1+
-   * - Inherited from `com.example.fixtures.Sizable`; Runs the JNI call on a background thread; resolves on the JS thread
-   */
-  sizeAsync(): Promise<number> {
-    return (Sizable.$t()['size()I'](true, this.$h) as Promise<unknown>).then(r => r as number);
   }
 }
 
@@ -628,11 +539,7 @@ export class EnumClass extends JavaObject {
   static valueOf(name: string | null): EnumClass | null {
     return $rt.wrap(EnumClass, EnumClass.$t()['valueOf(java.lang.String)Lcom/example/fixtures/EnumClass;'](false, name));
   }
-  /**
-   * Native API: `com.example.fixtures.EnumClass#valueOf(java.lang.String)`
-   * - Android API: 1+
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
+  /** Promise variant of `com.example.fixtures.EnumClass#valueOf(java.lang.String)`: the JNI call runs on a background thread. */
   static valueOfAsync(name: string | null): Promise<EnumClass | null> {
     return (EnumClass.$t()['valueOf(java.lang.String)Lcom/example/fixtures/EnumClass;'](true, name) as Promise<unknown>).then(r => $rt.wrap(EnumClass, r));
   }
@@ -643,11 +550,7 @@ export class EnumClass extends JavaObject {
   static values(): (EnumClass | null)[] | null {
     return $rt.wrapArray(EnumClass, EnumClass.$t()['values()[Lcom/example/fixtures/EnumClass;'](false), 1) as (EnumClass | null)[] | null;
   }
-  /**
-   * Native API: `com.example.fixtures.EnumClass#values()`
-   * - Android API: 1+
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
+  /** Promise variant of `com.example.fixtures.EnumClass#values()`: the JNI call runs on a background thread. */
   static valuesAsync(): Promise<(EnumClass | null)[] | null> {
     return (EnumClass.$t()['values()[Lcom/example/fixtures/EnumClass;'](true) as Promise<unknown>).then(r => $rt.wrapArray(EnumClass, r, 1) as (EnumClass | null)[] | null);
   }
@@ -658,11 +561,7 @@ export class EnumClass extends JavaObject {
   code(): number {
     return EnumClass.$t()['code()I'](false, this.$h) as number;
   }
-  /**
-   * Native API: `com.example.fixtures.EnumClass#code()`
-   * - Android API: 1+
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
+  /** Promise variant of `com.example.fixtures.EnumClass#code()`: the JNI call runs on a background thread. */
   codeAsync(): Promise<number> {
     return (EnumClass.$t()['code()I'](true, this.$h) as Promise<unknown>).then(r => r as number);
   }
@@ -698,13 +597,7 @@ export class GenericClass extends JavaObject {
   static index(keys: JavaObject | null, values: JavaObject | null): JavaObject | null {
     return $rt.wrap(JavaObject, GenericClass.$t()['index(java.util.List,java.util.List)Ljava/util/Map;'](false, $rt.h(keys), $rt.h(values)));
   }
-  /**
-   * Native API: `com.example.fixtures.GenericClass#index(java.util.List,java.util.List)`
-   * - Android API: 1+
-   * - Note E003 UNSUPPORTED_GENERIC: Generic types are erased to their bounds in this version
-   * - Note E016 OUTSIDE_CLOSURE: Outside the generation closure, exposed as JObject: java.util.List, java.util.Map
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
+  /** Promise variant of `com.example.fixtures.GenericClass#index(java.util.List,java.util.List)`: the JNI call runs on a background thread. */
   static indexAsync(keys: JavaObject | null, values: JavaObject | null): Promise<JavaObject | null> {
     return (GenericClass.$t()['index(java.util.List,java.util.List)Ljava/util/Map;'](true, $rt.h(keys), $rt.h(values)) as Promise<unknown>).then(r => $rt.wrap(JavaObject, r));
   }
@@ -717,6 +610,10 @@ export class GenericClass extends JavaObject {
   first(items: JavaObject | null): JavaObject | null {
     return $rt.wrap(JavaObject, GenericClass.$t()['first(java.util.List)Ljava/lang/Object;'](false, this.$h, $rt.h(items)));
   }
+  /** Promise variant of `com.example.fixtures.GenericClass#first(java.util.List)`: the JNI call runs on a background thread. */
+  firstAsync(items: JavaObject | null): Promise<JavaObject | null> {
+    return (GenericClass.$t()['first(java.util.List)Ljava/lang/Object;'](true, this.$h, $rt.h(items)) as Promise<unknown>).then(r => $rt.wrap(JavaObject, r));
+  }
   /**
    * Native API: `com.example.fixtures.GenericClass#get()`
    * - Android API: 1+
@@ -724,6 +621,10 @@ export class GenericClass extends JavaObject {
    */
   get(): JavaObject | null {
     return $rt.wrap(JavaObject, GenericClass.$t()['get()Ljava/lang/CharSequence;'](false, this.$h));
+  }
+  /** Promise variant of `com.example.fixtures.GenericClass#get()`: the JNI call runs on a background thread. */
+  getAsync(): Promise<JavaObject | null> {
+    return (GenericClass.$t()['get()Ljava/lang/CharSequence;'](true, this.$h) as Promise<unknown>).then(r => $rt.wrap(JavaObject, r));
   }
   /**
    * Native API: `com.example.fixtures.GenericClass#set(java.lang.CharSequence)`
@@ -733,31 +634,7 @@ export class GenericClass extends JavaObject {
   set(value: JavaObject | null): void {
     GenericClass.$t()['set(java.lang.CharSequence)V'](false, this.$h, $rt.h(value));
   }
-  /**
-   * Native API: `com.example.fixtures.GenericClass#first(java.util.List)`
-   * - Android API: 1+
-   * - Note E003 UNSUPPORTED_GENERIC: Generic types are erased to their bounds in this version
-   * - Note E016 OUTSIDE_CLOSURE: Outside the generation closure, exposed as JObject: java.util.List
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
-  firstAsync(items: JavaObject | null): Promise<JavaObject | null> {
-    return (GenericClass.$t()['first(java.util.List)Ljava/lang/Object;'](true, this.$h, $rt.h(items)) as Promise<unknown>).then(r => $rt.wrap(JavaObject, r));
-  }
-  /**
-   * Native API: `com.example.fixtures.GenericClass#get()`
-   * - Android API: 1+
-   * - Note E003 UNSUPPORTED_GENERIC: Generic types are erased to their bounds in this version
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
-  getAsync(): Promise<JavaObject | null> {
-    return (GenericClass.$t()['get()Ljava/lang/CharSequence;'](true, this.$h) as Promise<unknown>).then(r => $rt.wrap(JavaObject, r));
-  }
-  /**
-   * Native API: `com.example.fixtures.GenericClass#set(java.lang.CharSequence)`
-   * - Android API: 1+
-   * - Note E003 UNSUPPORTED_GENERIC: Generic types are erased to their bounds in this version
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
+  /** Promise variant of `com.example.fixtures.GenericClass#set(java.lang.CharSequence)`: the JNI call runs on a background thread. */
   setAsync(value: JavaObject | null): Promise<void> {
     return (GenericClass.$t()['set(java.lang.CharSequence)V'](true, this.$h, $rt.h(value)) as Promise<unknown>).then(r => undefined);
   }
@@ -787,6 +664,12 @@ export interface MultiParent {
   readonly __brand_com_example_fixtures_CallbackInterface: true;
   readonly __brand_com_example_fixtures_MultiParent: true;
   readonly __brand_com_example_fixtures_NestedClass: true;
+  /** Inherited from `com.example.fixtures.CallbackInterface`: `com.example.fixtures.CallbackInterface#label()` */
+  label(): string | null;
+  labelAsync(): Promise<string | null>;
+  /** Inherited from `com.example.fixtures.NestedClass`: `com.example.fixtures.NestedClass#name()` */
+  name(): string | null;
+  nameAsync(): Promise<string | null>;
 }
 export class MultiParent extends JavaObject {
   static readonly javaInternalName: string = 'com/example/fixtures/MultiParent';
@@ -805,21 +688,9 @@ export class MultiParent extends JavaObject {
   compareTo(other: MultiParent$Like | null): number {
     return MultiParent.$t()['compareTo(com.example.fixtures.MultiParent)I'](false, this.$h, $rt.h(other)) as number;
   }
-  /**
-   * Native API: `com.example.fixtures.CallbackInterface#label()`
-   * - Android API: 1+
-   * - Inherited from `com.example.fixtures.CallbackInterface`
-   */
-  label(): string | null {
-    return CallbackInterface.$t()['label()Ljava/lang/String;'](false, this.$h) as string | null;
-  }
-  /**
-   * Native API: `com.example.fixtures.NestedClass#name()`
-   * - Android API: 1+
-   * - Inherited from `com.example.fixtures.NestedClass`
-   */
-  name(): string | null {
-    return NestedClass.$t()['name()Ljava/lang/String;'](false, this.$h) as string | null;
+  /** Promise variant of `com.example.fixtures.MultiParent#compareTo(com.example.fixtures.MultiParent)`: the JNI call runs on a background thread. */
+  compareToAsync(other: MultiParent$Like | null): Promise<number> {
+    return (MultiParent.$t()['compareTo(com.example.fixtures.MultiParent)I'](true, this.$h, $rt.h(other)) as Promise<unknown>).then(r => r as number);
   }
   /**
    * Native API: `com.example.fixtures.MultiParent#onEvent(java.lang.String,int)`
@@ -828,6 +699,10 @@ export class MultiParent extends JavaObject {
   onEvent(name: string | null, code: number): void {
     MultiParent.$t()['onEvent(java.lang.String,int)V'](false, this.$h, name, code);
   }
+  /** Promise variant of `com.example.fixtures.MultiParent#onEvent(java.lang.String,int)`: the JNI call runs on a background thread. */
+  onEventAsync(name: string | null, code: number): Promise<void> {
+    return (MultiParent.$t()['onEvent(java.lang.String,int)V'](true, this.$h, name, code) as Promise<unknown>).then(r => undefined);
+  }
   /**
    * Native API: `com.example.fixtures.MultiParent#shouldContinue()`
    * - Android API: 1+
@@ -835,43 +710,7 @@ export class MultiParent extends JavaObject {
   shouldContinue(): boolean {
     return MultiParent.$t()['shouldContinue()Z'](false, this.$h) as boolean;
   }
-  /**
-   * Native API: `com.example.fixtures.MultiParent#compareTo(com.example.fixtures.MultiParent)`
-   * - Android API: 1+
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
-  compareToAsync(other: MultiParent$Like | null): Promise<number> {
-    return (MultiParent.$t()['compareTo(com.example.fixtures.MultiParent)I'](true, this.$h, $rt.h(other)) as Promise<unknown>).then(r => r as number);
-  }
-  /**
-   * Native API: `com.example.fixtures.CallbackInterface#label()`
-   * - Android API: 1+
-   * - Inherited from `com.example.fixtures.CallbackInterface`; Runs the JNI call on a background thread; resolves on the JS thread
-   */
-  labelAsync(): Promise<string | null> {
-    return (CallbackInterface.$t()['label()Ljava/lang/String;'](true, this.$h) as Promise<unknown>).then(r => r as string | null);
-  }
-  /**
-   * Native API: `com.example.fixtures.NestedClass#name()`
-   * - Android API: 1+
-   * - Inherited from `com.example.fixtures.NestedClass`; Runs the JNI call on a background thread; resolves on the JS thread
-   */
-  nameAsync(): Promise<string | null> {
-    return (NestedClass.$t()['name()Ljava/lang/String;'](true, this.$h) as Promise<unknown>).then(r => r as string | null);
-  }
-  /**
-   * Native API: `com.example.fixtures.MultiParent#onEvent(java.lang.String,int)`
-   * - Android API: 1+
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
-  onEventAsync(name: string | null, code: number): Promise<void> {
-    return (MultiParent.$t()['onEvent(java.lang.String,int)V'](true, this.$h, name, code) as Promise<unknown>).then(r => undefined);
-  }
-  /**
-   * Native API: `com.example.fixtures.MultiParent#shouldContinue()`
-   * - Android API: 1+
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
+  /** Promise variant of `com.example.fixtures.MultiParent#shouldContinue()`: the JNI call runs on a background thread. */
   shouldContinueAsync(): Promise<boolean> {
     return (MultiParent.$t()['shouldContinue()Z'](true, this.$h) as Promise<unknown>).then(r => r as boolean);
   }
@@ -903,11 +742,7 @@ export class NestedClass extends JavaObject {
   name(): string | null {
     return NestedClass.$t()['name()Ljava/lang/String;'](false, this.$h) as string | null;
   }
-  /**
-   * Native API: `com.example.fixtures.NestedClass#name()`
-   * - Android API: 1+
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
+  /** Promise variant of `com.example.fixtures.NestedClass#name()`: the JNI call runs on a background thread. */
   nameAsync(): Promise<string | null> {
     return (NestedClass.$t()['name()Ljava/lang/String;'](true, this.$h) as Promise<unknown>).then(r => r as string | null);
   }
@@ -939,6 +774,10 @@ export class NestedClass_Builder extends JavaObject {
   build(): NestedClass | null {
     return $rt.wrap(NestedClass, NestedClass_Builder.$t()['build()Lcom/example/fixtures/NestedClass;'](false, this.$h));
   }
+  /** Promise variant of `com.example.fixtures.NestedClass$Builder#build()`: the JNI call runs on a background thread. */
+  buildAsync(): Promise<NestedClass | null> {
+    return (NestedClass_Builder.$t()['build()Lcom/example/fixtures/NestedClass;'](true, this.$h) as Promise<unknown>).then(r => $rt.wrap(NestedClass, r));
+  }
   /**
    * Native API: `com.example.fixtures.NestedClass$Builder#name(java.lang.String)`
    * - Android API: 1+
@@ -946,19 +785,7 @@ export class NestedClass_Builder extends JavaObject {
   name(name: string | null): NestedClass_Builder | null {
     return $rt.wrap(NestedClass_Builder, NestedClass_Builder.$t()['name(java.lang.String)Lcom/example/fixtures/NestedClass$Builder;'](false, this.$h, name));
   }
-  /**
-   * Native API: `com.example.fixtures.NestedClass$Builder#build()`
-   * - Android API: 1+
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
-  buildAsync(): Promise<NestedClass | null> {
-    return (NestedClass_Builder.$t()['build()Lcom/example/fixtures/NestedClass;'](true, this.$h) as Promise<unknown>).then(r => $rt.wrap(NestedClass, r));
-  }
-  /**
-   * Native API: `com.example.fixtures.NestedClass$Builder#name(java.lang.String)`
-   * - Android API: 1+
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
+  /** Promise variant of `com.example.fixtures.NestedClass$Builder#name(java.lang.String)`: the JNI call runs on a background thread. */
   nameAsync(name: string | null): Promise<NestedClass_Builder | null> {
     return (NestedClass_Builder.$t()['name(java.lang.String)Lcom/example/fixtures/NestedClass$Builder;'](true, this.$h, name) as Promise<unknown>).then(r => $rt.wrap(NestedClass_Builder, r));
   }
@@ -990,11 +817,7 @@ export class NestedClass_Inner extends JavaObject {
   value(): number {
     return NestedClass_Inner.$t()['value()I'](false, this.$h) as number;
   }
-  /**
-   * Native API: `com.example.fixtures.NestedClass$Inner#value()`
-   * - Android API: 1+
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
+  /** Promise variant of `com.example.fixtures.NestedClass$Inner#value()`: the JNI call runs on a background thread. */
   valueAsync(): Promise<number> {
     return (NestedClass_Inner.$t()['value()I'](true, this.$h) as Promise<unknown>).then(r => r as number);
   }
@@ -1019,11 +842,7 @@ export class NestedClass_Listener extends JavaObject {
   onChange(p0: NestedClass$Like | null): void {
     NestedClass_Listener.$t()['onChange(com.example.fixtures.NestedClass)V'](false, this.$h, $rt.h(p0));
   }
-  /**
-   * Native API: `com.example.fixtures.NestedClass$Listener#onChange(com.example.fixtures.NestedClass)`
-   * - Android API: 1+
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
+  /** Promise variant of `com.example.fixtures.NestedClass$Listener#onChange(com.example.fixtures.NestedClass)`: the JNI call runs on a background thread. */
   onChangeAsync(p0: NestedClass$Like | null): Promise<void> {
     return (NestedClass_Listener.$t()['onChange(com.example.fixtures.NestedClass)V'](true, this.$h, $rt.h(p0)) as Promise<unknown>).then(r => undefined);
   }
@@ -1077,11 +896,7 @@ export class NullableClass extends JavaObject {
   static find(key: string): NullableClass | null {
     return $rt.wrap(NullableClass, NullableClass.$t()['find(java.lang.String)Lcom/example/fixtures/NullableClass;'](false, key));
   }
-  /**
-   * Native API: `com.example.fixtures.NullableClass#find(java.lang.String)`
-   * - Android API: 1+
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
+  /** Promise variant of `com.example.fixtures.NullableClass#find(java.lang.String)`: the JNI call runs on a background thread. */
   static findAsync(key: string): Promise<NullableClass | null> {
     return (NullableClass.$t()['find(java.lang.String)Lcom/example/fixtures/NullableClass;'](true, key) as Promise<unknown>).then(r => $rt.wrap(NullableClass, r));
   }
@@ -1123,12 +938,7 @@ export class NullableClass extends JavaObject {
   describe(prefix: string | null, value: JavaObject, unannotated: string | null): string {
     return nn(NullableClass.$t()['describe(java.lang.String,java.lang.Object,java.lang.String)Ljava/lang/String;'](false, this.$h, prefix, $rt.h(value), unannotated) as string | null, 'com.example.fixtures.NullableClass#describe(java.lang.String,java.lang.Object,java.lang.String)');
   }
-  /**
-   * Native API: `com.example.fixtures.NullableClass#describe(java.lang.String,java.lang.Object,java.lang.String)`
-   * - Android API: 1+
-   * - Note E016 OUTSIDE_CLOSURE: Outside the generation closure, exposed as JObject: java.lang.Object
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
+  /** Promise variant of `com.example.fixtures.NullableClass#describe(java.lang.String,java.lang.Object,java.lang.String)`: the JNI call runs on a background thread. */
   describeAsync(prefix: string | null, value: JavaObject, unannotated: string | null): Promise<string> {
     return (NullableClass.$t()['describe(java.lang.String,java.lang.Object,java.lang.String)Ljava/lang/String;'](true, this.$h, prefix, $rt.h(value), unannotated) as Promise<unknown>).then(r => nn(r as string | null, 'com.example.fixtures.NullableClass#describe(java.lang.String,java.lang.Object,java.lang.String)'));
   }
@@ -1174,11 +984,7 @@ export class OverloadedClass extends JavaObject {
   static join(separator: string | null, parts: (string | null)[] | null): string | null {
     return OverloadedClass.$t()['join(java.lang.String,java.lang.String[])Ljava/lang/String;'](false, separator, parts) as string | null;
   }
-  /**
-   * Native API: `com.example.fixtures.OverloadedClass#join(java.lang.String,java.lang.String[])`
-   * - Android API: 1+
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
+  /** Promise variant of `com.example.fixtures.OverloadedClass#join(java.lang.String,java.lang.String[])`: the JNI call runs on a background thread. */
   static joinAsync(separator: string | null, parts: (string | null)[] | null): Promise<string | null> {
     return (OverloadedClass.$t()['join(java.lang.String,java.lang.String[])Ljava/lang/String;'](true, separator, parts) as Promise<unknown>).then(r => r as string | null);
   }
@@ -1189,12 +995,20 @@ export class OverloadedClass extends JavaObject {
   add(a: number, b: number): number {
     return OverloadedClass.$t()['add(int,int)I'](false, this.$h, a, b) as number;
   }
+  /** Promise variant of `com.example.fixtures.OverloadedClass#add(int,int)`: the JNI call runs on a background thread. */
+  addAsync(a: number, b: number): Promise<number> {
+    return (OverloadedClass.$t()['add(int,int)I'](true, this.$h, a, b) as Promise<unknown>).then(r => r as number);
+  }
   /**
    * Native API: `com.example.fixtures.OverloadedClass#add(java.lang.String,java.lang.String)`
    * - Android API: 1+
    */
   add$String$String(a: string | null, b: string | null): string | null {
     return OverloadedClass.$t()['add(java.lang.String,java.lang.String)Ljava/lang/String;'](false, this.$h, a, b) as string | null;
+  }
+  /** Promise variant of `com.example.fixtures.OverloadedClass#add(java.lang.String,java.lang.String)`: the JNI call runs on a background thread. */
+  add$String$StringAsync(a: string | null, b: string | null): Promise<string | null> {
+    return (OverloadedClass.$t()['add(java.lang.String,java.lang.String)Ljava/lang/String;'](true, this.$h, a, b) as Promise<unknown>).then(r => r as string | null);
   }
   /**
    * Native API: `com.example.fixtures.OverloadedClass#add(double,double)`
@@ -1203,12 +1017,20 @@ export class OverloadedClass extends JavaObject {
   add$double$double(a: number, b: number): number {
     return OverloadedClass.$t()['add(double,double)D'](false, this.$h, a, b) as number;
   }
+  /** Promise variant of `com.example.fixtures.OverloadedClass#add(double,double)`: the JNI call runs on a background thread. */
+  add$double$doubleAsync(a: number, b: number): Promise<number> {
+    return (OverloadedClass.$t()['add(double,double)D'](true, this.$h, a, b) as Promise<unknown>).then(r => r as number);
+  }
   /**
    * Native API: `com.example.fixtures.OverloadedClass#add(long,long)`
    * - Android API: 1+
    */
   add$long$long(a: number, b: number): number {
     return OverloadedClass.$t()['add(long,long)J'](false, this.$h, a, b) as number;
+  }
+  /** Promise variant of `com.example.fixtures.OverloadedClass#add(long,long)`: the JNI call runs on a background thread. */
+  add$long$longAsync(a: number, b: number): Promise<number> {
+    return (OverloadedClass.$t()['add(long,long)J'](true, this.$h, a, b) as Promise<unknown>).then(r => r as number);
   }
   /**
    * Native API: `com.example.fixtures.OverloadedClass#last()`
@@ -1217,12 +1039,20 @@ export class OverloadedClass extends JavaObject {
   last(): string | null {
     return OverloadedClass.$t()['last()Ljava/lang/String;'](false, this.$h) as string | null;
   }
+  /** Promise variant of `com.example.fixtures.OverloadedClass#last()`: the JNI call runs on a background thread. */
+  lastAsync(): Promise<string | null> {
+    return (OverloadedClass.$t()['last()Ljava/lang/String;'](true, this.$h) as Promise<unknown>).then(r => r as string | null);
+  }
   /**
    * Native API: `com.example.fixtures.OverloadedClass#put(java.lang.String,int)`
    * - Android API: 1+
    */
   put(key: string | null, value: number): void {
     OverloadedClass.$t()['put(java.lang.String,int)V'](false, this.$h, key, value);
+  }
+  /** Promise variant of `com.example.fixtures.OverloadedClass#put(java.lang.String,int)`: the JNI call runs on a background thread. */
+  putAsync(key: string | null, value: number): Promise<void> {
+    return (OverloadedClass.$t()['put(java.lang.String,int)V'](true, this.$h, key, value) as Promise<unknown>).then(r => undefined);
   }
   /**
    * Native API: `com.example.fixtures.OverloadedClass#put(java.lang.String,java.lang.String)`
@@ -1231,12 +1061,20 @@ export class OverloadedClass extends JavaObject {
   put$String$String(key: string | null, value: string | null): void {
     OverloadedClass.$t()['put(java.lang.String,java.lang.String)V'](false, this.$h, key, value);
   }
+  /** Promise variant of `com.example.fixtures.OverloadedClass#put(java.lang.String,java.lang.String)`: the JNI call runs on a background thread. */
+  put$String$StringAsync(key: string | null, value: string | null): Promise<void> {
+    return (OverloadedClass.$t()['put(java.lang.String,java.lang.String)V'](true, this.$h, key, value) as Promise<unknown>).then(r => undefined);
+  }
   /**
    * Native API: `com.example.fixtures.OverloadedClass#put(java.lang.String,boolean)`
    * - Android API: 1+
    */
   put$String$boolean(key: string | null, value: boolean): void {
     OverloadedClass.$t()['put(java.lang.String,boolean)V'](false, this.$h, key, value);
+  }
+  /** Promise variant of `com.example.fixtures.OverloadedClass#put(java.lang.String,boolean)`: the JNI call runs on a background thread. */
+  put$String$booleanAsync(key: string | null, value: boolean): Promise<void> {
+    return (OverloadedClass.$t()['put(java.lang.String,boolean)V'](true, this.$h, key, value) as Promise<unknown>).then(r => undefined);
   }
   /**
    * Native API: `com.example.fixtures.OverloadedClass#put(java.lang.String,byte)`
@@ -1245,12 +1083,20 @@ export class OverloadedClass extends JavaObject {
   put$String$byte(key: string | null, value: number): void {
     OverloadedClass.$t()['put(java.lang.String,byte)V'](false, this.$h, key, value);
   }
+  /** Promise variant of `com.example.fixtures.OverloadedClass#put(java.lang.String,byte)`: the JNI call runs on a background thread. */
+  put$String$byteAsync(key: string | null, value: number): Promise<void> {
+    return (OverloadedClass.$t()['put(java.lang.String,byte)V'](true, this.$h, key, value) as Promise<unknown>).then(r => undefined);
+  }
   /**
    * Native API: `com.example.fixtures.OverloadedClass#put(java.lang.String,char)`
    * - Android API: 1+
    */
   put$String$char(key: string | null, value: number): void {
     OverloadedClass.$t()['put(java.lang.String,char)V'](false, this.$h, key, value);
+  }
+  /** Promise variant of `com.example.fixtures.OverloadedClass#put(java.lang.String,char)`: the JNI call runs on a background thread. */
+  put$String$charAsync(key: string | null, value: number): Promise<void> {
+    return (OverloadedClass.$t()['put(java.lang.String,char)V'](true, this.$h, key, value) as Promise<unknown>).then(r => undefined);
   }
   /**
    * Native API: `com.example.fixtures.OverloadedClass#put(java.lang.String,float)`
@@ -1259,12 +1105,20 @@ export class OverloadedClass extends JavaObject {
   put$String$float(key: string | null, value: number): void {
     OverloadedClass.$t()['put(java.lang.String,float)V'](false, this.$h, key, value);
   }
+  /** Promise variant of `com.example.fixtures.OverloadedClass#put(java.lang.String,float)`: the JNI call runs on a background thread. */
+  put$String$floatAsync(key: string | null, value: number): Promise<void> {
+    return (OverloadedClass.$t()['put(java.lang.String,float)V'](true, this.$h, key, value) as Promise<unknown>).then(r => undefined);
+  }
   /**
    * Native API: `com.example.fixtures.OverloadedClass#put(java.lang.String,int[])`
    * - Android API: 1+
    */
   put$String$intArray(key: string | null, value: number[] | null): void {
     OverloadedClass.$t()['put(java.lang.String,int[])V'](false, this.$h, key, value);
+  }
+  /** Promise variant of `com.example.fixtures.OverloadedClass#put(java.lang.String,int[])`: the JNI call runs on a background thread. */
+  put$String$intArrayAsync(key: string | null, value: number[] | null): Promise<void> {
+    return (OverloadedClass.$t()['put(java.lang.String,int[])V'](true, this.$h, key, value) as Promise<unknown>).then(r => undefined);
   }
   /**
    * Native API: `com.example.fixtures.OverloadedClass#put(java.lang.String,short)`
@@ -1273,107 +1127,7 @@ export class OverloadedClass extends JavaObject {
   put$String$short(key: string | null, value: number): void {
     OverloadedClass.$t()['put(java.lang.String,short)V'](false, this.$h, key, value);
   }
-  /**
-   * Native API: `com.example.fixtures.OverloadedClass#add(int,int)`
-   * - Android API: 1+
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
-  addAsync(a: number, b: number): Promise<number> {
-    return (OverloadedClass.$t()['add(int,int)I'](true, this.$h, a, b) as Promise<unknown>).then(r => r as number);
-  }
-  /**
-   * Native API: `com.example.fixtures.OverloadedClass#add(java.lang.String,java.lang.String)`
-   * - Android API: 1+
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
-  add$String$StringAsync(a: string | null, b: string | null): Promise<string | null> {
-    return (OverloadedClass.$t()['add(java.lang.String,java.lang.String)Ljava/lang/String;'](true, this.$h, a, b) as Promise<unknown>).then(r => r as string | null);
-  }
-  /**
-   * Native API: `com.example.fixtures.OverloadedClass#add(double,double)`
-   * - Android API: 1+
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
-  add$double$doubleAsync(a: number, b: number): Promise<number> {
-    return (OverloadedClass.$t()['add(double,double)D'](true, this.$h, a, b) as Promise<unknown>).then(r => r as number);
-  }
-  /**
-   * Native API: `com.example.fixtures.OverloadedClass#add(long,long)`
-   * - Android API: 1+
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
-  add$long$longAsync(a: number, b: number): Promise<number> {
-    return (OverloadedClass.$t()['add(long,long)J'](true, this.$h, a, b) as Promise<unknown>).then(r => r as number);
-  }
-  /**
-   * Native API: `com.example.fixtures.OverloadedClass#last()`
-   * - Android API: 1+
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
-  lastAsync(): Promise<string | null> {
-    return (OverloadedClass.$t()['last()Ljava/lang/String;'](true, this.$h) as Promise<unknown>).then(r => r as string | null);
-  }
-  /**
-   * Native API: `com.example.fixtures.OverloadedClass#put(java.lang.String,int)`
-   * - Android API: 1+
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
-  putAsync(key: string | null, value: number): Promise<void> {
-    return (OverloadedClass.$t()['put(java.lang.String,int)V'](true, this.$h, key, value) as Promise<unknown>).then(r => undefined);
-  }
-  /**
-   * Native API: `com.example.fixtures.OverloadedClass#put(java.lang.String,java.lang.String)`
-   * - Android API: 1+
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
-  put$String$StringAsync(key: string | null, value: string | null): Promise<void> {
-    return (OverloadedClass.$t()['put(java.lang.String,java.lang.String)V'](true, this.$h, key, value) as Promise<unknown>).then(r => undefined);
-  }
-  /**
-   * Native API: `com.example.fixtures.OverloadedClass#put(java.lang.String,boolean)`
-   * - Android API: 1+
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
-  put$String$booleanAsync(key: string | null, value: boolean): Promise<void> {
-    return (OverloadedClass.$t()['put(java.lang.String,boolean)V'](true, this.$h, key, value) as Promise<unknown>).then(r => undefined);
-  }
-  /**
-   * Native API: `com.example.fixtures.OverloadedClass#put(java.lang.String,byte)`
-   * - Android API: 1+
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
-  put$String$byteAsync(key: string | null, value: number): Promise<void> {
-    return (OverloadedClass.$t()['put(java.lang.String,byte)V'](true, this.$h, key, value) as Promise<unknown>).then(r => undefined);
-  }
-  /**
-   * Native API: `com.example.fixtures.OverloadedClass#put(java.lang.String,char)`
-   * - Android API: 1+
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
-  put$String$charAsync(key: string | null, value: number): Promise<void> {
-    return (OverloadedClass.$t()['put(java.lang.String,char)V'](true, this.$h, key, value) as Promise<unknown>).then(r => undefined);
-  }
-  /**
-   * Native API: `com.example.fixtures.OverloadedClass#put(java.lang.String,float)`
-   * - Android API: 1+
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
-  put$String$floatAsync(key: string | null, value: number): Promise<void> {
-    return (OverloadedClass.$t()['put(java.lang.String,float)V'](true, this.$h, key, value) as Promise<unknown>).then(r => undefined);
-  }
-  /**
-   * Native API: `com.example.fixtures.OverloadedClass#put(java.lang.String,int[])`
-   * - Android API: 1+
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
-  put$String$intArrayAsync(key: string | null, value: number[] | null): Promise<void> {
-    return (OverloadedClass.$t()['put(java.lang.String,int[])V'](true, this.$h, key, value) as Promise<unknown>).then(r => undefined);
-  }
-  /**
-   * Native API: `com.example.fixtures.OverloadedClass#put(java.lang.String,short)`
-   * - Android API: 1+
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
+  /** Promise variant of `com.example.fixtures.OverloadedClass#put(java.lang.String,short)`: the JNI call runs on a background thread. */
   put$String$shortAsync(key: string | null, value: number): Promise<void> {
     return (OverloadedClass.$t()['put(java.lang.String,short)V'](true, this.$h, key, value) as Promise<unknown>).then(r => undefined);
   }
@@ -1420,11 +1174,7 @@ export class ReservedWords extends JavaObject {
   static late(required: number): void {
     ReservedWords.$t()['late(int)V'](false, required);
   }
-  /**
-   * Native API: `com.example.fixtures.ReservedWords#late(int)`
-   * - Android API: 1+
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
+  /** Promise variant of `com.example.fixtures.ReservedWords#late(int)`: the JNI call runs on a background thread. */
   static lateAsync(required: number): Promise<void> {
     return (ReservedWords.$t()['late(int)V'](true, required) as Promise<unknown>).then(r => undefined);
   }
@@ -1436,12 +1186,20 @@ export class ReservedWords extends JavaObject {
   equals(other: JavaObject | null): boolean {
     return ReservedWords.$t()['equals(java.lang.Object)Z'](false, this.$h, $rt.h(other)) as boolean;
   }
+  /** Promise variant of `com.example.fixtures.ReservedWords#equals(java.lang.Object)`: the JNI call runs on a background thread. */
+  equalsAsync(other: JavaObject | null): Promise<boolean> {
+    return (ReservedWords.$t()['equals(java.lang.Object)Z'](true, this.$h, $rt.h(other)) as Promise<unknown>).then(r => r as boolean);
+  }
   /**
    * Native API: `com.example.fixtures.ReservedWords#get(int,int,int)`
    * - Android API: 1+
    */
   get(extension: number, switch_: number, with_: number): void {
     ReservedWords.$t()['get(int,int,int)V'](false, this.$h, extension, switch_, with_);
+  }
+  /** Promise variant of `com.example.fixtures.ReservedWords#get(int,int,int)`: the JNI call runs on a background thread. */
+  getAsync(extension: number, switch_: number, with_: number): Promise<void> {
+    return (ReservedWords.$t()['get(int,int,int)V'](true, this.$h, extension, switch_, with_) as Promise<unknown>).then(r => undefined);
   }
   /**
    * Native API: `com.example.fixtures.ReservedWords#hashCode()`
@@ -1450,12 +1208,20 @@ export class ReservedWords extends JavaObject {
   hashCode$(): number {
     return ReservedWords.$t()['hashCode()I'](false, this.$h) as number;
   }
+  /** Promise variant of `com.example.fixtures.ReservedWords#hashCode()`: the JNI call runs on a background thread. */
+  hashCode$Async(): Promise<number> {
+    return (ReservedWords.$t()['hashCode()I'](true, this.$h) as Promise<unknown>).then(r => r as number);
+  }
   /**
    * Native API: `com.example.fixtures.ReservedWords#release()`
    * - Android API: 1+
    */
   release$(): void {
     ReservedWords.$t()['release()V'](false, this.$h);
+  }
+  /** Promise variant of `com.example.fixtures.ReservedWords#release()`: the JNI call runs on a background thread. */
+  release$Async(): Promise<void> {
+    return (ReservedWords.$t()['release()V'](true, this.$h) as Promise<unknown>).then(r => undefined);
   }
   /**
    * Native API: `com.example.fixtures.ReservedWords#toString()`
@@ -1464,6 +1230,10 @@ export class ReservedWords extends JavaObject {
   toString$(): string | null {
     return ReservedWords.$t()['toString()Ljava/lang/String;'](false, this.$h) as string | null;
   }
+  /** Promise variant of `com.example.fixtures.ReservedWords#toString()`: the JNI call runs on a background thread. */
+  toString$Async(): Promise<string | null> {
+    return (ReservedWords.$t()['toString()Ljava/lang/String;'](true, this.$h) as Promise<unknown>).then(r => r as string | null);
+  }
   /**
    * Native API: `com.example.fixtures.ReservedWords#yield()`
    * - Android API: 1+
@@ -1471,52 +1241,7 @@ export class ReservedWords extends JavaObject {
   yield(): void {
     ReservedWords.$t()['yield()V'](false, this.$h);
   }
-  /**
-   * Native API: `com.example.fixtures.ReservedWords#equals(java.lang.Object)`
-   * - Android API: 1+
-   * - Note E016 OUTSIDE_CLOSURE: Outside the generation closure, exposed as JObject: java.lang.Object
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
-  equalsAsync(other: JavaObject | null): Promise<boolean> {
-    return (ReservedWords.$t()['equals(java.lang.Object)Z'](true, this.$h, $rt.h(other)) as Promise<unknown>).then(r => r as boolean);
-  }
-  /**
-   * Native API: `com.example.fixtures.ReservedWords#get(int,int,int)`
-   * - Android API: 1+
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
-  getAsync(extension: number, switch_: number, with_: number): Promise<void> {
-    return (ReservedWords.$t()['get(int,int,int)V'](true, this.$h, extension, switch_, with_) as Promise<unknown>).then(r => undefined);
-  }
-  /**
-   * Native API: `com.example.fixtures.ReservedWords#hashCode()`
-   * - Android API: 1+
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
-  hashCode$Async(): Promise<number> {
-    return (ReservedWords.$t()['hashCode()I'](true, this.$h) as Promise<unknown>).then(r => r as number);
-  }
-  /**
-   * Native API: `com.example.fixtures.ReservedWords#release()`
-   * - Android API: 1+
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
-  release$Async(): Promise<void> {
-    return (ReservedWords.$t()['release()V'](true, this.$h) as Promise<unknown>).then(r => undefined);
-  }
-  /**
-   * Native API: `com.example.fixtures.ReservedWords#toString()`
-   * - Android API: 1+
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
-  toString$Async(): Promise<string | null> {
-    return (ReservedWords.$t()['toString()Ljava/lang/String;'](true, this.$h) as Promise<unknown>).then(r => r as string | null);
-  }
-  /**
-   * Native API: `com.example.fixtures.ReservedWords#yield()`
-   * - Android API: 1+
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
+  /** Promise variant of `com.example.fixtures.ReservedWords#yield()`: the JNI call runs on a background thread. */
   yieldAsync(): Promise<void> {
     return (ReservedWords.$t()['yield()V'](true, this.$h) as Promise<unknown>).then(r => undefined);
   }
@@ -1541,11 +1266,7 @@ export class Sizable extends JavaObject {
   size(): number {
     return Sizable.$t()['size()I'](false, this.$h) as number;
   }
-  /**
-   * Native API: `com.example.fixtures.Sizable#size()`
-   * - Android API: 1+
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
+  /** Promise variant of `com.example.fixtures.Sizable#size()`: the JNI call runs on a background thread. */
   sizeAsync(): Promise<number> {
     return (Sizable.$t()['size()I'](true, this.$h) as Promise<unknown>).then(r => r as number);
   }
@@ -1600,12 +1321,7 @@ export class ThrowsClass extends JavaObject {
   static parse(text: string | null): number {
     return ThrowsClass.$t()['parse(java.lang.String)I'](false, text) as number;
   }
-  /**
-   * Native API: `com.example.fixtures.ThrowsClass#parse(java.lang.String)`
-   * - Android API: 1+
-   * - Throws (Java): java.lang.NumberFormatException, java.lang.IllegalStateException; surfaced as NativeJavaError
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
+  /** Promise variant of `com.example.fixtures.ThrowsClass#parse(java.lang.String)`: the JNI call runs on a background thread. */
   static parseAsync(text: string | null): Promise<number> {
     return (ThrowsClass.$t()['parse(java.lang.String)I'](true, text) as Promise<unknown>).then(r => r as number);
   }
@@ -1617,13 +1333,12 @@ export class ThrowsClass extends JavaObject {
   read(): void {
     ThrowsClass.$t()['read()V'](false, this.$h);
   }
-  /**
-   * Native API: `com.example.fixtures.ThrowsClass#read()`
-   * - Android API: 1+
-   * - Throws (Java): java.io.IOException; surfaced as NativeJavaError
-   * - Runs the JNI call on a background thread; resolves on the JS thread
-   */
+  /** Promise variant of `com.example.fixtures.ThrowsClass#read()`: the JNI call runs on a background thread. */
   readAsync(): Promise<void> {
     return (ThrowsClass.$t()['read()V'](true, this.$h) as Promise<unknown>).then(r => undefined);
   }
 }
+
+// Inherited members: copied from ancestors (nearest first) at load time.
+$rt.inherit(DualImpl, [Sizable, Countable, Marker]);
+$rt.inherit(MultiParent, [NestedClass, CallbackInterface]);
