@@ -6,3 +6,8 @@
 
 # The runtime classes are only referenced from native code.
 -keep class dev.nativeapibindgen.runtime.** { *; }
+# Kotlin coroutine classes used reflectively by NabContinuation.
+-keep interface kotlin.coroutines.Continuation { *; }
+-keep class kotlin.coroutines.EmptyCoroutineContext { *; }
+-keep class kotlin.Result$Failure { *; }
+-keep class kotlin.coroutines.intrinsics.CoroutineSingletons { *; }

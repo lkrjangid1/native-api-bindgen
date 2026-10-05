@@ -42,7 +42,11 @@ final class RnJsiOptions {
 final class RnJsiEmitter {
   /// Creates an emitter; [module] is planned for JVM targets internally.
   RnJsiEmitter(ApiModule module, {this.options = const RnJsiOptions()})
-    : module = planJvmTarget(module, callbacks: options.callbacks) {
+    : module = planJvmTarget(
+        module,
+        callbacks: options.callbacks,
+        suspend: true,
+      ) {
     for (final t in this.module.types) {
       if (t.isGeneratable && t.kind != TypeKind.annotationType) {
         _types[t.id] = t;
@@ -948,7 +952,100 @@ final class RnJsiEmitter {
   }
 
   bool _asyncAllowed(ApiMethod m) =>
-      m.threading != Threading.mainThread && m.threading != Threading.uiThread;
+      !isSuspend(m) &&
+      m.threading != Threading.mainThread &&
+      m.threading != Threading.uiThread;
+
+  /// Boxed results of suspend functions arrive as JS primitives.
+  String? _boxedTs(TypeRef t) => switch (t) {
+    DeclaredTypeRef(name: 'java.lang.Boolean') => 'boolean',
+    DeclaredTypeRef(name: 'java.lang.Long') =>
+      options.mode == TypescriptMode.strict ? 'bigint' : 'number',
+    DeclaredTypeRef(
+      name: 'java.lang.Integer' ||
+          'java.lang.Short' ||
+          'java.lang.Byte' ||
+          'java.lang.Character' ||
+          'java.lang.Float' ||
+          'java.lang.Double',
+    ) =>
+      'number',
+    _ => null,
+  };
+
+  /// A Kotlin `suspend` function: `Promise<T>` settled when the coroutine
+  /// completes (the runtime supplies the continuation; calling convention
+  /// `(2, [self], ...args)`).
+  void _emitSuspend(
+    StringBuffer b,
+    ApiType t,
+    ApiType owner,
+    ApiMethod m,
+    String name, {
+    required bool isStatic,
+  }) {
+    final tv = _typeVars(owner, m);
+    final params = <String>[];
+    final args = <String>[];
+    final usedParams = <String>{};
+    for (final p in suspendParameters(m)) {
+      var pn = Identifiers.typescript(p.name);
+      if (_tsNames.containsValue(pn) ||
+          const {'JavaObject', 'nn', 'Handle'}.contains(pn)) {
+        pn = '$pn\$';
+      }
+      while (!usedParams.add(pn)) {
+        pn = '$pn\$';
+      }
+      final mt = _mapper.map(p.type, typeVariableBounds: tv);
+      params.add('$pn: ${_paramType(p.type, mt)}');
+      args.add(_argExpr(pn, p.type, mt));
+    }
+    final result = suspendResult(m);
+    final nonnull = result.nullability == Nullability.nonnull;
+    final String retType;
+    final String Function(String) convert;
+    if (isKotlinUnit(result)) {
+      retType = 'void';
+      convert = (r) => 'undefined';
+    } else if (_boxedTs(result) case final prim?) {
+      retType = nonnull ? prim : '$prim | null';
+      convert = (r) =>
+          nonnull ? "nn($r as $prim | null, '${m.id}')" : '$r as $prim | null';
+    } else {
+      final rt = _mapper.map(result, typeVariableBounds: tv);
+      retType = _returnType(result, rt);
+      convert = (r) => _convertReturn(r, result, rt, m.id);
+    }
+    final raw =
+        "${_ref(owner)}.\$t()['${_cppKey(m)}'](${[2, if (!isStatic) 'this.\$h', ...args].join(', ')})";
+    _doc(
+      b,
+      m,
+      '  ',
+      note: owner.id != t.id ? 'Inherited from `${owner.id}`' : null,
+    );
+    b.writeln(
+      '  ${isStatic ? 'static ' : ''}$name(${params.join(', ')}): Promise<$retType> {',
+    );
+    b.write(_guard(m));
+    b.writeln(
+      '    return ($raw as Promise<unknown>).then(r => ${convert('r')});',
+    );
+    b.writeln('  }');
+    if (owner.id == t.id) {
+      _bindings.add(
+        BindingMapEntry(
+          symbolId: m.id,
+          generated: '${_tsName(t)}.$name',
+          file: _file,
+          generator: _generatorId,
+          runtimeAdapter:
+              'JSI host function -> JNI + NabContinuation (Kotlin suspend -> Promise)',
+        ),
+      );
+    }
+  }
 
   String _cppKey(ApiMethod m) => _key(m) + _retDesc(m);
 
@@ -967,6 +1064,10 @@ final class RnJsiEmitter {
     bool ctor = false,
     bool async = false,
   }) {
+    if (isSuspend(m) && !ctor) {
+      _emitSuspend(b, t, owner, m, name, isStatic: isStatic);
+      return;
+    }
     final tv = _typeVars(owner, m);
     final params = <String>[];
     final args = <String>[];
@@ -1521,7 +1622,25 @@ final class RnJsiEmitter {
   String _proguard() =>
       '${generatedHeader(module, comment: '#')}\n'
       '# The runtime classes are only referenced from native code.\n'
-      '-keep class dev.nativeapibindgen.runtime.** { *; }\n';
+      '-keep class dev.nativeapibindgen.runtime.** { *; }\n'
+      '# Kotlin coroutine classes used reflectively by NabContinuation.\n'
+      '-keep interface kotlin.coroutines.Continuation { *; }\n'
+      '-keep class kotlin.coroutines.EmptyCoroutineContext { *; }\n'
+      '-keep class kotlin.Result\$Failure { *; }\n'
+      '-keep class kotlin.coroutines.intrinsics.CoroutineSingletons { *; }\n'
+      '${_libraryKeepRules()}';
+
+  /// Library (non-SDK) classes are looked up by name from native code, so
+  /// R8 must not rename or remove them.
+  String _libraryKeepRules() {
+    final ids = [
+      for (final t in _types.values)
+        if (t.provenance.sourceKind == 'library') t.id,
+    ]..sort();
+    if (ids.isEmpty) return '';
+    return '# Library classes bound by name from native code.\n'
+        '${ids.map((id) => '-keep class $id { *; }\n').join()}';
+  }
 
   String _readme() =>
       '# native-api-bindings (generated)\n\n'

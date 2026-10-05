@@ -207,9 +207,21 @@ void main() {
   group('Kotlin suspend functions (library jar)', () {
     test('a suspending call completes the Future', () async {
       final g = Greeter.create(js('Ada'));
-      expect((await g.greetLater(20))!.toDartString(), 'Later, Ada');
+      expect((await g.greetLater(20)).toDartString(), 'Later, Ada');
+      expect(await g.maybe(false), isNull);
       expect(await g.immediate(), 3);
       await g.pause(10);
+    });
+
+    test('a Kotlin Flow is collected into a Stream', () async {
+      final g = Greeter.create(js('Ada'));
+      expect(await g.countTo(4).toList(), [1, 2, 3, 4]);
+      expect(await g.ticks().take(3).toList(), [0, 1, 2]);
+      expect((await g.words().toList()).map((w) => w?.toDartString()), [
+        'a',
+        null,
+        'c',
+      ]);
     });
 
     test(

@@ -123,6 +123,12 @@ dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
 
+    // Kotlin fixture library bound by native-api-bindgen (platform.android.libraries);
+    // build it first: fixtures/kotlin/basic/gradlew -p fixtures/kotlin/basic jar
+    implementation(files("../../../../../fixtures/kotlin/basic/build/libs/kfixtures.jar"))
+    // Coroutines runtime used by the Kotlin library's suspend functions.
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
+
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")
     } else {

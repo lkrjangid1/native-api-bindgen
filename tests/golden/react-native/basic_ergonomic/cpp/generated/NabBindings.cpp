@@ -175,6 +175,8 @@ const MemberSpec k_com_example_fixtures_Sizable[] = {
 
 const MemberSpec k_com_example_fixtures_SuspendShaped[] = {
     {"<init>()V", "<init>", "()V", MemberKind::Constructor},
+    {"count(kotlin.coroutines.Continuation)Ljava/lang/Object;", "count", "(Lkotlin/coroutines/Continuation;)Ljava/lang/Object;", MemberKind::InstanceMethod},
+    {"load(java.lang.String,kotlin.coroutines.Continuation)Ljava/lang/Object;", "load", "(Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;", MemberKind::InstanceMethod},
 };
 
 const MemberSpec k_com_example_fixtures_ThrowsClass[] = {

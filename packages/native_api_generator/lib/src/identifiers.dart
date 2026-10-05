@@ -200,9 +200,14 @@ abstract final class Identifiers {
     return n;
   }
 
-  /// Escapes for TypeScript.
-  static String typescript(String name) =>
-      typescriptReserved.contains(name) ? '${name}_' : name;
+  /// Escapes for TypeScript: characters outside `[A-Za-z0-9_$]` become `$`
+  /// (JVM names such as Kotlin's `<set-?>`), a leading digit gets `_`.
+  static String typescript(String name) {
+    var n = name;
+    if (!_valid.hasMatch(n)) n = n.replaceAll(RegExp(r'[^A-Za-z0-9_$]'), r'$');
+    if (n.isEmpty || RegExp(r'^[0-9]').hasMatch(n)) n = '_$n';
+    return typescriptReserved.contains(n) ? '${n}_' : n;
+  }
 
   /// Dart library prefix for a Java package: `android.content` →
   /// `android_content`.

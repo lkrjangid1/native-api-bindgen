@@ -19,6 +19,8 @@ const files = {
       'runtimes/jni/java/dev/nativeapibindgen/runtime/NabInvocationHandler.java',
   'android/java/dev/nativeapibindgen/runtime/NabContext.java':
       'runtimes/jni/java/dev/nativeapibindgen/runtime/NabContext.java',
+  'android/java/dev/nativeapibindgen/runtime/NabContinuation.java':
+      'runtimes/jni/java/dev/nativeapibindgen/runtime/NabContinuation.java',
 };
 
 String render(String root) {

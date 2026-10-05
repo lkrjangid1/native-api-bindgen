@@ -24,7 +24,7 @@ void main() {
 
   test('suspend function that suspends returns its value', () async {
     final r = await greeter('Ada').greetLater(20);
-    expect(r!.toDartString(), 'Later, Ada');
+    expect(r.toDartString(), 'Later, Ada');
   });
 
   test('suspend function that returns without suspending', () async {
@@ -39,7 +39,7 @@ void main() {
 
   test('suspend function returning a Kotlin object', () async {
     final c = await greeter('Ada').child('!'.toJString());
-    expect(c!.greet().toDartString(), 'Hello, Ada!');
+    expect(c.greet().toDartString(), 'Hello, Ada!');
   });
 
   test('exception after suspension surfaces as NativeJavaException', () async {
@@ -62,7 +62,75 @@ void main() {
     final results = await Future.wait([
       for (var i = 0; i < 50; i++) g.greetLater(i % 7),
     ]);
-    expect(results.map((r) => r!.toDartString()).toSet(), {'Later, n'});
+    expect(results.map((r) => r.toDartString()).toSet(), {'Later, n'});
+  });
+
+  group('kotlin.Metadata', () {
+    test('nullable suspend result stays nullable', () async {
+      final g = greeter('Ada');
+      expect((await g.maybe(true))?.toDartString(), 'yes, Ada');
+      expect(await g.maybe(false), isNull);
+    });
+
+    test('Kotlin properties are bean properties', () {
+      final g = greeter('Ada');
+      expect(g.nickname, isNull);
+      g.nickname = 'Countess'.toJString();
+      expect(g.getNickname()!.toDartString(), 'Countess');
+      expect(g.nameLength, 3);
+      expect(g.loud, isFalse);
+      g.loud = true;
+      expect(g.isLoud(), isTrue);
+    });
+
+    test('default arguments must be passed explicitly', () {
+      expect(
+        greeter(
+          'x',
+        ).repeat('ab'.toJString(), 3, '-'.toJString()).toDartString(),
+        'ab-ab-ab',
+      );
+    });
+  });
+
+  group('Flow -> Stream', () {
+    test('collects every value, then closes', () async {
+      expect(await greeter('x').countTo(5).toList(), [1, 2, 3, 4, 5]);
+    });
+
+    test('nullable elements', () async {
+      final words = await greeter('x').words().toList();
+      expect(words.map((w) => w?.toDartString()), ['a', null, 'c']);
+    });
+
+    test('a Kotlin exception is a stream error after earlier values', () async {
+      final values = <String>[];
+      Object? error;
+      await greeter('x')
+          .failing('bad'.toJString())
+          .handleError((Object e) => error = e)
+          .forEach((v) => values.add(v.toDartString()));
+      expect(values, ['first']);
+      expect(
+        error,
+        isA<NativeJavaException>().having(
+          (e) => e.message,
+          'message',
+          contains('bad'),
+        ),
+      );
+    });
+
+    test('cancelling the subscription stops an endless flow', () async {
+      final first = await greeter('x').ticks().take(3).toList();
+      expect(first, [0, 1, 2]);
+    });
+
+    test('not collected until listened to', () async {
+      final s = greeter('x').countTo(2);
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      expect(await s.toList(), [1, 2]);
+    });
   });
 
   test(

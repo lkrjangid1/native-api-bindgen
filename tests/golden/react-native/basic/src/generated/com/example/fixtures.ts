@@ -752,7 +752,7 @@ export class GenericClass extends JavaObject {
   /**
    * Native API: `com.example.fixtures.GenericClass#lengths(java.util.List)`
    * - Android API: 1+
-   * - Note E016 OUTSIDE_CLOSURE: Outside the generation closure, exposed as JObject: java.lang.Integer, java.util.List, java.util.Map
+   * - Note E016 OUTSIDE_CLOSURE: Outside the generation closure, exposed as JObject: java.util.List, java.util.Map
    */
   static lengths(items: JavaObject | null): JavaObject | null {
     return $rt.wrap(JavaObject, GenericClass.$t()['lengths(java.util.List)Ljava/util/Map;'](false, $rt.h(items)));
@@ -1496,6 +1496,20 @@ export class SuspendShaped extends JavaObject {
    */
   static new(): SuspendShaped {
     return $rt.wrapNonNull(SuspendShaped, SuspendShaped.$t()['<init>()V'](false), 'com.example.fixtures.SuspendShaped#<init>()');
+  }
+  /**
+   * Native API: `com.example.fixtures.SuspendShaped#count(kotlin.coroutines.Continuation)`
+   * - Android API: 1+
+   */
+  count(): Promise<number | null> {
+    return (SuspendShaped.$t()['count(kotlin.coroutines.Continuation)Ljava/lang/Object;'](2, this.$h) as Promise<unknown>).then(r => r as number | null);
+  }
+  /**
+   * Native API: `com.example.fixtures.SuspendShaped#load(java.lang.String,kotlin.coroutines.Continuation)`
+   * - Android API: 1+
+   */
+  load(key: string | null): Promise<string | null> {
+    return (SuspendShaped.$t()['load(java.lang.String,kotlin.coroutines.Continuation)Ljava/lang/Object;'](2, this.$h, key) as Promise<unknown>).then(r => r as string | null);
   }
 }
 

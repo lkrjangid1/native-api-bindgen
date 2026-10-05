@@ -320,6 +320,8 @@ final class DartJniEmitter {
     final properties = <String, BeanProperty>{};
     final taken = {...methodSet, ...fieldNames.values};
     for (final bp in beanProperties(t)) {
+      // Flow getters are generated as Streams, not as values.
+      if (_flowElement(bp.getter) != null) continue;
       final n = Identifiers.dartMember(bp.name);
       // A getter named like a type would shadow that type in member
       // signatures of this extension type.
@@ -664,8 +666,11 @@ final class DartJniEmitter {
         }
       }
       if (suspend) {
+        final r = suspendResult(n);
         lines.writeln(
-          '/// - Kotlin `suspend` function: completes with `${suspendResult(n).display}` (nullability not recorded in the JVM signature; treated as nullable)',
+          r.nullability == Nullability.unknown
+              ? '/// - Kotlin `suspend` function: completes with `${r.display}` (nullability not recorded in the JVM signature; treated as nullable)'
+              : '/// - Kotlin `suspend` function: completes with `${r.display}`, ${_nullText(r.nullability)} (from `kotlin.Metadata`)',
         );
       } else if (!n.isConstructor && n.returnType is! PrimitiveTypeRef) {
         lines.writeln(
@@ -933,6 +938,11 @@ final class DartJniEmitter {
       _emitSuspend(b, c, m, dart, redeclared: redeclared);
       return;
     }
+    final flow = _flowElement(m);
+    if (flow != null) {
+      _emitFlow(b, c, m, dart, flow, redeclared: redeclared);
+      return;
+    }
     final owner = _types[SymbolIds.ownerOf(m.id)] ?? c.type;
     final tv = _typeVars(owner, m);
     final scope = _scope(c, owner, m);
@@ -1035,36 +1045,16 @@ final class DartJniEmitter {
     final ps = _params(m, c.mapper, tv, scope);
     final result = suspendResult(m);
     final unit = isKotlinUnit(result);
-    final boxed = result is DeclaredTypeRef ? _boxed[result.name] : null;
-    final ret = c.mapper.map(
-      result,
-      typeVariableBounds: tv,
-      typeVariables: scope,
-    );
+    final conv = _objectResult(result, c, tv, scope, r'$r');
     final methodTypeParams = _typeParameterDecl(m.typeParameters);
-    final dartRet = unit
-        ? 'void'
-        : boxed != null
-        ? '${boxed.dart}?'
-        : ret.ergonomicString
-        ? 'String?'
-        : '${ret.dartType}?';
+    final dartRet = unit ? 'void' : conv.type;
     final idName = '_\$m\$$dart';
     final kind = m.isStatic ? 'staticMethodId' : 'instanceMethodId';
     final target = m.isStatic ? '_\$class' : 'this';
     final args = [if (ps.args.isNotEmpty) ps.args, r'$c'].join(', ');
     final call =
         'await rt\$.callSuspend((\$c) => $idName.callNullable($target, jni\$.JObject.type, [$args]))';
-    final jType = ret.ergonomicString ? 'jni\$.JString.type' : ret.jniType;
-    final convert = unit
-        ? null
-        : boxed != null
-        ? '\$r?.as(jni\$.${boxed.jni}.type, releaseOriginal: true).${boxed.toDart}(releaseOriginal: true)'
-        : ret.ergonomicString
-        ? '\$r?.as($jType, releaseOriginal: true).toDartString(releaseOriginal: true)'
-        : ret.needsCast
-        ? '(\$r as $dartRet)'
-        : '\$r?.as($jType, releaseOriginal: true)';
+    final convert = unit ? null : conv.convert;
     b.writeln();
     b.writeln(
       "  static final $idName = _\$class.$kind(r'${m.name}', r'${m.nativeDescriptor}');",
@@ -1103,6 +1093,121 @@ final class DartJniEmitter {
       '${c.name}.$dart',
       c.file,
       'package:jni method ID + Kotlin continuation (Future)',
+    );
+  }
+
+  /// Dart type and conversion of a value that arrives as a (possibly
+  /// boxed) `JObject` in variable [v]: suspend results and Flow elements.
+  /// Non-null only when `kotlin.Metadata` says so (the JVM erases it).
+  ({String type, String convert}) _objectResult(
+    TypeRef result,
+    _MemberContext c,
+    Map<String, TypeRef> tv,
+    Map<String, String> scope,
+    String v,
+  ) {
+    final boxed = result is DeclaredTypeRef ? _boxed[result.name] : null;
+    final ret = c.mapper.map(
+      result,
+      typeVariableBounds: tv,
+      typeVariables: scope,
+    );
+    final q = result.nullability == Nullability.nonnull ? '' : '?';
+    final type = boxed != null
+        ? '${boxed.dart}$q'
+        : ret.ergonomicString
+        ? 'String$q'
+        : '${ret.dartType}$q';
+    final jType = ret.ergonomicString ? 'jni\$.JString.type' : ret.jniType;
+    final r = '$v${q.isEmpty ? '!' : '?'}';
+    final convert = boxed != null
+        ? '$r.as(jni\$.${boxed.jni}.type, releaseOriginal: true).${boxed.toDart}(releaseOriginal: true)'
+        : ret.ergonomicString
+        ? '$r.as($jType, releaseOriginal: true).toDartString(releaseOriginal: true)'
+        : ret.needsCast
+        ? '($v as $type)'
+        : '$r.as($jType, releaseOriginal: true)';
+    return (type: type, convert: convert);
+  }
+
+  /// Element type of a `kotlinx.coroutines.flow.Flow<T>` result, or null.
+  static TypeRef? _flowElement(ApiMethod m) {
+    final r = m.returnType;
+    if (r is! DeclaredTypeRef ||
+        r.name != 'kotlinx.coroutines.flow.Flow' ||
+        r.typeArguments.length != 1) {
+      return null;
+    }
+    final a = r.typeArguments.single;
+    if (a is WildcardTypeRef) {
+      return a.isSuper || a.bound == null
+          ? const DeclaredTypeRef('java.lang.Object')
+          : a.bound;
+    }
+    return a;
+  }
+
+  /// A Kotlin function returning `Flow<T>`: generated as `Stream<T>` that
+  /// collects the flow when listened to (`rt$.collectFlow`).
+  void _emitFlow(
+    StringBuffer b,
+    _MemberContext c,
+    ApiMethod m,
+    String dart,
+    TypeRef element, {
+    bool redeclared = false,
+  }) {
+    final owner = _types[SymbolIds.ownerOf(m.id)] ?? c.type;
+    final tv = _typeVars(owner, m);
+    final scope = _scope(c, owner, m);
+    final ps = _params(m, c.mapper, tv, scope);
+    final conv = _objectResult(element, c, tv, scope, r'$e');
+    final methodTypeParams = _typeParameterDecl(m.typeParameters);
+    final idName = '_\$m\$$dart';
+    final kind = m.isStatic ? 'staticMethodId' : 'instanceMethodId';
+    final target = m.isStatic ? '_\$class' : 'this';
+    b.writeln();
+    b.writeln(
+      "  static final $idName = _\$class.$kind(r'${m.name}', r'${m.nativeDescriptor}');",
+    );
+    final plain = Identifiers.dartMember(m.name);
+    _memberDoc(b, m, generatedAs: dart == plain ? null : '${c.name}.$dart');
+    b.writeln(
+      '  /// - Kotlin `Flow`: collected into a `Stream` when listened to; cancelling the subscription aborts the flow at its next `emit` (values are buffered, no backpressure)',
+    );
+    if (redeclared) {
+      b.writeln('  // Redeclared: inherited from more than one supertype.');
+    }
+    b.writeln(
+      '  ${m.isStatic ? 'static ' : ''}Stream<${conv.type}> $dart$methodTypeParams(${ps.params}) {',
+    );
+    b.write(_guard(m, '    '));
+    b.write(ps.pre);
+    final call =
+        'rt\$.guardJni(() => $idName.callNullable($target, jni\$.JObject.type, [${ps.args}]))';
+    void body(String indent) {
+      b.writeln('${indent}final \$f = $call;');
+      b.writeln('${indent}if (\$f == null) return const Stream.empty();');
+      b.writeln(
+        '${indent}return rt\$.collectFlow(\$f).map((\$e) => ${conv.convert});',
+      );
+    }
+
+    if (ps.post.isEmpty) {
+      body('    ');
+    } else {
+      b.writeln('    try {');
+      body('      ');
+      b.writeln('    } finally {');
+      b.write(ps.post);
+      b.writeln('    }');
+    }
+    b.writeln('  }');
+    _binding(
+      m.id,
+      '${c.name}.$dart',
+      c.file,
+      'package:jni method ID + Kotlin Flow collector (Stream)',
     );
   }
 

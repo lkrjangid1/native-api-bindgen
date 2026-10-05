@@ -28,6 +28,9 @@ jmethodID gHandlerCreate = nullptr; // static Object create(long, Class)
 jclass gContextClass = nullptr;     // dev.nativeapibindgen.runtime.NabContext
 jmethodID gAppContext = nullptr;
 jmethodID gCurrentActivity = nullptr;
+jclass gContinuationClass = nullptr;    // dev.nativeapibindgen.runtime.NabContinuation
+jmethodID gContinuationCreate = nullptr; // static Object create(long)
+jmethodID gContinuationIsSuspended = nullptr; // static boolean isSuspended(Object)
 
 // Boot classes used for conversions.
 struct Boot {
@@ -625,6 +628,112 @@ jsi::Value resultToJs(jsi::Runtime& rt, JNIEnv* e, CallResult& res, const std::s
   return out;
 }
 
+// ------------------------------------------------------- Kotlin suspend
+
+jsi::Value boxedToJs(jsi::Runtime& rt, JNIEnv* e, jobject o);
+
+struct PendingSuspend {
+  std::shared_ptr<jsi::Value> resolve; // touched only on the JS thread
+  std::shared_ptr<jsi::Value> reject;
+};
+
+std::mutex gSuspendMutex;
+std::unordered_map<jlong, PendingSuspend> gSuspended;
+std::atomic<jlong> gNextSuspend{1};
+
+/// Removes and returns the pending call [id] (empty if unknown).
+PendingSuspend takeSuspended(jlong id) {
+  std::lock_guard<std::mutex> lock(gSuspendMutex);
+  auto it = gSuspended.find(id);
+  if (it == gSuspended.end()) return {};
+  PendingSuspend p = std::move(it->second);
+  gSuspended.erase(it);
+  return p;
+}
+
+/// Calls a suspend function on the JS thread with a NabContinuation. A direct
+/// result settles the promise at once; COROUTINE_SUSPENDED leaves it pending
+/// until resume0/fail0 (any thread) post the outcome to the JS thread.
+jsi::Value callSuspend(jsi::Runtime& rt, const MemberSpec* m, const Resolved& r, jobject self, std::vector<jvalue> jargs) {
+  if (gContinuationClass == nullptr) {
+    throw jsi::JSError(rt, "E010 RUNTIME_BINDING_FAILURE: NabContinuation not found (call nab::initialize from JNI_OnLoad)");
+  }
+  auto promiseCtor = rt.global().getPropertyAsFunction(rt, "Promise");
+  const Resolved* rp = &r;
+  auto executor = jsi::Function::createFromHostFunction(
+      rt,
+      jsi::PropNameID::forAscii(rt, "executor"),
+      2,
+      [m, rp, self, jargs](jsi::Runtime& rt, const jsi::Value&, const jsi::Value* a, std::size_t) mutable -> jsi::Value {
+        auto resolveFn = std::make_shared<jsi::Value>(rt, a[0]);
+        auto rejectFn = std::make_shared<jsi::Value>(rt, a[1]);
+        JNIEnv* e = env();
+        LocalFrame frame(e);
+        const jlong id = gNextSuspend++;
+        {
+          std::lock_guard<std::mutex> lock(gSuspendMutex);
+          gSuspended.emplace(id, PendingSuspend{resolveFn, rejectFn});
+        }
+        jobject cont = e->CallStaticObjectMethod(gContinuationClass, gContinuationCreate, id);
+        if (e->ExceptionCheck()) {
+          auto t = e->ExceptionOccurred();
+          e->ExceptionClear();
+          takeSuspended(id);
+          rejectFn->asObject(rt).asFunction(rt).call(rt, makeJsError(rt, describe(e, t)));
+          return jsi::Value::undefined();
+        }
+        jvalue c;
+        c.l = cont;
+        jargs.push_back(c);
+        CallResult res = invokeJni(e, m, *rp, self, jargs);
+        if (res.failed) {
+          takeSuspended(id);
+          rejectFn->asObject(rt).asFunction(rt).call(rt, makeJsError(rt, res.error));
+          return jsi::Value::undefined();
+        }
+        jobject value = res.value.l;
+        const bool suspended = e->CallStaticBooleanMethod(gContinuationClass, gContinuationIsSuspended, value) == JNI_TRUE;
+        if (!suspended) {
+          takeSuspended(id);
+          try {
+            auto v = boxedToJs(rt, e, value);
+            resolveFn->asObject(rt).asFunction(rt).call(rt, std::move(v));
+          } catch (const jsi::JSError& err) {
+            rejectFn->asObject(rt).asFunction(rt).call(rt, jsi::Value(rt, err.value()));
+          }
+        }
+        if (value != nullptr) e->DeleteGlobalRef(value);
+        return jsi::Value::undefined();
+      });
+  return promiseCtor.callAsConstructor(rt, executor);
+}
+
+void JNICALL resume0(JNIEnv* e, jclass, jlong id, jobject value) {
+  jobject g = value == nullptr ? nullptr : e->NewGlobalRef(value);
+  gInvoker->invokeAsync([id, g](jsi::Runtime& rt) {
+    JNIEnv* je = env();
+    LocalFrame frame(je);
+    PendingSuspend p = takeSuspended(id);
+    if (p.resolve) {
+      try {
+        auto v = boxedToJs(rt, je, g);
+        p.resolve->asObject(rt).asFunction(rt).call(rt, std::move(v));
+      } catch (const jsi::JSError& err) {
+        p.reject->asObject(rt).asFunction(rt).call(rt, jsi::Value(rt, err.value()));
+      }
+    }
+    if (g != nullptr) je->DeleteGlobalRef(g);
+  });
+}
+
+void JNICALL fail0(JNIEnv* e, jclass, jlong id, jthrowable error) {
+  JavaErrorInfo info = describe(e, error);
+  gInvoker->invokeAsync([id, info](jsi::Runtime& rt) {
+    PendingSuspend p = takeSuspended(id);
+    if (p.reject) p.reject->asObject(rt).asFunction(rt).call(rt, makeJsError(rt, info));
+  });
+}
+
 /// Host-function body shared by every generated member.
 /// JS calling convention: (async: boolean, [self], ...args).
 jsi::Value callMember(jsi::Runtime& rt, const ClassSpec* c, const MemberSpec* m, const jsi::Value* args, std::size_t count) {
@@ -632,6 +741,9 @@ jsi::Value callMember(jsi::Runtime& rt, const ClassSpec* c, const MemberSpec* m,
   LocalFrame frame(e);
   const Resolved& r = resolve(rt, e, c, m);
   const bool async = count > 0 && args[0].isBool() && args[0].getBool();
+  // Kotlin suspend function: (2, [self], ...args) -> Promise; the runtime
+  // supplies the trailing kotlin.coroutines.Continuation.
+  const bool suspend = count > 0 && args[0].isNumber() && args[0].getNumber() == 2;
   std::size_t i = 1;
   const bool needsSelf = m->kind == MemberKind::InstanceMethod || m->kind == MemberKind::InstanceGetter ||
       m->kind == MemberKind::InstanceSetter;
@@ -647,6 +759,12 @@ jsi::Value callMember(jsi::Runtime& rt, const ClassSpec* c, const MemberSpec* m,
   if (m->kind == MemberKind::StaticSetter || m->kind == MemberKind::InstanceSetter) {
     paramDescs = {r.sig.ret};
   }
+  if (suspend) {
+    if (paramDescs.empty() || paramDescs.back() != "Lkotlin/coroutines/Continuation;") {
+      typeError(rt, std::string(m->jsName) + " is not a Kotlin suspend function");
+    }
+    paramDescs.pop_back();
+  }
   if (count - i < paramDescs.size()) {
     typeError(rt, std::string("not enough arguments for ") + m->jsName);
   }
@@ -656,6 +774,8 @@ jsi::Value callMember(jsi::Runtime& rt, const ClassSpec* c, const MemberSpec* m,
     jargs.push_back(toJvalue(rt, e, args[i + p], paramDescs[p]));
   }
   const std::string retDesc = returnDescriptor(m, r);
+
+  if (suspend) return callSuspend(rt, m, r, self, std::move(jargs));
 
   if (!async) {
     CallResult res = invokeJni(e, m, r, self, jargs);
@@ -1057,6 +1177,16 @@ void initialize(JavaVM* vm) {
         {const_cast<char*>("release0"), const_cast<char*>("(J)V"), reinterpret_cast<void*>(&release0)},
     };
     e->RegisterNatives(gHandlerClass, natives, 2);
+  }
+  gContinuationClass = globalClass(e, "dev/nativeapibindgen/runtime/NabContinuation");
+  if (gContinuationClass != nullptr) {
+    gContinuationCreate = e->GetStaticMethodID(gContinuationClass, "create", "(J)Ljava/lang/Object;");
+    gContinuationIsSuspended = e->GetStaticMethodID(gContinuationClass, "isSuspended", "(Ljava/lang/Object;)Z");
+    static const JNINativeMethod suspendNatives[] = {
+        {const_cast<char*>("resume0"), const_cast<char*>("(JLjava/lang/Object;)V"), reinterpret_cast<void*>(&resume0)},
+        {const_cast<char*>("fail0"), const_cast<char*>("(JLjava/lang/Throwable;)V"), reinterpret_cast<void*>(&fail0)},
+    };
+    e->RegisterNatives(gContinuationClass, suspendNatives, 2);
   }
   gContextClass = globalClass(e, "dev/nativeapibindgen/runtime/NabContext");
   if (gContextClass != nullptr) {

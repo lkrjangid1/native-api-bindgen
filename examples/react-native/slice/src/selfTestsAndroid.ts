@@ -6,6 +6,7 @@
 import {
   AndroidApi,
   Bundle,
+  Greeter,
   Handler,
   Handler_Callback,
   Intent,
@@ -116,6 +117,32 @@ const tests: Array<[string, () => void | Promise<void>]> = [
       expectEqual(intent.data, null, 'no data');
       intent.setData(uri);
       expectEqual(intent.data?.toString(), 'https://example.com/p?q=1', 'data');
+    },
+  ],
+
+  [
+    'Kotlin suspend functions resolve Promises',
+    async () => {
+      const g = Greeter.create('Ada');
+      expectEqual(await g.greetLater(20n), 'Later, Ada', 'suspended result');
+      expectEqual(await g.immediate(), 3, 'direct result');
+      expectEqual(await g.maybe(false), null, 'nullable result');
+      expectEqual(await g.pause(5n), undefined, 'Unit result');
+      const child = await g.child('!');
+      expectEqual(child.greet(), 'Hello, Ada!', 'object result');
+      let failed: unknown = null;
+      try {
+        await g.failLater('boom');
+      } catch (e) {
+        failed = e;
+      }
+      if (!isNativeJavaError(failed)) {
+        throw new Error(`expected NativeJavaError, got ${String(failed)}`);
+      }
+      const all = await Promise.all(
+        Array.from({length: 20}, (_, i) => g.greetLater(BigInt(i % 5))),
+      );
+      expectEqual(new Set(all).size, 1, 'concurrent results');
     },
   ],
 

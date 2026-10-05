@@ -12,6 +12,7 @@ import 'api_versions.dart';
 import 'classfile/byte_reader.dart';
 import 'classfile/class_file.dart';
 import 'classfile/signatures.dart';
+import 'kotlin_metadata.dart';
 import 'zip_reader.dart';
 
 /// A source of class files addressed by binary name.
@@ -424,6 +425,7 @@ final class AndroidApiExtractor {
       superClass = null;
     }
 
+    final kotlin = _kotlinMetadata(cf, id, diags);
     final typeAnns = _annotations(
       cf.visibleAnnotations,
       cf.invisibleAnnotations,
@@ -469,6 +471,7 @@ final class AndroidApiExtractor {
             m,
             versions,
             classThreading,
+            kotlin,
           ),
     ];
 
@@ -632,8 +635,10 @@ final class AndroidApiExtractor {
     MemberInfo m,
     ClassVersions? versions,
     Threading classThreading,
+    KotlinMetadata? kotlin,
   ) {
     final isCtor = m.name == '<init>';
+    final kf = kotlin?.byJvmSignature['${m.name}${m.descriptor}'];
     final erased = SignatureParser.method(m.descriptor);
     final id = SymbolIds.method(owner, m.name, erased.parameters);
     final diags = <Diagnostic>[];
@@ -709,14 +714,35 @@ final class AndroidApiExtractor {
         name = m.localVariableNames[slot];
         nameSource = 'LocalVariableTable';
       }
+      if (name != null && !_javaIdentifier.hasMatch(name)) {
+        // Compiler-synthesized names (Kotlin setters: `<set-?>`).
+        name = sig.parameters.length == 1 && m.name.startsWith('set')
+            ? 'value'
+            : null;
+        nameSource = 'synthesized';
+      }
       if (name == null) {
         name = 'p$i';
         nameSource = 'synthesized';
       }
+      var nullability = nullabilityOf(pAnns);
+      final kp = _kotlinParameter(kf, i, sig.parameters.length);
+      if (nullability == Nullability.unknown && kp != null) {
+        nullability = kp.type.nullable
+            ? Nullability.nullable
+            : Nullability.nonnull;
+      }
+      if (kp != null && nameSource == 'synthesized' && kp.name.isNotEmpty) {
+        name = kp.name;
+        nameSource = 'kotlin.Metadata';
+      }
       params.add(
         ApiParameter(
           name,
-          _withNullability(t, nullabilityOf(pAnns)),
+          _withNullability(
+            kp == null ? t : _withKotlinArguments(t, kp.type),
+            nullability,
+          ),
           annotations: pAnns,
           nameSource: nameSource,
         ),
@@ -753,6 +779,28 @@ final class AndroidApiExtractor {
         !isCtor &&
         lastParam is DeclaredTypeRef &&
         lastParam.name == 'kotlin.coroutines.Continuation';
+    if (isSuspend && kf != null && kf.isSuspend && kf.returnType != null) {
+      // The JVM signature erases the result's nullability; kotlin.Metadata
+      // records it.
+      params[params.length - 1] = _withSuspendResultNullability(
+        params.last,
+        kf.returnType!.nullable ? Nullability.nullable : Nullability.nonnull,
+      );
+    }
+    final defaults = [
+      for (final p in kf?.parameters ?? const <KotlinParameter>[])
+        if (p.hasDefault) p.name,
+    ];
+    if (defaults.isNotEmpty) {
+      diags.add(
+        Diagnostic(
+          DiagnosticCode.unsupportedType,
+          'Kotlin default arguments (${defaults.map((n) => '`$n`').join(', ')}) are not applied through JNI: pass every argument, or use @JvmOverloads overloads if the library declares them',
+          severity: Severity.info,
+          symbolId: id,
+        ),
+      );
+    }
     final mods = _modifiers(m.accessFlags, isMethod: true);
     if (cf.has(AccessFlags.interface) &&
         !m.has(AccessFlags.abstract_) &&
@@ -766,7 +814,12 @@ final class AndroidApiExtractor {
       kind: isCtor ? MethodKind.constructor : MethodKind.method,
       returnType: isCtor
           ? const PrimitiveTypeRef(PrimitiveKind.void_)
-          : _withNullability(sig.returnType, nullabilityOf(anns)),
+          : _withNullability(
+              kf?.returnType == null || kf!.isSuspend
+                  ? sig.returnType
+                  : _withKotlinArguments(sig.returnType, kf.returnType!),
+              _returnNullability(anns, kf),
+            ),
       parameters: params,
       typeParameters: sig.typeParameters,
       throws: throws,
@@ -793,6 +846,134 @@ final class AndroidApiExtractor {
     );
   }
 
+  static final _javaIdentifier = RegExp(r'^[A-Za-z_$][A-Za-z0-9_$]*$');
+
+  /// Decodes the class's `kotlin.Metadata`, or null (not Kotlin, or
+  /// undecodable: reported as E008 info and ignored).
+  KotlinMetadata? _kotlinMetadata(
+    ClassFile cf,
+    String id,
+    List<Diagnostic> diags,
+  ) {
+    final a = cf.visibleAnnotations
+        .where((a) => a.typeName == 'kotlin.Metadata')
+        .firstOrNull;
+    if (a == null) return null;
+    final d1 = a.stringArrays['d1'];
+    final d2 = a.stringArrays['d2'];
+    if (d1 == null || d2 == null) return null;
+    try {
+      return KotlinMetadata.decode(
+        kind: int.tryParse(a.values['k'] ?? '1') ?? 1,
+        d1: d1,
+        d2: d2,
+      );
+    } on MalformedInputException catch (e) {
+      diags.add(
+        Diagnostic(
+          DiagnosticCode.invalidAst,
+          'kotlin.Metadata not decoded (${e.message}); Kotlin-specific information unavailable',
+          severity: Severity.info,
+          symbolId: id,
+        ),
+      );
+      return null;
+    }
+  }
+
+  /// The Kotlin parameter for JVM parameter [i] of [jvmCount] (extension
+  /// receivers come first; the suspend continuation is not a parameter).
+  static KotlinParameter? _kotlinParameter(
+    KotlinFunction? f,
+    int i,
+    int jvmCount,
+  ) {
+    if (f == null) return null;
+    final k = i - (f.hasReceiver ? 1 : 0);
+    if (k < 0 || k >= f.parameters.length) return null;
+    final expected =
+        f.parameters.length + (f.hasReceiver ? 1 : 0) + (f.isSuspend ? 1 : 0);
+    return expected == jvmCount ? f.parameters[k] : null;
+  }
+
+  static Nullability _returnNullability(
+    List<ApiAnnotation> anns,
+    KotlinFunction? f,
+  ) {
+    final n = nullabilityOf(anns);
+    if (n != Nullability.unknown || f == null || f.isSuspend) return n;
+    final r = f.returnType;
+    if (r == null) return n;
+    return r.nullable ? Nullability.nullable : Nullability.nonnull;
+  }
+
+  /// [t] with the nullability of its type arguments taken from the Kotlin
+  /// type [k] (`Flow<String?>`, `List<Int>`), recursively, when the shapes
+  /// agree. The JVM signature does not record it.
+  static TypeRef _withKotlinArguments(
+    TypeRef t,
+    KotlinType k, [
+    int depth = 0,
+  ]) {
+    if (t is! DeclaredTypeRef ||
+        depth > 16 ||
+        t.typeArguments.length != k.arguments.length ||
+        t.typeArguments.isEmpty) {
+      return t;
+    }
+    final args = <TypeRef>[];
+    for (var i = 0; i < t.typeArguments.length; i++) {
+      final a = t.typeArguments[i];
+      final ka = k.arguments[i];
+      if (ka == null) {
+        args.add(a);
+        continue;
+      }
+      final n = ka.nullable ? Nullability.nullable : Nullability.nonnull;
+      args.add(switch (a) {
+        WildcardTypeRef(:final bound?) => WildcardTypeRef(
+          _withKotlinArguments(bound, ka, depth + 1).withNullability(n),
+          isSuper: a.isSuper,
+        ),
+        WildcardTypeRef() => a,
+        TypeVariableRef() => a.withNullability(n),
+        _ => _withKotlinArguments(a, ka, depth + 1).withNullability(n),
+      });
+    }
+    return DeclaredTypeRef(
+      t.name,
+      typeArguments: args,
+      nullability: t.nullability,
+    );
+  }
+
+  /// `Continuation<? super T>` with [n] applied to `T`.
+  static ApiParameter _withSuspendResultNullability(
+    ApiParameter p,
+    Nullability n,
+  ) {
+    final c = p.type;
+    if (c is! DeclaredTypeRef || c.typeArguments.length != 1) return p;
+    final a = c.typeArguments.single;
+    final TypeRef arg = switch (a) {
+      WildcardTypeRef(:final bound?) => WildcardTypeRef(
+        bound.withNullability(n),
+        isSuper: a.isSuper,
+      ),
+      WildcardTypeRef() => a,
+      _ => a.withNullability(n),
+    };
+    return ApiParameter(
+      p.name,
+      DeclaredTypeRef(
+        c.name,
+        typeArguments: [arg],
+      ).withNullability(c.nullability),
+      annotations: p.annotations,
+      nameSource: p.nameSource,
+    );
+  }
+
   // Public stub members that the official list omits: in practice members
   // re-declared from a non-public superclass. They are public API (they are
   // in android.jar), but their availability is inferred, not listed.
@@ -814,7 +995,13 @@ final class AndroidApiExtractor {
       out.add(
         ApiAnnotation(
           a.typeName,
-          values: a.values,
+          // kotlin.Metadata payloads are decoded, not copied into the IR.
+          values: a.typeName == 'kotlin.Metadata'
+              ? {
+                  for (final e in a.values.entries)
+                    if (e.key == 'k' || e.key == 'mv') e.key: e.value,
+                }
+              : a.values,
           classification: classifyAnnotation(a.typeName, runtimeVisible: true),
           source: 'classfile',
         ),

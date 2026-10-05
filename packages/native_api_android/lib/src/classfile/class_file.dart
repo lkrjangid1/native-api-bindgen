@@ -62,13 +62,21 @@ abstract final class ClassFileLimits {
 /// A parsed annotation. Values are rendered to stable strings.
 final class RawAnnotation {
   /// Creates an annotation.
-  const RawAnnotation(this.descriptor, this.values);
+  const RawAnnotation(
+    this.descriptor,
+    this.values, {
+    this.stringArrays = const {},
+  });
 
   /// Type descriptor, e.g. `Landroid/annotation/NonNull;`.
   final String descriptor;
 
   /// Element name → rendered value.
   final Map<String, String> values;
+
+  /// Element name → exact elements of string-array values (e.g.
+  /// `kotlin.Metadata.d1`), which [values] renders lossily.
+  final Map<String, List<String>> stringArrays;
 
   /// Binary name with dots, e.g. `android.annotation.NonNull`.
   String get typeName {
@@ -442,11 +450,34 @@ class _Parser {
     final type = _utf8(r.u2());
     final pairs = r.u2();
     final values = <String, String>{};
+    final arrays = <String, List<String>>{};
     for (var i = 0; i < pairs; i++) {
       final name = _utf8(r.u2());
+      final start = r.offset;
       values[name] = _elementValue(depth + 1);
+      final strings = _stringArrayAt(start);
+      if (strings != null) arrays[name] = strings;
     }
-    return RawAnnotation(type, values);
+    return RawAnnotation(type, values, stringArrays: arrays);
+  }
+
+  /// Re-reads the element value at [start] if it is an array of strings
+  /// (already validated by [_elementValue]); restores the offset.
+  List<String>? _stringArrayAt(int start) {
+    final end = r.offset;
+    r.offset = start;
+    try {
+      if (String.fromCharCode(r.u1()) != '[') return null;
+      final n = r.u2();
+      final out = <String>[];
+      for (var i = 0; i < n; i++) {
+        if (String.fromCharCode(r.u1()) != 's') return null;
+        out.add(_utf8(r.u2()));
+      }
+      return out;
+    } finally {
+      r.offset = end;
+    }
   }
 
   String _elementValue(int depth) {

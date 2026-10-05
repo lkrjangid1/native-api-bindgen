@@ -15,7 +15,10 @@ platform:
       - java.lang.Runnable
       - android.os.Handler.Callback
       - android.os.Message
+      - com.example.kfixtures.Greeter   # Kotlin library class (suspend functions)
     depth: 0
+    libraries:
+      - ../../../fixtures/kotlin/basic/build/libs/kfixtures.jar
 
   ios:
     sdk: auto

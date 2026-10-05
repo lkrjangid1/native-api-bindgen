@@ -2,6 +2,9 @@
 package com.example.kfixtures
 
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 
 /** Exercises Kotlin `suspend` functions as seen through JNI. */
 class Greeter(private val name: String) {
@@ -32,6 +35,52 @@ class Greeter(private val name: String) {
     suspend fun child(suffix: String): Greeter {
         delay(1)
         return Greeter(name + suffix)
+    }
+
+    /** Suspends, then returns a value or null (nullable result). */
+    suspend fun maybe(present: Boolean): String? {
+        delay(1)
+        return if (present) "yes, $name" else null
+    }
+
+    /** Default arguments (not applied through JNI: every argument is passed). */
+    fun repeat(text: String, times: Int = 2, separator: String = ","): String =
+        List(times) { text }.joinToString(separator)
+
+    /** A mutable nullable property. */
+    var nickname: String? = null
+
+    /** A read-only computed property. */
+    val nameLength: Int
+        get() = name.length
+
+    /** A boolean property (`isLoud` / `setLoud`). */
+    var isLoud: Boolean = false
+
+    /** A cold flow of 1..[count], suspending between values. */
+    fun countTo(count: Int): Flow<Int> = flow {
+        for (i in 1..count) {
+            delay(1)
+            emit(i)
+        }
+    }
+
+    /** A flow of strings that may contain null. */
+    fun words(): Flow<String?> = flowOf("a", null, "c")
+
+    /** A flow that fails after one value. */
+    fun failing(message: String): Flow<String> = flow {
+        emit("first")
+        throw IllegalStateException(message)
+    }
+
+    /** An endless flow (cancelled by the collector). */
+    fun ticks(): Flow<Long> = flow {
+        var i = 0L
+        while (true) {
+            delay(1)
+            emit(i++)
+        }
     }
 
     companion object {
