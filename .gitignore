@@ -25,6 +25,9 @@ coverage/
 *.framework/
 *.xcframework/
 android.jar
+*.pch
+*.pcm
+*.ast
 
 # OS
 .DS_Store

@@ -113,12 +113,50 @@ final class AndroidConfig {
   final int depth;
 }
 
+/// Apple (iOS) platform configuration.
+final class IosConfig {
+  /// Creates iOS configuration.
+  const IosConfig({
+    this.sdk = 'auto',
+    this.minVersion = '13.0',
+    this.frameworks = const [],
+    this.include = const [],
+    this.classes = const [],
+    this.entries = const [],
+    this.depth = 1,
+  });
+
+  /// `auto` (iphonesimulator), `iphonesimulator` or `iphoneos`.
+  final String sdk;
+
+  /// Minimum iOS version of the app; newer APIs get runtime guards.
+  final String minVersion;
+
+  /// Frameworks whose headers are parsed (e.g. `[Foundation, UIKit]`).
+  final List<String> frameworks;
+
+  /// Frameworks to generate entirely.
+  final List<String> include;
+
+  /// Individual classes/protocols (`UIView` or `UIKit.UIView`).
+  final List<String> classes;
+
+  /// Entry types for dependency-aware generation.
+  final List<String> entries;
+
+  /// Dependency depth from entries (0 = entries only).
+  final int depth;
+
+  /// The xcrun SDK name.
+  String get sdkName => sdk == 'auto' ? 'iphonesimulator' : sdk;
+}
+
 /// Full `native_api_bindgen.yaml` configuration.
 final class BindgenConfig {
   /// Creates a configuration.
   const BindgenConfig({
     this.android = const AndroidConfig(),
-    this.iosFrameworks = const [],
+    this.ios = const IosConfig(),
     this.flutter = true,
     this.reactNative = false,
     this.mode = GenerationMode.strictNative,
@@ -162,7 +200,29 @@ final class BindgenConfig {
       'depth',
     });
     final ios = _optMap(platform['ios'], 'platform.ios');
-    _keys(ios, 'platform.ios', {'sdk', 'frameworks'});
+    _keys(ios, 'platform.ios', {
+      'sdk',
+      'minVersion',
+      'frameworks',
+      'include',
+      'classes',
+      'entries',
+      'depth',
+    });
+    final iosSdk = _str(ios['sdk'], 'platform.ios.sdk', 'auto');
+    if (!{'auto', 'iphonesimulator', 'iphoneos'}.contains(iosSdk)) {
+      throw ConfigException(
+        'platform.ios.sdk must be auto, iphonesimulator or iphoneos',
+      );
+    }
+    final iosMin = '${ios['minVersion'] ?? '13.0'}';
+    if (!RegExp(r'^\d{1,3}(\.\d{1,3}){0,2}$').hasMatch(iosMin)) {
+      throw ConfigException('platform.ios.minVersion must look like 13.0');
+    }
+    final iosDepth = _int(ios['depth'], 'platform.ios.depth', 1);
+    if (iosDepth < 0 || iosDepth > 8) {
+      throw ConfigException('platform.ios.depth must be 0..8');
+    }
 
     final targets = _optMap(root['targets'], 'targets');
     _keys(targets, 'targets', {'flutter', 'reactNative'});
@@ -202,7 +262,15 @@ final class BindgenConfig {
         entries: _names(a['entries'], 'platform.android.entries'),
         depth: depth,
       ),
-      iosFrameworks: _names(ios['frameworks'], 'platform.ios.frameworks'),
+      ios: IosConfig(
+        sdk: iosSdk,
+        minVersion: iosMin,
+        frameworks: _names(ios['frameworks'], 'platform.ios.frameworks'),
+        include: _names(ios['include'], 'platform.ios.include'),
+        classes: _names(ios['classes'], 'platform.ios.classes'),
+        entries: _names(ios['entries'], 'platform.ios.entries'),
+        depth: iosDepth,
+      ),
       flutter: _bool(targets['flutter'], 'targets.flutter', true),
       reactNative: _bool(targets['reactNative'], 'targets.reactNative', false),
       mode: _enum(gen['mode'], GenerationMode.values, (m) => m.key, 'mode'),
@@ -246,8 +314,8 @@ final class BindgenConfig {
   /// Android settings.
   final AndroidConfig android;
 
-  /// Apple frameworks (not yet used).
-  final List<String> iosFrameworks;
+  /// Apple (iOS) settings.
+  final IosConfig ios;
 
   /// Generate Flutter bindings.
   final bool flutter;
@@ -292,6 +360,13 @@ final class BindgenConfig {
     preserveAnnotations,
     callbacks,
     typescriptMode.key,
+    ios.sdkName,
+    ios.minVersion,
+    ios.frameworks.join(','),
+    ios.include.join(','),
+    ios.classes.join(','),
+    ios.entries.join(','),
+    ios.depth,
   ].join('|');
 
   /// Default configuration file written by `init`.
@@ -312,8 +387,13 @@ platform:
     depth: 1           # how far to follow referenced types from entries
 
   ios:
-    sdk: auto          # not yet implemented
-    frameworks: []
+    sdk: auto          # iphonesimulator (default) or iphoneos, via xcrun
+    minVersion: "13.0" # APIs newer than this get runtime availability guards
+    frameworks: []     # headers to parse, e.g. [Foundation, UIKit]
+    include: []        # frameworks to generate entirely
+    classes: []        # individual classes/protocols, e.g. [UIDevice]
+    entries: []        # dependency-aware roots
+    depth: 1
 
 targets:
   flutter: true

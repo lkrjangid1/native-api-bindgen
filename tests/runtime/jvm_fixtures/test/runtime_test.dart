@@ -174,8 +174,8 @@ void main() {
       o.dispose();
       o.dispose();
       expect(o.isAlive, isFalse);
-      expect(() => o.last(), throwsA(isA<UseAfterReleaseError>()));
-      expect(() => o.release(), throwsA(isA<DoubleReleaseError>()));
+      expect(o.last, throwsA(isA<UseAfterReleaseError>()));
+      expect(o.release, throwsA(isA<DoubleReleaseError>()));
     });
 
     test('availability guard throws before touching JNI on old devices', () {

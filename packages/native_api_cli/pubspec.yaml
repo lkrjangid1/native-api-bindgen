@@ -1,5 +1,5 @@
 name: native_api_bindgen
-description: Command-line tool that generates typed Flutter bindings for supported public Android platform SDK APIs from the locally installed SDK.
+description: Command-line tool that generates typed Flutter and React Native bindings for supported public Android and iOS platform SDK APIs from the locally installed SDKs.
 version: 0.1.0-dev.1
 resolution: workspace
 
@@ -14,7 +14,9 @@ dependencies:
   native_api_android: ^0.1.0-dev.1
   native_api_core: ^0.1.0-dev.1
   native_api_flutter_android: ^0.1.0-dev.1
+  native_api_flutter_ios: ^0.1.0-dev.1
   native_api_generator: ^0.1.0-dev.1
+  native_api_ios: ^0.1.0-dev.1
   native_api_ir: ^0.1.0-dev.1
   native_api_react_native_android: ^0.1.0-dev.1
   path: ^1.9.0

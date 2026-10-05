@@ -4,7 +4,9 @@ import 'dart:io';
 import 'package:native_api_android/native_api_android.dart';
 import 'package:native_api_core/native_api_core.dart';
 import 'package:native_api_flutter_android/native_api_flutter_android.dart';
+import 'package:native_api_flutter_ios/native_api_flutter_ios.dart';
 import 'package:native_api_generator/native_api_generator.dart';
+import 'package:native_api_ios/native_api_ios.dart';
 import 'package:native_api_ir/native_api_ir.dart';
 import 'package:path/path.dart' as p;
 
@@ -204,13 +206,128 @@ final class CliContext {
     return (extraction: extraction, output: out);
   }
 
-  /// Persists derived state used by coverage / why-* commands.
+  /// Locates the configured Apple SDK through `xcrun` or fails with E001.
+  AppleSdk appleSdk() {
+    final sdk = XcodeLocator().locate(sdkName: config.ios.sdkName);
+    if (sdk == null || !File(sdk.libclangPath).existsSync()) {
+      throw CliFailure(
+        Diagnostic(
+          DiagnosticCode.sdkNotFound,
+          Platform.isMacOS
+              ? 'Xcode with the ${config.ios.sdkName} SDK not found. Install Xcode and run '
+                    '`xcode-select -s /Applications/Xcode.app`; this tool never downloads SDKs.'
+              : 'iOS bindings can only be generated on macOS with Xcode installed.',
+          severity: Severity.error,
+        ),
+      );
+    }
+    return sdk;
+  }
+
+  /// Builds an iOS extraction request from configuration plus CLI
+  /// overrides, and the frameworks whose headers must be parsed.
+  ({ObjCRequest request, List<String> parse}) iosRequest({
+    List<String>? frameworks,
+    List<String>? classes,
+    List<String>? entries,
+    int? depth,
+  }) {
+    final c = config.ios;
+    final cli = [...?frameworks, ...?classes, ...?entries].isNotEmpty;
+    final request = ObjCRequest(
+      frameworks: cli ? (frameworks ?? const []) : c.include,
+      classes: cli ? (classes ?? const []) : c.classes,
+      entries: cli ? (entries ?? const []) : c.entries,
+      depth: depth ?? c.depth,
+    );
+    if ([
+      ...request.frameworks,
+      ...request.classes,
+      ...request.entries,
+    ].isEmpty) {
+      throw CliFailure(
+        const Diagnostic(
+          DiagnosticCode.configInvalid,
+          'Nothing selected for iOS. Use --framework/--class/--entry or set platform.ios.include/classes/entries. '
+          'Generating the entire SDK is never implicit.',
+          severity: Severity.error,
+        ),
+        ExitCodes.usage,
+      );
+    }
+    final parse = <String>{
+      ...c.frameworks,
+      ...request.frameworks,
+      for (final n in [...request.classes, ...request.entries])
+        if (n.contains('.')) n.substring(0, n.indexOf('.')),
+    };
+    if (parse.isEmpty) {
+      throw CliFailure(
+        const Diagnostic(
+          DiagnosticCode.configInvalid,
+          'No headers to parse: set platform.ios.frameworks (e.g. [Foundation, UIKit]) '
+          'or qualify names as Framework.Class.',
+          severity: Severity.error,
+        ),
+        ExitCodes.usage,
+      );
+    }
+    return (request: request, parse: parse.toList()..sort());
+  }
+
+  /// Parses the requested frameworks and extracts Apple IR.
+  ApiModule extractIos(
+    AppleSdk sdk,
+    ({ObjCRequest request, List<String> parse}) r,
+  ) {
+    logger.info(
+      'SDK detected: ${sdk.name} ${sdk.version} (${sdk.xcodeVersion})',
+      event: 'sdk-detected',
+    );
+    final ex = ObjCExtractor(
+      libclangPath: sdk.libclangPath,
+      sysroot: sdk.path,
+      target: sdk.name == 'iphoneos'
+          ? 'arm64-apple-ios${config.ios.minVersion}'
+          : 'arm64-apple-ios${config.ios.minVersion}-simulator',
+      sdkVersion: sdk.version,
+    )..parse([for (final f in r.parse) '$f/$f.h']);
+    final module = ex.extract(r.request);
+    logger.info('Parsed ${module.types.length} types', event: 'parsed');
+    for (final d in module.diagnostics) {
+      logger.diagnostic(d);
+    }
+    if (module.diagnostics.any((d) => d.severity == Severity.error)) {
+      throw CliFailure(
+        module.diagnostics.firstWhere((d) => d.severity == Severity.error),
+      );
+    }
+    return module;
+  }
+
+  /// Runs iOS extraction + Flutter (package:objective_c) emission.
+  GenerationOutput generateFlutterIos(ApiModule module) {
+    final out = DartObjCEmitter(
+      module,
+      options: DartObjCOptions(minIos: ApiVersion.parse(config.ios.minVersion)),
+    ).emit();
+    for (final d in out.diagnostics) {
+      logger.diagnostic(d);
+    }
+    return out;
+  }
+
+  /// Persists derived state used by coverage / why-* commands; [subdir]
+  /// separates platforms (`ios`).
   void writeState(
     ApiModule planned,
     List<BindingMapEntry> bindings,
-    Map<String, int> closure,
-  ) {
-    final guard = OutputGuard(stateDir);
+    Map<String, int> closure, {
+    String? subdir,
+  }) {
+    final guard = OutputGuard(
+      subdir == null ? stateDir : p.join(stateDir, subdir),
+    );
     guard.writeString('ir.json', planned.toCanonicalJson());
     guard.writeString(
       'binding_map.json',

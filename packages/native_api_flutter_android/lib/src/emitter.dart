@@ -26,6 +26,7 @@ const _ignores = [
   'unused_import',
   'unused_field',
   'lines_longer_than_80_chars',
+  'sort_constructors_first',
 ];
 
 /// Options for [DartJniEmitter].
@@ -836,7 +837,7 @@ final class DartJniEmitter {
       '  static void implementIn(jni\$.JImplementer implementer, $mixin \$impl) {',
     );
     b.writeln('    late final jnii\$.RawReceivePort \$p;');
-    b.writeln('    \$p = jnii\$.RawReceivePort((\$m) {');
+    b.writeln('    \$p = jnii\$.RawReceivePort((Object? \$m) {');
     b.writeln('      if (\$m == null) {');
     b.writeln('        _\$impls.remove(\$p.sendPort.nativePort);');
     b.writeln('        \$p.close();');

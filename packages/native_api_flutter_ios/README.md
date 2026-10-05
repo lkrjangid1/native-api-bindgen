@@ -1,3 +1,3 @@
 # native_api_flutter_ios
 
-**Not implemented yet.** Reserved for the flutter_ios target/platform (see `docs/roadmap.md`). The CLI reports `E015 NOT_IMPLEMENTED` for these targets rather than producing output.
+Emits Dart bindings over `package:objective_c` from Apple IR: extension types per Objective-C class/protocol, typed `objc_msgSend` trampolines, ARC ownership by method family, properties, structs (`ffi.Struct`), enums, and iOS availability guards. Core Foundation/ObjC types already provided by `package:objective_c` are referenced, not regenerated.

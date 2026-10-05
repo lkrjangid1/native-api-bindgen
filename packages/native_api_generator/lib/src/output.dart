@@ -108,13 +108,15 @@ String generatedHeader(ApiModule module, {String comment = '//'}) {
 /// Writes [output] below [guard]'s root and removes files that a previous
 /// run generated but this run did not. Only files recorded in the previous
 /// manifest *and* starting with the generated marker are ever deleted.
-/// Returns the list of written relative paths.
+/// Returns the list of written relative paths. Targets sharing an output
+/// directory must use distinct [manifestName]s so they never delete each
+/// other's files.
 List<String> writeGeneration(
   OutputGuard guard,
   GenerationOutput output, {
   Map<String, String> extra = const {},
+  String manifestName = '.native_api_bindgen_manifest',
 }) {
-  const manifestName = '.native_api_bindgen_manifest';
   final manifestPath = guard.resolve(manifestName);
   final previous = File(manifestPath).existsSync()
       ? File(

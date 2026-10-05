@@ -1,3 +1,3 @@
 # native_api_ios
 
-**Not implemented yet.** Reserved for the ios target/platform (see `docs/roadmap.md`). The CLI reports `E015 NOT_IMPLEMENTED` for these targets rather than producing output.
+Apple SDK discovery (`xcode-select`, `xcrun`) and Objective-C header extraction through libclang's stable C API (`clang-c/Index.h`), loaded from the locally installed Xcode toolchain. Produces Native IR with per-platform availability, nullability, ObjC selectors, properties, protocols, categories, enums and structs. Never copies SDK files.

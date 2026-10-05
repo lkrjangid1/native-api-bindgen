@@ -4,7 +4,7 @@
 // Derived from SDK metadata installed on the build machine; see
 // docs/legal/source-provenance.md before redistributing.
 
-// ignore_for_file: camel_case_types, comment_references, constant_identifier_names, deprecated_member_use_from_same_package, implementation_imports, invalid_use_of_internal_member, library_prefixes, non_constant_identifier_names, no_leading_underscores_for_local_identifiers, public_member_api_docs, unnecessary_cast, unnecessary_non_null_assertion, unused_element, unused_import, unused_field, lines_longer_than_80_chars
+// ignore_for_file: camel_case_types, comment_references, constant_identifier_names, deprecated_member_use_from_same_package, implementation_imports, invalid_use_of_internal_member, library_prefixes, non_constant_identifier_names, no_leading_underscores_for_local_identifiers, public_member_api_docs, unnecessary_cast, unnecessary_non_null_assertion, unused_element, unused_import, unused_field, lines_longer_than_80_chars, sort_constructors_first
 
 /// Bindings for Java package `com.example.fixtures`.
 library;
@@ -355,7 +355,7 @@ extension type CallbackInterface._(jni$.JObject _$CallbackInterface) implements 
   /// objects implementing several interfaces.
   static void implementIn(jni$.JImplementer implementer, $CallbackInterface $impl) {
     late final jnii$.RawReceivePort $p;
-    $p = jnii$.RawReceivePort(($m) {
+    $p = jnii$.RawReceivePort((Object? $m) {
       if ($m == null) {
         _$impls.remove($p.sendPort.nativePort);
         $p.close();
@@ -486,7 +486,7 @@ extension type Countable._(jni$.JObject _$Countable) implements jni$.JObject {
   /// objects implementing several interfaces.
   static void implementIn(jni$.JImplementer implementer, $Countable $impl) {
     late final jnii$.RawReceivePort $p;
-    $p = jnii$.RawReceivePort(($m) {
+    $p = jnii$.RawReceivePort((Object? $m) {
       if ($m == null) {
         _$impls.remove($p.sendPort.nativePort);
         $p.close();
@@ -988,7 +988,7 @@ extension type NestedClass_Listener._(jni$.JObject _$NestedClass_Listener) imple
   /// objects implementing several interfaces.
   static void implementIn(jni$.JImplementer implementer, $NestedClass_Listener $impl) {
     late final jnii$.RawReceivePort $p;
-    $p = jnii$.RawReceivePort(($m) {
+    $p = jnii$.RawReceivePort((Object? $m) {
       if ($m == null) {
         _$impls.remove($p.sendPort.nativePort);
         $p.close();
@@ -1459,7 +1459,7 @@ extension type Sizable._(jni$.JObject _$Sizable) implements jni$.JObject {
   /// objects implementing several interfaces.
   static void implementIn(jni$.JImplementer implementer, $Sizable $impl) {
     late final jnii$.RawReceivePort $p;
-    $p = jnii$.RawReceivePort(($m) {
+    $p = jnii$.RawReceivePort((Object? $m) {
       if ($m == null) {
         _$impls.remove($p.sendPort.nativePort);
         $p.close();

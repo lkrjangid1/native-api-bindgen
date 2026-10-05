@@ -16,8 +16,13 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 - `license-audit-allowlist.yaml`: checksum-pinned reviewed exceptions (never waives BLOCK).
 
 - React Native (Android, New Architecture): TypeScript bindings over a JSI/JNI runtime installed by one pure C++ Turbo Module; Promise variants; Java interfaces implemented in JS; `generate react-native`; RN example with on-device self-tests; `tools/run_rn_device_tests.sh`, `tools/measure_rn_size.py`.
+- iOS (Flutter): Apple SDK discovery and Objective-C extraction through the Xcode toolchain's libclang (`native_api_ios`); Dart bindings over `package:objective_c` (`native_api_flutter_ios`); `generate ios`, `inspect ios`, `doctor` libclang check; `NSError **` → `NativeObjCError`; iOS availability guards; synthetic Objective-C fixtures with IR snapshot and goldens; `examples/flutter/ios_slice` with 12 simulator integration tests.
+- IR schema 2: Apple module-qualified IDs, per-platform availability, unsigned primitives, pointer and block type references (schema 1 still reads).
 
 ### Changed
+- `writeGeneration` takes a per-target manifest name; Android and iOS output can share a directory.
+- Configuration: `platform.ios` (`sdk`, `minVersion`, `frameworks`, `include`, `classes`, `entries`, `depth`).
+- `audit-license`: Apple-derived generated bindings are reported (WARN); Clang AST dumps and precompiled headers are blocked.
 - The JVM-target planner moved to `native_api_generator` (shared by Flutter and React Native).
 - Configuration: `generation.typescriptMode`, `output.reactNativeDir`.
 

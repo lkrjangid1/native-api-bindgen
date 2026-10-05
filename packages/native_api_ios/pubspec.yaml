@@ -1,0 +1,16 @@
+name: native_api_ios
+description: Apple SDK discovery and Objective-C header extraction (via the Xcode toolchain's libclang) producing native-api-bindgen IR.
+version: 0.1.0-dev.1
+resolution: workspace
+
+environment:
+  sdk: ^3.9.0
+
+dependencies:
+  ffi: ^2.1.3
+  native_api_core: ^0.1.0-dev.1
+  native_api_ir: ^0.1.0-dev.1
+  path: ^1.9.0
+
+dev_dependencies:
+  test: ^1.29.0

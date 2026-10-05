@@ -65,17 +65,11 @@ void main() {
     );
   });
 
-  test('iOS reports E015 with a distinct exit code', () async {
+  test('iOS: nothing selected is a usage error; diff ios is E015', () async {
     final r = await cli(['--json', 'generate', 'ios'], cwd: project.path);
-    expect(r.code, ExitCodes.notImplemented);
-    expect(
-      (jsonDecode(r.out) as Map)['diagnostic'],
-      containsPair('code', 'E015'),
-    );
-    expect(
-      (await cli(['inspect', 'ios'], cwd: project.path)).code,
-      ExitCodes.notImplemented,
-    );
+    // Without Xcode the SDK lookup fails first (E001); with Xcode the empty
+    // selection is rejected (E018). Generating everything is never implicit.
+    expect(r.code, anyOf(ExitCodes.usage, ExitCodes.failure));
     expect(
       (await cli([
         'diff',
@@ -87,6 +81,75 @@ void main() {
       ], cwd: project.path)).code,
       ExitCodes.notImplemented,
     );
+  });
+
+  group('with Xcode', () {
+    final xcode =
+        Platform.isMacOS &&
+        Process.runSync('xcrun', [
+              '--sdk',
+              'iphonesimulator',
+              '--show-sdk-path',
+            ]).exitCode ==
+            0;
+
+    test(
+      'generate ios writes Dart bindings beside Android output',
+      () async {
+        final out = Directory(p.join(project.path, 'lib', 'src', 'generated'))
+          ..createSync(recursive: true);
+        // A file owned by another target's manifest must survive.
+        File(
+          p.join(out.path, '.native_api_bindgen_manifest'),
+        ).writeAsStringSync('android/keep.dart\n');
+        final keep = File(p.join(out.path, 'android', 'keep.dart'))
+          ..createSync(recursive: true)
+          ..writeAsStringSync('// GENERATED CODE - DO NOT MODIFY BY HAND.\n');
+        File(p.join(project.path, 'native_api_bindgen.yaml')).writeAsStringSync(
+          'platform:\n  ios:\n    frameworks: [Foundation, UIKit]\n'
+          '    classes: [UIDevice]\n    depth: 0\n',
+        );
+        final r = await cli(['--json', 'generate', 'ios'], cwd: project.path);
+        expect(r.code, ExitCodes.ok, reason: r.err);
+        final json = jsonDecode(r.out) as Map;
+        expect(json['files'], contains('apple/uikit.dart'));
+        expect(json['bindings'], greaterThan(0));
+        final uikit = File(
+          p.join(out.path, 'apple', 'uikit.dart'),
+        ).readAsStringSync();
+        expect(uikit, contains('extension type UIDevice._'));
+        expect(keep.existsSync(), isTrue);
+        expect(
+          File(
+            p.join(out.path, '.native_api_bindgen_manifest_ios'),
+          ).existsSync(),
+          isTrue,
+        );
+        final inspect = await cli([
+          '--json',
+          'inspect',
+          'ios',
+        ], cwd: project.path);
+        expect(inspect.code, ExitCodes.ok);
+        expect(
+          (jsonDecode(inspect.out) as Map)['frameworks'],
+          contains('UIKit'),
+        );
+      },
+      skip: xcode ? false : 'Xcode not available',
+    );
+
+    test('unknown iOS class is E001', () async {
+      final r = await cli([
+        '--json',
+        'generate',
+        'ios',
+        '--class',
+        'Foundation.NABDoesNotExist',
+      ], cwd: project.path);
+      expect(r.code, ExitCodes.failure);
+      expect(r.out + r.err, contains('E001'));
+    }, skip: xcode ? false : 'Xcode not available');
   });
 
   test('missing SDK fails with E001 and never downloads', () async {

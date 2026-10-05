@@ -1,0 +1,25 @@
+# native-api-bindgen configuration for the iOS vertical slice.
+platform:
+  ios:
+    sdk: auto            # iphonesimulator via xcrun
+    minVersion: "15.0"   # = the app deployment target; newer APIs get runtime guards
+    frameworks: [Foundation, UIKit]
+    classes:
+      - UIDevice
+      - UIView
+      - UIViewController
+      - UIColor
+      - NSProcessInfo
+      - NSFileManager
+    depth: 0
+
+targets:
+  flutter: true
+  reactNative: false
+
+output:
+  dir: lib/src/generated
+
+distribution:
+  generatedArtifacts: local-only
+  documentationMode: links-only

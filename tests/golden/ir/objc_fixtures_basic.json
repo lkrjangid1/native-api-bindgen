@@ -1,0 +1,1310 @@
+{
+  "generatorVersion": "0.1.0-dev.1",
+  "platform": "apple",
+  "schemaVersion": 2,
+  "sdkVersion": "fixture",
+  "types": [
+    {
+      "fields": [
+        {
+          "constantValue": {
+            "literal": "1",
+            "type": "uint64"
+          },
+          "id": "NABFixtures.NABFlags#NABFlagsA",
+          "modifiers": [
+            "final",
+            "public",
+            "static"
+          ],
+          "name": "NABFlagsA",
+          "support": "supported",
+          "type": {
+            "kind": "primitive",
+            "name": "uint64"
+          },
+          "visibility": "public"
+        },
+        {
+          "constantValue": {
+            "literal": "2",
+            "type": "uint64"
+          },
+          "id": "NABFixtures.NABFlags#NABFlagsB",
+          "modifiers": [
+            "final",
+            "public",
+            "static"
+          ],
+          "name": "NABFlagsB",
+          "support": "supported",
+          "type": {
+            "kind": "primitive",
+            "name": "uint64"
+          },
+          "visibility": "public"
+        },
+        {
+          "constantValue": {
+            "literal": "9223372036854775808",
+            "type": "uint64"
+          },
+          "id": "NABFixtures.NABFlags#NABFlagsHigh",
+          "modifiers": [
+            "final",
+            "public",
+            "static"
+          ],
+          "name": "NABFlagsHigh",
+          "support": "supported",
+          "type": {
+            "kind": "primitive",
+            "name": "uint64"
+          },
+          "visibility": "public"
+        },
+        {
+          "constantValue": {
+            "literal": "0",
+            "type": "uint64"
+          },
+          "id": "NABFixtures.NABFlags#NABFlagsNone",
+          "modifiers": [
+            "final",
+            "public",
+            "static"
+          ],
+          "name": "NABFlagsNone",
+          "support": "supported",
+          "type": {
+            "kind": "primitive",
+            "name": "uint64"
+          },
+          "visibility": "public"
+        }
+      ],
+      "id": "NABFixtures.NABFlags",
+      "kind": "enumType",
+      "modifiers": [
+        "public"
+      ],
+      "name": "NABFlags",
+      "namespace": "NABFixtures",
+      "provenance": {
+        "artifactEntry": "NABFixtures.h",
+        "localArtifact": "fixture headers",
+        "platform": "apple",
+        "sdkVersion": "fixture",
+        "sourceKind": "fixture"
+      },
+      "support": "supported",
+      "visibility": "public"
+    },
+    {
+      "id": "NABFixtures.NABListener",
+      "interfaces": [
+        {
+          "kind": "declared",
+          "name": "ObjectiveC.NSObjectProtocol",
+          "nullability": "unknown"
+        }
+      ],
+      "kind": "protocol",
+      "methods": [
+        {
+          "annotations": [
+            {
+              "classification": "semantic",
+              "source": "headers",
+              "type": "objc.optional"
+            }
+          ],
+          "id": "NABFixtures.NABListener#-shouldStop",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "shouldStop",
+          "nativeDescriptor": "shouldStop",
+          "returnType": {
+            "kind": "primitive",
+            "name": "boolean"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "id": "NABFixtures.NABListener#-thing:didChangeValue:",
+          "kind": "method",
+          "modifiers": [
+            "abstract",
+            "public"
+          ],
+          "name": "thing:didChangeValue:",
+          "nativeDescriptor": "thing:didChangeValue:",
+          "parameters": [
+            {
+              "name": "thing",
+              "nameSource": "header",
+              "type": {
+                "kind": "declared",
+                "name": "objc.id",
+                "nullability": "nonnull"
+              }
+            },
+            {
+              "name": "value",
+              "nameSource": "header",
+              "type": {
+                "kind": "primitive",
+                "name": "long"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        }
+      ],
+      "modifiers": [
+        "public"
+      ],
+      "name": "NABListener",
+      "namespace": "NABFixtures",
+      "provenance": {
+        "artifactEntry": "NABFixtures.h",
+        "localArtifact": "fixture headers",
+        "platform": "apple",
+        "sdkVersion": "fixture",
+        "sourceKind": "fixture"
+      },
+      "support": "supported",
+      "visibility": "public"
+    },
+    {
+      "availability": {
+        "platforms": {
+          "ios": {
+            "unavailable": true
+          }
+        }
+      },
+      "diagnostics": [
+        {
+          "code": "E012",
+          "label": "AVAILABILITY_MISMATCH",
+          "message": "Unavailable on iOS",
+          "severity": "warning",
+          "symbolId": "NABFixtures.NABMacOnly"
+        }
+      ],
+      "id": "NABFixtures.NABMacOnly",
+      "kind": "classType",
+      "modifiers": [
+        "public"
+      ],
+      "name": "NABMacOnly",
+      "namespace": "NABFixtures",
+      "provenance": {
+        "artifactEntry": "NABFixtures.h",
+        "localArtifact": "fixture headers",
+        "platform": "apple",
+        "sdkVersion": "fixture",
+        "sourceKind": "fixture"
+      },
+      "superClass": {
+        "kind": "declared",
+        "name": "ObjectiveC.NSObject",
+        "nullability": "unknown"
+      },
+      "support": "unsupported",
+      "visibility": "public"
+    },
+    {
+      "fields": [
+        {
+          "availability": {
+            "introduced": "15",
+            "platforms": {
+              "ios": {
+                "introduced": "15"
+              }
+            }
+          },
+          "constantValue": {
+            "literal": "2",
+            "type": "long"
+          },
+          "id": "NABFixtures.NABMode#NABModeAuto",
+          "modifiers": [
+            "final",
+            "public",
+            "static"
+          ],
+          "name": "NABModeAuto",
+          "support": "supported",
+          "type": {
+            "kind": "primitive",
+            "name": "long"
+          },
+          "visibility": "public"
+        },
+        {
+          "constantValue": {
+            "literal": "0",
+            "type": "long"
+          },
+          "id": "NABFixtures.NABMode#NABModeOff",
+          "modifiers": [
+            "final",
+            "public",
+            "static"
+          ],
+          "name": "NABModeOff",
+          "support": "supported",
+          "type": {
+            "kind": "primitive",
+            "name": "long"
+          },
+          "visibility": "public"
+        },
+        {
+          "constantValue": {
+            "literal": "1",
+            "type": "long"
+          },
+          "id": "NABFixtures.NABMode#NABModeOn",
+          "modifiers": [
+            "final",
+            "public",
+            "static"
+          ],
+          "name": "NABModeOn",
+          "support": "supported",
+          "type": {
+            "kind": "primitive",
+            "name": "long"
+          },
+          "visibility": "public"
+        }
+      ],
+      "id": "NABFixtures.NABMode",
+      "kind": "enumType",
+      "modifiers": [
+        "public"
+      ],
+      "name": "NABMode",
+      "namespace": "NABFixtures",
+      "provenance": {
+        "artifactEntry": "NABFixtures.h",
+        "localArtifact": "fixture headers",
+        "platform": "apple",
+        "sdkVersion": "fixture",
+        "sourceKind": "fixture"
+      },
+      "support": "supported",
+      "visibility": "public"
+    },
+    {
+      "fields": [
+        {
+          "id": "NABFixtures.NABPoint#x",
+          "modifiers": [
+            "public"
+          ],
+          "name": "x",
+          "support": "supported",
+          "type": {
+            "kind": "primitive",
+            "name": "double"
+          },
+          "visibility": "public"
+        },
+        {
+          "id": "NABFixtures.NABPoint#y",
+          "modifiers": [
+            "public"
+          ],
+          "name": "y",
+          "support": "supported",
+          "type": {
+            "kind": "primitive",
+            "name": "double"
+          },
+          "visibility": "public"
+        }
+      ],
+      "id": "NABFixtures.NABPoint",
+      "kind": "struct",
+      "modifiers": [
+        "public"
+      ],
+      "name": "NABPoint",
+      "namespace": "NABFixtures",
+      "provenance": {
+        "artifactEntry": "NABFixtures.h",
+        "localArtifact": "fixture headers",
+        "platform": "apple",
+        "sdkVersion": "fixture",
+        "sourceKind": "fixture"
+      },
+      "support": "supported",
+      "visibility": "public"
+    },
+    {
+      "fields": [
+        {
+          "id": "NABFixtures.NABRect#origin",
+          "modifiers": [
+            "public"
+          ],
+          "name": "origin",
+          "support": "supported",
+          "type": {
+            "kind": "declared",
+            "name": "NABFixtures.NABPoint",
+            "nullability": "unknown"
+          },
+          "visibility": "public"
+        },
+        {
+          "id": "NABFixtures.NABRect#size",
+          "modifiers": [
+            "public"
+          ],
+          "name": "size",
+          "support": "supported",
+          "type": {
+            "kind": "declared",
+            "name": "NABFixtures.NABPoint",
+            "nullability": "unknown"
+          },
+          "visibility": "public"
+        }
+      ],
+      "id": "NABFixtures.NABRect",
+      "kind": "struct",
+      "modifiers": [
+        "public"
+      ],
+      "name": "NABRect",
+      "namespace": "NABFixtures",
+      "provenance": {
+        "artifactEntry": "NABFixtures.h",
+        "localArtifact": "fixture headers",
+        "platform": "apple",
+        "sdkVersion": "fixture",
+        "sourceKind": "fixture"
+      },
+      "support": "supported",
+      "visibility": "public"
+    },
+    {
+      "availability": {
+        "introduced": "13",
+        "platforms": {
+          "ios": {
+            "introduced": "13"
+          }
+        }
+      },
+      "id": "NABFixtures.NABThing",
+      "interfaces": [
+        {
+          "kind": "declared",
+          "name": "Foundation.NSCopying",
+          "nullability": "unknown"
+        }
+      ],
+      "kind": "classType",
+      "methods": [
+        {
+          "availability": {
+            "introduced": "13",
+            "platforms": {
+              "ios": {
+                "introduced": "13"
+              }
+            }
+          },
+          "id": "NABFixtures.NABThing#+instances",
+          "kind": "method",
+          "modifiers": [
+            "public",
+            "static"
+          ],
+          "name": "instances",
+          "nativeDescriptor": "instances",
+          "returnType": {
+            "kind": "primitive",
+            "name": "uint64"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "13",
+            "platforms": {
+              "ios": {
+                "introduced": "13"
+              }
+            }
+          },
+          "id": "NABFixtures.NABThing#+thingWithValue:",
+          "kind": "method",
+          "modifiers": [
+            "public",
+            "static"
+          ],
+          "name": "thingWithValue:",
+          "nativeDescriptor": "thingWithValue:",
+          "parameters": [
+            {
+              "name": "value",
+              "nameSource": "header",
+              "type": {
+                "kind": "primitive",
+                "name": "double"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "declared",
+            "name": "NABFixtures.NABThing",
+            "nullability": "nullable"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "13",
+            "platforms": {
+              "ios": {
+                "introduced": "13"
+              }
+            }
+          },
+          "diagnostics": [
+            {
+              "code": "E005",
+              "label": "PRIVATE_API",
+              "message": "Private or SPI declaration (not public SDK API)",
+              "severity": "warning",
+              "symbolId": "NABFixtures.NABThing#-_privateHelper"
+            }
+          ],
+          "id": "NABFixtures.NABThing#-_privateHelper",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "_privateHelper",
+          "nativeDescriptor": "_privateHelper",
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "unsupported",
+          "visibility": "private"
+        },
+        {
+          "availability": {
+            "introduced": "13",
+            "platforms": {
+              "ios": {
+                "introduced": "13"
+              }
+            }
+          },
+          "id": "NABFixtures.NABThing#-addItem:",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "addItem:",
+          "nativeDescriptor": "addItem:",
+          "parameters": [
+            {
+              "name": "item",
+              "nameSource": "header",
+              "type": {
+                "kind": "declared",
+                "name": "Foundation.NSString",
+                "nullability": "nonnull"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "13",
+            "platforms": {
+              "ios": {
+                "introduced": "13"
+              }
+            }
+          },
+          "id": "NABFixtures.NABThing#-addItem:atIndex:",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "addItem:atIndex:",
+          "nativeDescriptor": "addItem:atIndex:",
+          "parameters": [
+            {
+              "name": "item",
+              "nameSource": "header",
+              "type": {
+                "kind": "declared",
+                "name": "Foundation.NSString",
+                "nullability": "nonnull"
+              }
+            },
+            {
+              "name": "index",
+              "nameSource": "header",
+              "type": {
+                "kind": "primitive",
+                "name": "uint64"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "13",
+            "platforms": {
+              "ios": {
+                "introduced": "13"
+              }
+            }
+          },
+          "id": "NABFixtures.NABThing#-centerOf:",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "centerOf:",
+          "nativeDescriptor": "centerOf:",
+          "parameters": [
+            {
+              "name": "rect",
+              "nameSource": "header",
+              "type": {
+                "kind": "declared",
+                "name": "NABFixtures.NABRect",
+                "nullability": "unknown"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "declared",
+            "name": "NABFixtures.NABPoint",
+            "nullability": "unknown"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "13",
+            "platforms": {
+              "ios": {
+                "introduced": "13"
+              }
+            }
+          },
+          "id": "NABFixtures.NABThing#-count",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "count",
+          "nativeDescriptor": "count",
+          "returnType": {
+            "kind": "primitive",
+            "name": "long"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "13",
+            "platforms": {
+              "ios": {
+                "introduced": "13"
+              }
+            }
+          },
+          "id": "NABFixtures.NABThing#-counts",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "counts",
+          "nativeDescriptor": "counts",
+          "returnType": {
+            "kind": "declared",
+            "name": "Foundation.NSDictionary",
+            "nullability": "nonnull",
+            "typeArguments": [
+              {
+                "kind": "declared",
+                "name": "Foundation.NSString",
+                "nullability": "unknown"
+              },
+              {
+                "kind": "declared",
+                "name": "Foundation.NSNumber",
+                "nullability": "unknown"
+              }
+            ]
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "13",
+            "platforms": {
+              "ios": {
+                "introduced": "13"
+              }
+            }
+          },
+          "id": "NABFixtures.NABThing#-describe",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "describe",
+          "nativeDescriptor": "describe",
+          "returnType": {
+            "kind": "declared",
+            "name": "Foundation.NSString",
+            "nullability": "nonnull"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "13",
+            "platforms": {
+              "ios": {
+                "introduced": "13"
+              }
+            }
+          },
+          "id": "NABFixtures.NABThing#-frame",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "frame",
+          "nativeDescriptor": "frame",
+          "returnType": {
+            "kind": "declared",
+            "name": "NABFixtures.NABRect",
+            "nullability": "unknown"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "13",
+            "platforms": {
+              "ios": {
+                "introduced": "13"
+              }
+            }
+          },
+          "id": "NABFixtures.NABThing#-init",
+          "kind": "constructor",
+          "modifiers": [
+            "public"
+          ],
+          "name": "init",
+          "nativeDescriptor": "init",
+          "returnType": {
+            "kind": "declared",
+            "name": "NABFixtures.NABThing",
+            "nullability": "nonnull"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "13",
+            "platforms": {
+              "ios": {
+                "introduced": "13"
+              }
+            }
+          },
+          "id": "NABFixtures.NABThing#-initWithName:",
+          "kind": "constructor",
+          "modifiers": [
+            "public"
+          ],
+          "name": "initWithName:",
+          "nativeDescriptor": "initWithName:",
+          "parameters": [
+            {
+              "name": "name",
+              "nameSource": "header",
+              "type": {
+                "kind": "declared",
+                "name": "Foundation.NSString",
+                "nullability": "nonnull"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "declared",
+            "name": "NABFixtures.NABThing",
+            "nullability": "nonnull"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "13",
+            "platforms": {
+              "ios": {
+                "introduced": "13"
+              }
+            }
+          },
+          "id": "NABFixtures.NABThing#-items",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "items",
+          "nativeDescriptor": "items",
+          "returnType": {
+            "kind": "declared",
+            "name": "Foundation.NSArray",
+            "nullability": "nonnull",
+            "typeArguments": [
+              {
+                "kind": "declared",
+                "name": "Foundation.NSString",
+                "nullability": "unknown"
+              }
+            ]
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "deprecated": "15",
+            "introduced": "13",
+            "platforms": {
+              "ios": {
+                "deprecated": "15",
+                "introduced": "13"
+              }
+            }
+          },
+          "id": "NABFixtures.NABThing#-legacy",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "legacy",
+          "nativeDescriptor": "legacy",
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "13",
+            "platforms": {
+              "ios": {
+                "introduced": "13"
+              }
+            }
+          },
+          "id": "NABFixtures.NABThing#-listener",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "listener",
+          "nativeDescriptor": "listener",
+          "returnType": {
+            "kind": "declared",
+            "name": "NABFixtures.NABListener",
+            "nullability": "nullable"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "13",
+            "platforms": {
+              "ios": {
+                "introduced": "13"
+              }
+            }
+          },
+          "diagnostics": [
+            {
+              "code": "E002",
+              "label": "UNSUPPORTED_TYPE",
+              "message": "Variadic Objective-C methods are not supported",
+              "severity": "warning",
+              "symbolId": "NABFixtures.NABThing#-log:"
+            }
+          ],
+          "id": "NABFixtures.NABThing#-log:",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "log:",
+          "nativeDescriptor": "log:",
+          "parameters": [
+            {
+              "name": "format",
+              "nameSource": "header",
+              "type": {
+                "kind": "declared",
+                "name": "Foundation.NSString",
+                "nullability": "nonnull"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "unsupported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "13",
+            "platforms": {
+              "ios": {
+                "introduced": "13"
+              }
+            }
+          },
+          "id": "NABFixtures.NABThing#-mode",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "mode",
+          "nativeDescriptor": "mode",
+          "returnType": {
+            "kind": "declared",
+            "name": "NABFixtures.NABMode",
+            "nullability": "unknown"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "13",
+            "platforms": {
+              "ios": {
+                "introduced": "13"
+              }
+            }
+          },
+          "id": "NABFixtures.NABThing#-name",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "name",
+          "nativeDescriptor": "name",
+          "returnType": {
+            "kind": "declared",
+            "name": "Foundation.NSString",
+            "nullability": "nullable"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "13",
+            "platforms": {
+              "ios": {
+                "introduced": "13"
+              }
+            }
+          },
+          "id": "NABFixtures.NABThing#-objectForKeyedSubscript:",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "objectForKeyedSubscript:",
+          "nativeDescriptor": "objectForKeyedSubscript:",
+          "parameters": [
+            {
+              "name": "key",
+              "nameSource": "header",
+              "type": {
+                "kind": "declared",
+                "name": "Foundation.NSString",
+                "nullability": "nonnull"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "declared",
+            "name": "objc.id",
+            "nullability": "nullable"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "16",
+            "platforms": {
+              "ios": {
+                "introduced": "16"
+              }
+            }
+          },
+          "id": "NABFixtures.NABThing#-runWithCompletion:",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "runWithCompletion:",
+          "nativeDescriptor": "runWithCompletion:",
+          "parameters": [
+            {
+              "name": "completion",
+              "nameSource": "header",
+              "type": {
+                "kind": "block",
+                "nullability": "nonnull",
+                "parameters": [
+                  {
+                    "kind": "primitive",
+                    "name": "boolean"
+                  }
+                ],
+                "returnType": {
+                  "kind": "primitive",
+                  "name": "void"
+                }
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "13",
+            "platforms": {
+              "ios": {
+                "introduced": "13"
+              }
+            }
+          },
+          "id": "NABFixtures.NABThing#-saveToPath:error:",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "saveToPath:error:",
+          "nativeDescriptor": "saveToPath:error:",
+          "parameters": [
+            {
+              "name": "path",
+              "nameSource": "header",
+              "type": {
+                "kind": "declared",
+                "name": "Foundation.NSString",
+                "nullability": "nonnull"
+              }
+            },
+            {
+              "name": "error",
+              "nameSource": "header",
+              "type": {
+                "kind": "pointer",
+                "nullability": "nullable",
+                "pointee": {
+                  "kind": "declared",
+                  "name": "Foundation.NSError",
+                  "nullability": "nullable"
+                }
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "boolean"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "13",
+            "platforms": {
+              "ios": {
+                "introduced": "13"
+              }
+            }
+          },
+          "id": "NABFixtures.NABThing#-setFrame:",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "setFrame:",
+          "nativeDescriptor": "setFrame:",
+          "parameters": [
+            {
+              "name": "frame",
+              "nameSource": "header",
+              "type": {
+                "kind": "declared",
+                "name": "NABFixtures.NABRect",
+                "nullability": "unknown"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "13",
+            "platforms": {
+              "ios": {
+                "introduced": "13"
+              }
+            }
+          },
+          "id": "NABFixtures.NABThing#-setListener:",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "setListener:",
+          "nativeDescriptor": "setListener:",
+          "parameters": [
+            {
+              "name": "listener",
+              "nameSource": "header",
+              "type": {
+                "kind": "declared",
+                "name": "NABFixtures.NABListener",
+                "nullability": "nullable"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "13",
+            "platforms": {
+              "ios": {
+                "introduced": "13"
+              }
+            }
+          },
+          "id": "NABFixtures.NABThing#-setMode:",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "setMode:",
+          "nativeDescriptor": "setMode:",
+          "parameters": [
+            {
+              "name": "mode",
+              "nameSource": "header",
+              "type": {
+                "kind": "declared",
+                "name": "NABFixtures.NABMode",
+                "nullability": "unknown"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "13",
+            "platforms": {
+              "ios": {
+                "introduced": "13"
+              }
+            }
+          },
+          "id": "NABFixtures.NABThing#-setName:",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "setName:",
+          "nativeDescriptor": "setName:",
+          "parameters": [
+            {
+              "name": "name",
+              "nameSource": "header",
+              "type": {
+                "kind": "declared",
+                "name": "Foundation.NSString",
+                "nullability": "nullable"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        }
+      ],
+      "modifiers": [
+        "public"
+      ],
+      "name": "NABThing",
+      "namespace": "NABFixtures",
+      "properties": [
+        {
+          "backing": "accessor",
+          "getterId": "NABFixtures.NABThing#-count",
+          "name": "count",
+          "type": {
+            "kind": "primitive",
+            "name": "long"
+          }
+        },
+        {
+          "backing": "accessor",
+          "getterId": "NABFixtures.NABThing#-frame",
+          "name": "frame",
+          "setterId": "NABFixtures.NABThing#-setFrame:",
+          "type": {
+            "kind": "declared",
+            "name": "NABFixtures.NABRect",
+            "nullability": "unknown"
+          }
+        },
+        {
+          "backing": "accessor",
+          "getterId": "NABFixtures.NABThing#+instances",
+          "name": "instances",
+          "type": {
+            "kind": "primitive",
+            "name": "uint64"
+          }
+        },
+        {
+          "backing": "accessor",
+          "getterId": "NABFixtures.NABThing#-listener",
+          "name": "listener",
+          "setterId": "NABFixtures.NABThing#-setListener:",
+          "type": {
+            "kind": "declared",
+            "name": "NABFixtures.NABListener",
+            "nullability": "nullable"
+          }
+        },
+        {
+          "backing": "accessor",
+          "getterId": "NABFixtures.NABThing#-mode",
+          "name": "mode",
+          "setterId": "NABFixtures.NABThing#-setMode:",
+          "type": {
+            "kind": "declared",
+            "name": "NABFixtures.NABMode",
+            "nullability": "unknown"
+          }
+        },
+        {
+          "backing": "accessor",
+          "getterId": "NABFixtures.NABThing#-name",
+          "name": "name",
+          "setterId": "NABFixtures.NABThing#-setName:",
+          "type": {
+            "kind": "declared",
+            "name": "Foundation.NSString",
+            "nullability": "nullable"
+          }
+        }
+      ],
+      "provenance": {
+        "artifactEntry": "NABFixtures.h",
+        "localArtifact": "fixture headers",
+        "platform": "apple",
+        "sdkVersion": "fixture",
+        "sourceKind": "fixture"
+      },
+      "superClass": {
+        "kind": "declared",
+        "name": "ObjectiveC.NSObject",
+        "nullability": "unknown"
+      },
+      "support": "supported",
+      "visibility": "public"
+    }
+  ]
+}

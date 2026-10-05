@@ -5,6 +5,7 @@ import 'package:native_api_android/native_api_android.dart';
 import 'package:native_api_core/native_api_core.dart';
 import 'package:native_api_flutter_android/native_api_flutter_android.dart';
 import 'package:native_api_generator/native_api_generator.dart';
+import 'package:native_api_ios/native_api_ios.dart';
 import 'package:native_api_ir/native_api_ir.dart';
 import 'package:native_api_react_native_android/native_api_react_native_android.dart';
 import 'package:path/path.dart' as p;
@@ -231,8 +232,19 @@ final class DetectCommand extends BindgenCommand {
       line('iOS SDK:', tc.iosSdkVersion ?? 'not found');
       line(
         'iOS generation:',
-        'not yet implemented (E015, see docs/roadmap.md)',
+        'Flutter (Dart over package:objective_c); React Native iOS: not yet implemented (E015)',
       );
+      if (doctor) {
+        final apple = XcodeLocator().locate(sdkName: ctx.config.ios.sdkName);
+        line(
+          'libclang:',
+          apple != null && File(apple.libclangPath).existsSync()
+              ? 'Xcode toolchain'
+              : 'not found',
+          ok: apple != null && File(apple.libclangPath).existsSync(),
+          fix: 'xcode-select -s /Applications/Xcode.app',
+        );
+      }
     }
     line(
       'Config:',
@@ -285,7 +297,7 @@ final class InspectCommand extends BindgenCommand {
       throw UsageException('Expected exactly one argument', usage);
     }
     final what = args.single;
-    if (what == 'ios') return _notImplemented('iOS SDK inspection');
+    if (what == 'ios') return _inspectIos();
     final platform = ctx.androidPlatform(ctx.androidSdk(), _opt('platform'));
     final ex = ctx.openExtractor(platform);
     if (what == 'android') {
@@ -312,6 +324,30 @@ final class InspectCommand extends BindgenCommand {
     }
     final node = _findSymbol(ex, what);
     _log.result(canonicalJson(node.toJson()).trimRight(), node.toJson());
+    return ExitCodes.ok;
+  }
+}
+
+extension on InspectCommand {
+  int _inspectIos() {
+    final sdk = ctx.appleSdk();
+    final fws = <String>[];
+    final dir = Directory(p.join(sdk.path, 'System', 'Library', 'Frameworks'));
+    if (dir.existsSync()) {
+      for (final e in dir.listSync()) {
+        final name = p.basename(e.path);
+        if (name.endsWith('.framework') &&
+            Directory(p.join(e.path, 'Headers')).existsSync()) {
+          fws.add(name.substring(0, name.length - '.framework'.length));
+        }
+      }
+    }
+    fws.sort();
+    ctx.logger.result(
+      '${sdk.name} SDK ${sdk.version} (${sdk.xcodeVersion})\n'
+      'frameworks with public headers: ${fws.length}',
+      {...sdk.toJson(), 'frameworks': fws},
+    );
     return ExitCodes.ok;
   }
 }
@@ -384,6 +420,10 @@ final class GenerateCommand extends BindgenCommand {
         'ts-mode',
         allowed: ['strict-typescript', 'ergonomic-typescript'],
         help: 'TypeScript mode for react-native (default: config).',
+      )
+      ..addMultiOption(
+        'framework',
+        help: 'ios: generate a whole Apple framework, e.g. UIKit (repeatable).',
       );
   }
 
@@ -392,7 +432,7 @@ final class GenerateCommand extends BindgenCommand {
 
   @override
   String get description =>
-      'Generate IR (android) or bindings (flutter, react-native). iOS is not implemented yet.';
+      'Generate IR (android) or bindings (flutter = Android, ios = Flutter on iOS, react-native = Android).';
 
   @override
   String get invocation =>
@@ -404,7 +444,7 @@ final class GenerateCommand extends BindgenCommand {
     final target = rest.isEmpty ? 'all' : rest.first;
     switch (target) {
       case 'ios':
-        return _notImplemented('iOS generation');
+        return _ios();
       case 'react-native':
         return _reactNative();
       case 'android':
@@ -431,13 +471,64 @@ final class GenerateCommand extends BindgenCommand {
         if (target == 'all' && ctx.config.reactNative && code == ExitCodes.ok) {
           code = _reactNative();
         }
-        if (target == 'all' && ctx.config.iosFrameworks.isNotEmpty) {
-          _notImplemented('iOS generation');
+        final ios = ctx.config.ios;
+        if (target == 'all' &&
+            code == ExitCodes.ok &&
+            ctx.config.flutter &&
+            [...ios.include, ...ios.classes, ...ios.entries].isNotEmpty) {
+          code = _ios();
         }
         return code;
       default:
         throw UsageException('Unknown target "$target"', usage);
     }
+  }
+
+  int _ios() {
+    final sdk = ctx.appleSdk();
+    final module = ctx.extractIos(
+      sdk,
+      ctx.iosRequest(
+        frameworks: _multi('framework'),
+        classes: _multi('class'),
+        entries: _multi('entry'),
+        depth: _intOpt('depth'),
+      ),
+    );
+    final out = ctx.generateFlutterIos(module);
+    final outDir = p.normalize(
+      p.join(ctx.projectDir, _opt('output') ?? ctx.config.outputDir),
+    );
+    final written = writeGeneration(
+      OutputGuard(outDir),
+      out,
+      manifestName: '.native_api_bindgen_manifest_ios',
+    );
+    ctx.writeState(out.module, out.bindings, const {}, subdir: 'ios');
+    final cov = CoverageReport.of(out.module);
+    final summary = StringBuffer()
+      ..writeln(
+        'Generated Flutter bindings for iOS (${sdk.name} ${sdk.version})',
+      )
+      ..writeln(
+        '  output: ${p.relative(outDir, from: ctx.projectDir)} (${written.length} files)',
+      )
+      ..writeln(
+        '  types: ${out.module.types.where((t) => t.isGeneratable).length} generated of ${out.module.types.length} parsed',
+      )
+      ..writeln('  members bound: ${out.bindings.length}');
+    if (cov.excludedByReason.isNotEmpty) {
+      summary.writeln('  skipped (by reason):');
+      cov.excludedByReason.forEach((k, v) => summary.writeln('    $k: $v'));
+    }
+    _log.result(summary.toString().trimRight(), {
+      'sdk': sdk.toJson(),
+      'output': p.relative(outDir, from: ctx.projectDir),
+      'files': written,
+      'bindings': out.bindings.length,
+      'coverage': cov.toJson(),
+    });
+    return ExitCodes.ok;
   }
 
   int _reactNative() {

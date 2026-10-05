@@ -447,11 +447,24 @@ final class LicenseAuditor {
       }
     }
     if (text.startsWith('// ${ProjectInfo.generatedMarker}') &&
-        text.contains('// Source SDK: Android API')) {
+        (text.contains('// Source SDK: Android API') ||
+            (text.contains('// Source SDK: Apple SDK') &&
+                !text.contains('// Source SDK: Apple SDK fixture')))) {
       add(
         AuditStatus.warn,
         'generated-sdk-binding',
-        'Generated binding derived from a local Android SDK (LEGAL_REVIEW_REQUIRED before redistribution).',
+        'Generated binding derived from a locally installed platform SDK (LEGAL_REVIEW_REQUIRED before redistribution).',
+      );
+    }
+    // Clang AST dumps / precompiled headers embed SDK header contents.
+    if (ext == '.pch' ||
+        ext == '.pcm' ||
+        ext == '.ast' ||
+        (ext == '.json' && text.contains(_clangAstMarker))) {
+      add(
+        AuditStatus.block,
+        'clang-ast-dump',
+        'Clang AST dump or precompiled header derived from SDK headers; never commit it.',
       );
     }
     final top = segments.first;
@@ -587,6 +600,8 @@ String classifyLicenseText(String text) {
   return 'UNKNOWN';
 }
 
+// `clang -ast-dump=json` root node.
+final _clangAstMarker = RegExp(r'"kind"\s*:\s*"TranslationUnitDecl"');
 final _appleBanner = RegExp(
   r'Copyright \(c\)[^\n]{0,40}Apple(,)? Inc',
   caseSensitive: false,
