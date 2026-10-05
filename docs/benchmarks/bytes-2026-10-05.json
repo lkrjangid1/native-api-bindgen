@@ -1,0 +1,27 @@
+{
+  "flutter_android_profile_emulator": {
+    "jni_bytes_roundtrip_16mb_ms": 32.9279,
+    "jni_bytes_roundtrip_1mb_ms": 1.7975,
+    "jni_direct_buffer_fill_16mb_ms": 5.9866,
+    "jni_direct_buffer_fill_1mb_ms": 2.3329999999999997,
+    "methodchannel_bytes_roundtrip_16mb_ms": 53.794,
+    "methodchannel_bytes_roundtrip_1mb_ms": 9.015
+  },
+  "flutter_ios_debug_simulator": {
+    "nsdata_from_bytes_16mb_ms": 2.4651,
+    "nsdata_from_bytes_1mb_ms": 0.076,
+    "nsdata_tolist_copy_16mb_ms": 2.0842,
+    "nsdata_tolist_copy_1mb_ms": 0.21139999999999998,
+    "nsdata_view_16mb_ms": 0.0002,
+    "nsdata_view_1mb_ms": 0.0002
+  },
+  "rn_android_release_emulator": {
+    "jsi_jni_bytes_roundtrip_16mb_us": 30881,
+    "jsi_jni_bytes_roundtrip_1mb_us": 1606,
+    "jsi_jni_number_array_roundtrip_1mb_us": 99596
+  },
+  "rn_ios_release_simulator": {
+    "jsi_objc_nsdata_roundtrip_16mb_us": 1746,
+    "jsi_objc_nsdata_roundtrip_1mb_us": 153
+  }
+}

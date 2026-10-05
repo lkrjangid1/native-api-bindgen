@@ -19,6 +19,7 @@ class MainActivity : FlutterActivity() {
                     "noop" -> result.success(null)
                     "bundleSize" -> result.success(benchBundle.size())
                     "parseUri" -> result.success(Uri.parse(call.arguments as String).toString())
+                    "copyBytes" -> result.success((call.arguments as ByteArray).copyOf())
                     else -> result.notImplemented()
                 }
             }

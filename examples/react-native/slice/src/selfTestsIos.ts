@@ -6,6 +6,9 @@
 import {
   IosApi,
   NSArray,
+  bytesFromNSData,
+  nsArrayItems,
+  nsDataFromBytes,
   NSCache,
   NSCacheDelegate,
   NSFileManager,
@@ -229,6 +232,20 @@ const tests: Array<[string, () => void | Promise<void>]> = [
       cache.setObject(UIView.new$(), UIView.new$());
       cache.removeAllObjects();
       expectEqual(evicted, 1, 'evictions reported');
+    },
+  ],
+
+  [
+    'NSData <-> Uint8Array and NSArray items',
+    () => {
+      const d = nsDataFromBytes(new Uint8Array([1, 2, 255]));
+      expectEqual(Array.from(bytesFromNSData(d)).join(), '1,2,255', 'bytes');
+      const parent = UIView.new$();
+      parent.addSubview(UIView.new$());
+      parent.addSubview(UIView.new$());
+      const items = nsArrayItems(parent.subviews);
+      expectEqual(items.length, 2, 'items');
+      expectEqual(UIView.isA(items[0]), true, 'item class');
     },
   ],
 

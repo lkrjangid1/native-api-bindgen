@@ -244,6 +244,25 @@ export function ensureInherited(cls: InheritingClass): void {
   }
 }
 
+/**
+ * @internal A `byte[]` argument: a `Uint8Array` crosses as an `ArrayBuffer`
+ * (one copy into the Java array); `number[]` is still accepted.
+ */
+export function bytesArg(v: Uint8Array | number[] | null | undefined): ArrayBuffer | number[] | null {
+  if (v === null || v === undefined) return null;
+  if (Array.isArray(v)) return v;
+  if (v.byteOffset === 0 && v.byteLength === v.buffer.byteLength && v.buffer instanceof ArrayBuffer) {
+    return v.buffer;
+  }
+  return v.slice().buffer as ArrayBuffer;
+}
+
+/** @internal A `byte[]` result (an `ArrayBuffer` from native) as `Uint8Array`. */
+export function bytesResult(raw: unknown): Uint8Array | null {
+  if (raw === null || raw === undefined) return null;
+  return new Uint8Array(raw as ArrayBuffer);
+}
+
 /** @internal */
 export function h(o: JavaObject | null | undefined): Handle | null {
   return o === null || o === undefined ? null : o.$h;

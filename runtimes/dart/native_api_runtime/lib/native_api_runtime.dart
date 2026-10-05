@@ -6,6 +6,7 @@
 library;
 
 export 'src/android_api.dart';
+export 'src/bytes.dart';
 export 'src/callbacks.dart';
 export 'src/errors.dart';
 export 'src/handles.dart';

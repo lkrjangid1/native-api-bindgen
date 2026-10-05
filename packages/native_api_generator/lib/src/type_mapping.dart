@@ -74,6 +74,8 @@ const jniBuiltinTypes = <String, (String, int)>{
   'java.lang.Double': ('jni\$.JDouble', 0),
   'java.lang.Float': ('jni\$.JFloat', 0),
   'java.lang.Number': ('jni\$.JNumber', 0),
+  // Direct buffers expose their memory without copying (`asUint8List`).
+  'java.nio.ByteBuffer': ('jni\$.JByteBuffer', 0),
 };
 
 /// Resolves the Dart representation of generated native types.
@@ -285,7 +287,12 @@ final class TsJsiType {
     this.isLong = false,
     this.isOpaque = false,
     this.arrayDepth = 0,
+    this.isBytes = false,
   });
+
+  /// Java `byte[]`: `Uint8Array` in TypeScript (one region copy per call,
+  /// through an `ArrayBuffer`).
+  final bool isBytes;
 
   /// TypeScript type without `| null`, e.g. `number`, `string`,
   /// `android_net.Uri`, `number[]`.
@@ -350,6 +357,10 @@ final class TsJsiTypeMapper {
           _ => const TsJsiType(tsType: 'number', isPrimitive: true),
         };
       case ArrayTypeRef(:final component):
+        if (component is PrimitiveTypeRef &&
+            component.kind == PrimitiveKind.byte) {
+          return const TsJsiType(tsType: 'Uint8Array', isBytes: true);
+        }
         if (component is PrimitiveTypeRef) {
           final e = map(component);
           return TsJsiType(tsType: '${e.tsType}[]');

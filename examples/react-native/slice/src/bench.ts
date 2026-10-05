@@ -4,8 +4,10 @@
  */
 import { Platform } from 'react-native';
 
-import { Bundle, Uri } from '../native-api-bindings';
+import { Arrays, Bundle, Uri } from '../native-api-bindings';
 import {
+  bytesFromNSData,
+  nsDataFromBytes,
   NSFileManager,
   NSProcessInfo,
   UIView,
@@ -19,6 +21,13 @@ function nsPerCall(n: number, f: () => unknown): number {
   const t0 = performance.now();
   for (let i = 0; i < n; i++) f();
   return Math.round(((performance.now() - t0) * 1e6) / n);
+}
+
+function usPerCall(n: number, f: () => unknown): number {
+  f();
+  const t0 = performance.now();
+  for (let i = 0; i < n; i++) f();
+  return Math.round(((performance.now() - t0) * 1e3) / n);
 }
 
 async function usPerAsyncCall(
@@ -42,6 +51,16 @@ export async function benchmarks(): Promise<Record<string, number>> {
     const uri = Uri.parse('https://example.com/path?q=1');
     r.jsi_jni_string_return_ns = nsPerCall(20000, () => uri?.toString());
     r.promise_variant_us = await usPerAsyncCall(2000, () => bundle.sizeAsync());
+    for (const [label, size] of [['1mb', 1 << 20], ['16mb', 16 << 20]] as const) {
+      const data = new Uint8Array(size).fill(7);
+      r[`jsi_jni_bytes_roundtrip_${label}_us`] = usPerCall(10, () => {
+        if (Arrays.copyOf(data, size).length !== size) throw new Error('size');
+      });
+    }
+    const plain = Array.from(new Uint8Array(1 << 20).fill(7));
+    r.jsi_jni_number_array_roundtrip_1mb_us = usPerCall(3, () => {
+      if (Arrays.copyOf(plain, plain.length).length !== plain.length) throw new Error('size');
+    });
   } else {
     const info = NSProcessInfo.processInfo;
     r.jsi_objc_getter_int_ns = nsPerCall(
@@ -57,6 +76,14 @@ export async function benchmarks(): Promise<Record<string, number>> {
     r.jsi_objc_uikit_struct_roundtrip_ns = nsPerCall(10000, () => {
       view.frame = view.frame;
     });
+    for (const [label, size] of [['1mb', 1 << 20], ['16mb', 16 << 20]] as const) {
+      const data = new Uint8Array(size).fill(7);
+      r[`jsi_objc_nsdata_roundtrip_${label}_us`] = usPerCall(10, () => {
+        const d = nsDataFromBytes(data);
+        if (bytesFromNSData(d).length !== size) throw new Error('size');
+        d.release();
+      });
+    }
     const fm = NSFileManager.defaultManager;
     r.promise_variant_us = await usPerAsyncCall(2000, () =>
       fm.fileExistsAtPathAsync('/'),

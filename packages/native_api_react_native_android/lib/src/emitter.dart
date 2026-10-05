@@ -359,7 +359,9 @@ final class RnJsiEmitter {
 
   String _paramType(TypeRef t, TsJsiType m) {
     String base;
-    if (m.isPrimitive || m.wrapClass == null) {
+    if (m.isBytes) {
+      base = 'Uint8Array | number[]';
+    } else if (m.isPrimitive || m.wrapClass == null) {
       base = m.tsType;
     } else if (m.arrayDepth > 0) {
       base = m.tsType.replaceFirst(
@@ -384,6 +386,7 @@ final class RnJsiEmitter {
   }
 
   String _argExpr(String name, TypeRef t, TsJsiType m) {
+    if (m.isBytes) return '\$rt.bytesArg($name)';
     if (m.isPrimitive || m.wrapClass == null) return name;
     if (m.arrayDepth > 0) return '\$rt.hArray($name)';
     return '\$rt.h($name)';
@@ -392,6 +395,11 @@ final class RnJsiEmitter {
   String _convertReturn(String raw, TypeRef t, TsJsiType m, String symbol) {
     final nonnull = t.nullability == Nullability.nonnull;
     if (m.isPrimitive) return '$raw as ${m.tsType}';
+    if (m.isBytes) {
+      return nonnull
+          ? "nn(\$rt.bytesResult($raw), '$symbol')"
+          : '\$rt.bytesResult($raw)';
+    }
     if (m.wrapClass == null) {
       return nonnull
           ? "nn($raw as ${m.tsType} | null, '$symbol')"

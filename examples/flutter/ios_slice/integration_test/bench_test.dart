@@ -54,6 +54,31 @@ void main() {
       view.frame = view.frame;
     });
 
+    // NSData <-> Uint8List (TRD §36): one native copy in, a zero-copy view
+    // out; objective_c's toList() copies.
+    double msPer(int n, void Function() f) {
+      f();
+      final sw = Stopwatch()..start();
+      for (var i = 0; i < n; i++) {
+        f();
+      }
+      return sw.elapsedMicroseconds / 1000 / n;
+    }
+
+    for (final (label, size) in [('1mb', 1 << 20), ('16mb', 16 << 20)]) {
+      final data = Uint8List(size)..fillRange(0, size, 7);
+      results['nsdata_from_bytes_${label}_ms'] = msPer(10, () {
+        ios.nsDataFromBytes(data).ref.release();
+      });
+      final d = ios.nsDataFromBytes(data);
+      results['nsdata_view_${label}_ms'] = msPer(10, () {
+        if (ios.nsDataView(d).length != size) throw StateError('size');
+      });
+      results['nsdata_tolist_copy_${label}_ms'] = msPer(10, () {
+        if (d.toList().length != size) throw StateError('size');
+      });
+    }
+
     const channel = MethodChannel('nab/bench');
     results['methodchannel_noop_us'] = await usPerAsyncCall(
       5000,

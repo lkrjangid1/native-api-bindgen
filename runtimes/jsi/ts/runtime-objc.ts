@@ -22,6 +22,9 @@ interface ObjCRoot {
   iosVersion(): string;
   string(h: Handle): string | null;
   log(message: string): void;
+  dataFromBytes(buffer: ArrayBuffer): Handle;
+  bytesOfData(h: Handle): ArrayBuffer;
+  arrayItems(h: Handle): Handle[];
   /** Object implementing [protocols]; [table] maps selectors to [codes, function]. */
   implementProtocols(
     protocols: string[],
@@ -125,6 +128,25 @@ export class ObjCObject {
     }
     return new cls(this.$h);
   }
+}
+
+/** A new `NSData` holding a copy of [bytes]. */
+export function nsDataFromBytes(bytes: Uint8Array): ObjCObject {
+  const buffer =
+    bytes.byteOffset === 0 && bytes.byteLength === bytes.buffer.byteLength
+      ? (bytes.buffer as ArrayBuffer)
+      : (bytes.slice().buffer as ArrayBuffer);
+  return new ObjCObject(objc().dataFromBytes(buffer));
+}
+
+/** A copy of the bytes of [data] (an `NSData`). */
+export function bytesFromNSData(data: ObjCObject): Uint8Array {
+  return new Uint8Array(objc().bytesOfData(data.$h));
+}
+
+/** The elements of [array] (an `NSArray`) as a JavaScript array. */
+export function nsArrayItems(array: ObjCObject): ObjCObject[] {
+  return objc().arrayItems(array.$h).map(h => new ObjCObject(h));
 }
 
 /** Writes [message] to the unified log via NSLog (works in release builds). */

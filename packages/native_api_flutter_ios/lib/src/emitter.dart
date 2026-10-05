@@ -113,7 +113,7 @@ final class DartObjCEmitter {
       umbrella.writeln("export '${libraryPath(ns)}';");
     }
     umbrella.writeln(
-      "export 'apple/_runtime.dart' show NativeObjCError, NativeThreadingError, isMainThread;",
+      "export 'apple/_runtime.dart' show NativeObjCError, NativeThreadingError, isMainThread, nsDataView, nsDataFromBytes;",
     );
     files.add(GeneratedFile('apple.dart', umbrella.toString()));
     return GenerationOutput(
@@ -1174,9 +1174,29 @@ ${generatedHeader(module)}
 library;
 
 import 'dart:ffi' as ffi;
+import 'dart:typed_data';
 
 import 'package:ffi/ffi.dart' as pffi;
 import 'package:objective_c/objective_c.dart' as objc;
+
+/// A view of [data]'s bytes without copying. Valid only while [data] is
+/// alive and unmodified (`NSData` is immutable; do not use with
+/// `NSMutableData` that may be resized). Use `data.toList()` for a copy.
+Uint8List nsDataView(objc.NSData data) {
+  final n = data.length;
+  if (n == 0 || data.bytes.address == 0) return Uint8List(0);
+  return data.bytes.cast<ffi.Uint8>().asTypedList(n);
+}
+
+/// A new `NSData` holding a copy of [bytes] (one native copy: the buffer is
+/// handed to `NSData` with `freeWhenDone`).
+objc.NSData nsDataFromBytes(Uint8List bytes) {
+  if (bytes.isEmpty) return objc.NSData();
+  final buffer = pffi.malloc<ffi.Uint8>(bytes.length);
+  buffer.asTypedList(bytes.length).setAll(0, bytes);
+  // `dataWithBytesNoCopy:length:` takes ownership and free()s the buffer.
+  return objc.NSData.dataWithBytesNoCopy(buffer.cast(), length: bytes.length);
+}
 
 /// An Objective-C `NSError` reported through an `NSError **` out-parameter.
 final class NativeObjCError implements Exception {

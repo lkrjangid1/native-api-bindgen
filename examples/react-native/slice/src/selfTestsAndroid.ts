@@ -5,6 +5,7 @@
  */
 import {
   AndroidApi,
+  Arrays,
   Bundle,
   Greeter,
   Handler,
@@ -104,6 +105,18 @@ const tests: Array<[string, () => void | Promise<void>]> = [
         Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP,
         'flags',
       );
+    },
+  ],
+
+  [
+    'byte[] crosses as Uint8Array (and number[])',
+    () => {
+      const copy = Arrays.copyOf(new Uint8Array([1, 2, 255, 0]), 3);
+      expectEqual(copy instanceof Uint8Array, true, 'Uint8Array result');
+      expectEqual(Array.from(copy).join(), '1,2,255', 'bytes');
+      const view = new Uint8Array([9, 8, 7, 6]).subarray(1, 3);
+      expectEqual(Array.from(Arrays.copyOf(view, 2)).join(), '8,7', 'subarray');
+      expectEqual(Array.from(Arrays.copyOf([5, 6], 2)).join(), '5,6', 'number[]');
     },
   ],
 

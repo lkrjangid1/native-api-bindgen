@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:jni/jni.dart';
+import 'package:native_api_runtime/native_api_runtime.dart' as rt;
 
 /// Micro-benchmarks (TRD §35): generated JNI bindings vs. a hand-written
 /// MethodChannel doing the same work. Run in profile mode:
@@ -55,6 +56,47 @@ void main() {
       u?.toString();
       u?.release();
     });
+
+    // Byte transfers (TRD §36): Dart -> byte[] -> Arrays.copyOf -> Dart, and
+    // the same through a MethodChannel; direct ByteBuffer view (no copy).
+    double msPer(int n, void Function() f) {
+      f();
+      final sw = Stopwatch()..start();
+      for (var i = 0; i < n; i++) {
+        f();
+      }
+      return sw.elapsedMicroseconds / 1000 / n;
+    }
+
+    const bytesChannel = MethodChannel('nab/bench');
+    for (final (label, size) in [('1mb', 1 << 20), ('16mb', 16 << 20)]) {
+      final data = Uint8List(size)..fillRange(0, size, 7);
+      results['jni_bytes_roundtrip_${label}_ms'] = msPer(10, () {
+        final a = rt.byteArrayOf(data);
+        final copy = Arrays.copyOf(a, size);
+        final back = rt.bytesOf(copy);
+        if (back.length != size) throw StateError('size');
+        a.release();
+        copy.release();
+      });
+      final channelMs = <int>[];
+      for (var i = 0; i < 10; i++) {
+        final sw = Stopwatch()..start();
+        final back = await bytesChannel.invokeMethod<Uint8List>(
+          'copyBytes',
+          data,
+        );
+        if (back!.length != size) throw StateError('size');
+        channelMs.add(sw.elapsedMicroseconds);
+      }
+      results['methodchannel_bytes_roundtrip_${label}_ms'] =
+          median(channelMs) / 1000;
+      results['jni_direct_buffer_fill_${label}_ms'] = msPer(10, () {
+        final b = rt.directBufferOf(data);
+        if (b.asUint8List().length != size) throw StateError('size');
+        b.release();
+      });
+    }
 
     const channel = MethodChannel('nab/bench');
     results['methodchannel_noop_us'] = await usPerAsyncCall(

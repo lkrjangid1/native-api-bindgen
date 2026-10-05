@@ -502,6 +502,14 @@ id callBlock(const std::shared_ptr<BlockTarget>& target, std::vector<id> args) {
   return nil;
 }
 
+/// Owns the bytes of an ArrayBuffer copied from an NSData.
+struct DataBuffer : jsi::MutableBuffer {
+  explicit DataBuffer(std::size_t n) : bytes(n) {}
+  std::size_t size() const override { return bytes.size(); }
+  uint8_t* data() override { return bytes.data(); }
+  std::vector<uint8_t> bytes;
+};
+
 // --------------------------------------------------------------- protocols
 
 /// JS implementation of protocol methods: selector -> [codes, function].
@@ -1012,6 +1020,38 @@ class Root : public jsi::HostObject {
         if (c == 0) typeError(rt, "log(message)");
         NSLog(@"%@", toNSString(rt, a[0]) ?: @"");
         return V::undefined();
+      });
+    }
+    if (n == "dataFromBytes") {
+      // dataFromBytes(ArrayBuffer) -> NSData handle (one copy).
+      return fn(rt, "dataFromBytes", [](jsi::Runtime& rt, const V&, const V* a, std::size_t c) -> V {
+        if (c == 0 || !a[0].isObject() || !a[0].getObject(rt).isArrayBuffer(rt)) {
+          typeError(rt, "dataFromBytes(ArrayBuffer)");
+        }
+        auto buf = a[0].getObject(rt).getArrayBuffer(rt);
+        return wrap(rt, [NSData dataWithBytes:buf.data(rt) length:buf.size(rt)]);
+      });
+    }
+    if (n == "bytesOfData") {
+      // bytesOfData(NSData handle) -> ArrayBuffer (one copy).
+      return fn(rt, "bytesOfData", [](jsi::Runtime& rt, const V&, const V* a, std::size_t c) -> V {
+        id o = arg(rt, a, c, 0);
+        if (o == nil || ![o isKindOfClass:[NSData class]]) typeError(rt, "bytesOfData: not an NSData");
+        NSData* d = (NSData*)o;
+        auto buf = std::make_shared<DataBuffer>(d.length);
+        if (d.length > 0) [d getBytes:buf->bytes.data() length:d.length];
+        return jsi::ArrayBuffer(rt, std::move(buf));
+      });
+    }
+    if (n == "arrayItems") {
+      // arrayItems(NSArray handle) -> JS array of handles.
+      return fn(rt, "arrayItems", [](jsi::Runtime& rt, const V&, const V* a, std::size_t c) -> V {
+        id o = arg(rt, a, c, 0);
+        if (o == nil || ![o isKindOfClass:[NSArray class]]) typeError(rt, "arrayItems: not an NSArray");
+        NSArray* items = (NSArray*)o;
+        jsi::Array out(rt, items.count);
+        for (NSUInteger i = 0; i < items.count; i++) out.setValueAtIndex(rt, i, wrap(rt, items[i]));
+        return jsi::Value(rt, out);
       });
     }
     if (n == "implementProtocols") {

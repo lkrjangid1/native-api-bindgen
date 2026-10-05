@@ -2,8 +2,11 @@ import 'dart:async';
 
 import 'package:android_slice/src/generated/bindings.dart';
 import 'package:android_slice/src/slice.dart';
+import 'dart:typed_data';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:native_api_runtime/native_api_runtime.dart' as rt;
 import 'package:jni/jni.dart';
 import 'package:native_api_runtime/native_api_runtime.dart';
 
@@ -47,6 +50,16 @@ void main() {
     expect(flags.has(Intent$Flag.FLAG_ACTIVITY_NEW_TASK), isTrue);
     expect(flags.has(Intent$Flag.FLAG_ACTIVITY_CLEAR_TASK), isFalse);
     expect(Context$Service.ALARM_SERVICE, Context.ALARM_SERVICE);
+  });
+
+  test('byte[] and direct ByteBuffer transfers', () {
+    final data = Uint8List.fromList([1, 2, 255, 0, 128]);
+    final a = rt.byteArrayOf(data);
+    final copy = Arrays.copyOf(a, 3);
+    expect(rt.bytesOf(copy), [1, 2, 255]);
+    final buffer = rt.directBufferOf(data);
+    expect(buffer.isDirect, isTrue);
+    expect(buffer.asUint8List(), data);
   });
 
   test('Bean properties delegate to the native getters', () {

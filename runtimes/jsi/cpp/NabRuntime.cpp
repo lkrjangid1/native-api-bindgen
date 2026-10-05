@@ -295,7 +295,23 @@ jlong toLong(jsi::Runtime& rt, const jsi::Value& v) {
 
 jobject toJavaObject(jsi::Runtime& rt, JNIEnv* e, const jsi::Value& v, const std::string& desc);
 
+/// Owns the bytes of an ArrayBuffer created from a Java byte[].
+struct ByteVectorBuffer : jsi::MutableBuffer {
+  explicit ByteVectorBuffer(std::size_t n) : bytes(n) {}
+  std::size_t size() const override { return bytes.size(); }
+  uint8_t* data() override { return bytes.data(); }
+  std::vector<uint8_t> bytes;
+};
+
 jarray toJavaArray(jsi::Runtime& rt, JNIEnv* e, const jsi::Value& v, const std::string& desc) {
+  if (desc == "[B" && v.isObject() && v.getObject(rt).isArrayBuffer(rt)) {
+    // Fast path: one region copy from the ArrayBuffer.
+    auto buf = v.getObject(rt).getArrayBuffer(rt);
+    const auto n = static_cast<jsize>(buf.size(rt));
+    auto a = e->NewByteArray(n);
+    if (n > 0) e->SetByteArrayRegion(a, 0, n, reinterpret_cast<const jbyte*>(buf.data(rt)));
+    return a;
+  }
   if (!v.isObject() || !v.getObject(rt).isArray(rt)) {
     if (auto h = handleOf(rt, v)) return static_cast<jarray>(e->NewLocalRef(h->ref(rt)));
     typeError(rt, "expected array for " + desc);
@@ -395,6 +411,12 @@ jsi::Value objectToJs(jsi::Runtime& rt, JNIEnv* e, jobject o, const std::string&
   if (desc[0] != '[') return wrapObject(rt, e, o);
   auto a = static_cast<jarray>(o);
   const jsize n = e->GetArrayLength(a);
+  if (desc == "[B") {
+    // byte[] -> ArrayBuffer (one region copy; the TS side views it as Uint8Array).
+    auto buf = std::make_shared<ByteVectorBuffer>(static_cast<std::size_t>(n));
+    if (n > 0) e->GetByteArrayRegion(static_cast<jbyteArray>(a), 0, n, reinterpret_cast<jbyte*>(buf->bytes.data()));
+    return jsi::ArrayBuffer(rt, std::move(buf));
+  }
   jsi::Array out(rt, static_cast<std::size_t>(n));
   const char el = desc[1];
 #define NAB_FROM_ARRAY(CH, JT, GET, CONV)                         \

@@ -55,6 +55,22 @@ iOS (iPhone 17 simulator, iOS 26.4), JSON: [`perf-2026-10-05-rn-ios.json`](perf-
 
 No hand-written React Native module was benchmarked for comparison.
 
+## Byte transfers (TRD §36) — single runs
+
+JSON: [`bytes-2026-10-05.json`](bytes-2026-10-05.json). Each value is the mean of 10 iterations after one warm-up (a single run, not a median of three).
+
+| Path | 1 MB | 16 MB |
+|---|---|---|
+| Flutter Android (profile, emulator): `Uint8List` → `byte[]` → `Arrays.copyOf` → `Uint8List` (`byteArrayOf` / `bytesOf`) | 1.80 ms | 32.9 ms |
+| Same through a hand-written MethodChannel | 9.02 ms | 53.8 ms |
+| Flutter Android: fill a direct `ByteBuffer` (`directBufferOf`, then a zero-copy `asUint8List` view) | 2.33 ms | 5.99 ms |
+| Flutter iOS (debug, simulator): `nsDataFromBytes` (one copy) | 0.076 ms | 2.47 ms |
+| Flutter iOS: `nsDataView` (zero-copy view) | 0.0002 ms | 0.0002 ms |
+| Flutter iOS: `NSData.toList()` (copy) | 0.21 ms | 2.08 ms |
+| React Native Android (release, emulator): `Uint8Array` → `byte[]` → `Arrays.copyOf` → `Uint8Array` | 1.61 ms | 30.9 ms |
+| React Native Android: same with `number[]` (element by element) | 99.6 ms | — |
+| React Native iOS (release, simulator): `nsDataFromBytes` + `bytesFromNSData` | 0.153 ms | 1.75 ms |
+
 ## Not measured yet
 
-Physical devices; release-mode Flutter on iOS; byte buffers; callback latency on React Native; memory per handle.
+Physical devices; release-mode Flutter on iOS; callback latency on React Native; memory per handle.

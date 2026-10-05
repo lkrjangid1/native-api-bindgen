@@ -1,4 +1,5 @@
 import 'dart:isolate';
+import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
@@ -42,6 +43,14 @@ void main() {
       expect(name, isNotEmpty);
     },
   );
+
+  test('NSData <-> Uint8List', () {
+    final bytes = Uint8List.fromList([1, 2, 255, 0]);
+    final d = ios.nsDataFromBytes(bytes);
+    expect(d.length, 4);
+    expect(ios.nsDataView(d), bytes);
+    expect(d.toList(), bytes);
+  });
 
   group('Objective-C blocks', () {
     test('NS_NOESCAPE block runs synchronously', () {
