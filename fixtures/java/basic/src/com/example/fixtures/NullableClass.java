@@ -1,0 +1,21 @@
+package com.example.fixtures;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+/** Nullability annotations on parameters, returns and fields. */
+public class NullableClass {
+  @Nullable public String maybe;
+  @NonNull public String definitely = "";
+  public String unknown;
+
+  public NullableClass() {}
+
+  @NonNull
+  public String describe(@Nullable String prefix, @NonNull Object value, String unannotated) {
+    return "";
+  }
+
+  @Nullable
+  public static NullableClass find(@NonNull String key) { return null; }
+}

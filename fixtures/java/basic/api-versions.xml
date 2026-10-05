@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Synthetic availability list for the fixtures (written for this project). -->
+<api version="3">
+	<class name="com/example/fixtures/ApiLevelClass" since="5">
+		<extends name="java/lang/Object"/>
+		<method name="&lt;init>()V"/>
+		<method name="since1()V" since="1"/>
+		<method name="since30()V" since="30" deprecated="35"/>
+		<method name="since36minor()V" since="36.1"/>
+	</class>
+	<class name="com/example/fixtures/AnnotatedClass" since="1">
+		<extends name="java/lang/Object"/>
+		<method name="&lt;init>()V"/>
+		<method name="render()V"/>
+		<method name="capture(I)V" since="23"/>
+		<method name="old()V" deprecated="30"/>
+		<field name="MODE_A"/>
+		<field name="MODE_B"/>
+		<field name="BIG"/>
+		<field name="HALF"/>
+		<field name="TINY"/>
+		<field name="LETTER"/>
+		<field name="ENABLED"/>
+		<field name="ACTION"/>
+		<field name="UNICODE"/>
+		<field name="counter"/>
+	</class>
+</api>

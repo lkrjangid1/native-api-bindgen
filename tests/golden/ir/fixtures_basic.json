@@ -1,0 +1,2786 @@
+{
+  "generatorVersion": "0.1.0-dev.1",
+  "platform": "android",
+  "schemaVersion": 1,
+  "sdkVersion": "fixture",
+  "types": [
+    {
+      "availability": {
+        "introduced": "1"
+      },
+      "fields": [
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "constantValue": {
+            "literal": "com.example.ACTION \"quoted\" $dollar \\slash",
+            "type": "string"
+          },
+          "id": "com.example.fixtures.AnnotatedClass#ACTION",
+          "modifiers": [
+            "final",
+            "public",
+            "static"
+          ],
+          "name": "ACTION",
+          "nativeDescriptor": "Ljava/lang/String;",
+          "support": "supported",
+          "type": {
+            "kind": "declared",
+            "name": "java.lang.String",
+            "nullability": "nonnull"
+          },
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "constantValue": {
+            "literal": "9223372036854775807",
+            "type": "long"
+          },
+          "id": "com.example.fixtures.AnnotatedClass#BIG",
+          "modifiers": [
+            "final",
+            "public",
+            "static"
+          ],
+          "name": "BIG",
+          "nativeDescriptor": "J",
+          "support": "supported",
+          "type": {
+            "kind": "primitive",
+            "name": "long"
+          },
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "constantValue": {
+            "literal": "true",
+            "type": "boolean"
+          },
+          "id": "com.example.fixtures.AnnotatedClass#ENABLED",
+          "modifiers": [
+            "final",
+            "public",
+            "static"
+          ],
+          "name": "ENABLED",
+          "nativeDescriptor": "Z",
+          "support": "supported",
+          "type": {
+            "kind": "primitive",
+            "name": "boolean"
+          },
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "constantValue": {
+            "literal": "0.5",
+            "type": "float"
+          },
+          "id": "com.example.fixtures.AnnotatedClass#HALF",
+          "modifiers": [
+            "final",
+            "public",
+            "static"
+          ],
+          "name": "HALF",
+          "nativeDescriptor": "F",
+          "support": "supported",
+          "type": {
+            "kind": "primitive",
+            "name": "float"
+          },
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "constantValue": {
+            "literal": "120",
+            "type": "char"
+          },
+          "id": "com.example.fixtures.AnnotatedClass#LETTER",
+          "modifiers": [
+            "final",
+            "public",
+            "static"
+          ],
+          "name": "LETTER",
+          "nativeDescriptor": "C",
+          "support": "supported",
+          "type": {
+            "kind": "primitive",
+            "name": "char"
+          },
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "constantValue": {
+            "literal": "1",
+            "type": "int"
+          },
+          "id": "com.example.fixtures.AnnotatedClass#MODE_A",
+          "modifiers": [
+            "final",
+            "public",
+            "static"
+          ],
+          "name": "MODE_A",
+          "nativeDescriptor": "I",
+          "support": "supported",
+          "type": {
+            "kind": "primitive",
+            "name": "int"
+          },
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "constantValue": {
+            "literal": "2",
+            "type": "int"
+          },
+          "id": "com.example.fixtures.AnnotatedClass#MODE_B",
+          "modifiers": [
+            "final",
+            "public",
+            "static"
+          ],
+          "name": "MODE_B",
+          "nativeDescriptor": "I",
+          "support": "supported",
+          "type": {
+            "kind": "primitive",
+            "name": "int"
+          },
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "constantValue": {
+            "literal": "1e-300",
+            "type": "double"
+          },
+          "id": "com.example.fixtures.AnnotatedClass#TINY",
+          "modifiers": [
+            "final",
+            "public",
+            "static"
+          ],
+          "name": "TINY",
+          "nativeDescriptor": "D",
+          "support": "supported",
+          "type": {
+            "kind": "primitive",
+            "name": "double"
+          },
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "constantValue": {
+            "literal": "café ☃",
+            "type": "string"
+          },
+          "id": "com.example.fixtures.AnnotatedClass#UNICODE",
+          "modifiers": [
+            "final",
+            "public",
+            "static"
+          ],
+          "name": "UNICODE",
+          "nativeDescriptor": "Ljava/lang/String;",
+          "support": "supported",
+          "type": {
+            "kind": "declared",
+            "name": "java.lang.String",
+            "nullability": "nonnull"
+          },
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.AnnotatedClass#counter",
+          "modifiers": [
+            "public",
+            "static"
+          ],
+          "name": "counter",
+          "nativeDescriptor": "I",
+          "support": "supported",
+          "type": {
+            "kind": "primitive",
+            "name": "int"
+          },
+          "visibility": "public"
+        }
+      ],
+      "id": "com.example.fixtures.AnnotatedClass",
+      "kind": "classType",
+      "methods": [
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.AnnotatedClass#<init>()",
+          "kind": "constructor",
+          "modifiers": [
+            "public"
+          ],
+          "name": "<init>",
+          "nativeDescriptor": "()V",
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "annotations": [
+            {
+              "classification": "preservable",
+              "source": "classfile-invisible",
+              "type": "androidx.annotation.RequiresPermission",
+              "values": {
+                "anyOf": "{android.permission.CAMERA, android.permission.RECORD_AUDIO}"
+              }
+            },
+            {
+              "classification": "semantic",
+              "source": "classfile-invisible",
+              "type": "androidx.annotation.WorkerThread"
+            }
+          ],
+          "availability": {
+            "introduced": "23"
+          },
+          "id": "com.example.fixtures.AnnotatedClass#capture(int)",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "capture",
+          "nativeDescriptor": "(I)V",
+          "parameters": [
+            {
+              "name": "mode",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "primitive",
+                "name": "int"
+              }
+            }
+          ],
+          "permissions": [
+            "anyOf:android.permission.CAMERA",
+            "anyOf:android.permission.RECORD_AUDIO"
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "threading": "workerThread",
+          "visibility": "public"
+        },
+        {
+          "annotations": [
+            {
+              "classification": "semantic",
+              "source": "classfile",
+              "type": "java.lang.Deprecated"
+            }
+          ],
+          "availability": {
+            "deprecated": "30",
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.AnnotatedClass#old()",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "old",
+          "nativeDescriptor": "()V",
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "annotations": [
+            {
+              "classification": "semantic",
+              "source": "classfile-invisible",
+              "type": "androidx.annotation.MainThread"
+            }
+          ],
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.AnnotatedClass#render()",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "render",
+          "nativeDescriptor": "()V",
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "threading": "mainThread",
+          "visibility": "public"
+        }
+      ],
+      "modifiers": [
+        "public"
+      ],
+      "name": "AnnotatedClass",
+      "namespace": "com.example.fixtures",
+      "provenance": {
+        "artifactEntry": "com/example/fixtures/AnnotatedClass.class",
+        "localArtifact": "fixtures",
+        "platform": "android",
+        "sdkVersion": "fixture",
+        "sourceKind": "fixture"
+      },
+      "superClass": {
+        "kind": "declared",
+        "name": "java.lang.Object",
+        "nullability": "unknown"
+      },
+      "support": "supported",
+      "visibility": "public"
+    },
+    {
+      "availability": {
+        "introduced": "5"
+      },
+      "id": "com.example.fixtures.ApiLevelClass",
+      "kind": "classType",
+      "methods": [
+        {
+          "availability": {
+            "introduced": "5"
+          },
+          "id": "com.example.fixtures.ApiLevelClass#<init>()",
+          "kind": "constructor",
+          "modifiers": [
+            "public"
+          ],
+          "name": "<init>",
+          "nativeDescriptor": "()V",
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "5"
+          },
+          "id": "com.example.fixtures.ApiLevelClass#since1()",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "since1",
+          "nativeDescriptor": "()V",
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "deprecated": "35",
+            "introduced": "30"
+          },
+          "id": "com.example.fixtures.ApiLevelClass#since30()",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "since30",
+          "nativeDescriptor": "()V",
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "36.1"
+          },
+          "id": "com.example.fixtures.ApiLevelClass#since36minor()",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "since36minor",
+          "nativeDescriptor": "()V",
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "5"
+          },
+          "diagnostics": [
+            {
+              "code": "E012",
+              "label": "AVAILABILITY_MISMATCH",
+              "message": "Not listed in api-versions.xml (inherited from a non-public superclass); availability inferred from the declaring class",
+              "severity": "info",
+              "symbolId": "com.example.fixtures.ApiLevelClass#unlisted()"
+            }
+          ],
+          "id": "com.example.fixtures.ApiLevelClass#unlisted()",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "unlisted",
+          "nativeDescriptor": "()V",
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "partial",
+          "visibility": "public"
+        }
+      ],
+      "modifiers": [
+        "public"
+      ],
+      "name": "ApiLevelClass",
+      "namespace": "com.example.fixtures",
+      "provenance": {
+        "artifactEntry": "com/example/fixtures/ApiLevelClass.class",
+        "localArtifact": "fixtures",
+        "platform": "android",
+        "sdkVersion": "fixture",
+        "sourceKind": "fixture"
+      },
+      "superClass": {
+        "kind": "declared",
+        "name": "java.lang.Object",
+        "nullability": "unknown"
+      },
+      "support": "supported",
+      "visibility": "public"
+    },
+    {
+      "availability": {
+        "introduced": "1"
+      },
+      "id": "com.example.fixtures.AsyncClass",
+      "kind": "classType",
+      "methods": [
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.AsyncClass#<init>()",
+          "kind": "constructor",
+          "modifiers": [
+            "public"
+          ],
+          "name": "<init>",
+          "nativeDescriptor": "()V",
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.AsyncClass#load(java.lang.String,com.example.fixtures.CallbackInterface)",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "load",
+          "nativeDescriptor": "(Ljava/lang/String;Lcom/example/fixtures/CallbackInterface;)V",
+          "parameters": [
+            {
+              "name": "key",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "declared",
+                "name": "java.lang.String",
+                "nullability": "unknown"
+              }
+            },
+            {
+              "name": "callback",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "declared",
+                "name": "com.example.fixtures.CallbackInterface",
+                "nullability": "unknown"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        }
+      ],
+      "modifiers": [
+        "public"
+      ],
+      "name": "AsyncClass",
+      "namespace": "com.example.fixtures",
+      "provenance": {
+        "artifactEntry": "com/example/fixtures/AsyncClass.class",
+        "localArtifact": "fixtures",
+        "platform": "android",
+        "sdkVersion": "fixture",
+        "sourceKind": "fixture"
+      },
+      "superClass": {
+        "kind": "declared",
+        "name": "java.lang.Object",
+        "nullability": "unknown"
+      },
+      "support": "supported",
+      "visibility": "public"
+    },
+    {
+      "availability": {
+        "introduced": "1"
+      },
+      "id": "com.example.fixtures.CallbackInterface",
+      "kind": "interfaceType",
+      "methods": [
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.CallbackInterface#label()",
+          "kind": "method",
+          "modifiers": [
+            "default",
+            "public"
+          ],
+          "name": "label",
+          "nativeDescriptor": "()Ljava/lang/String;",
+          "returnType": {
+            "kind": "declared",
+            "name": "java.lang.String",
+            "nullability": "unknown"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.CallbackInterface#noop()",
+          "kind": "method",
+          "modifiers": [
+            "public",
+            "static"
+          ],
+          "name": "noop",
+          "nativeDescriptor": "()Lcom/example/fixtures/CallbackInterface;",
+          "returnType": {
+            "kind": "declared",
+            "name": "com.example.fixtures.CallbackInterface",
+            "nullability": "unknown"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.CallbackInterface#onEvent(java.lang.String,int)",
+          "kind": "method",
+          "modifiers": [
+            "abstract",
+            "public"
+          ],
+          "name": "onEvent",
+          "nativeDescriptor": "(Ljava/lang/String;I)V",
+          "parameters": [
+            {
+              "annotations": [
+                {
+                  "classification": "semantic",
+                  "source": "classfile-invisible",
+                  "type": "androidx.annotation.NonNull"
+                }
+              ],
+              "name": "p0",
+              "nameSource": "synthesized",
+              "type": {
+                "kind": "declared",
+                "name": "java.lang.String",
+                "nullability": "nonnull"
+              }
+            },
+            {
+              "name": "p1",
+              "nameSource": "synthesized",
+              "type": {
+                "kind": "primitive",
+                "name": "int"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.CallbackInterface#shouldContinue()",
+          "kind": "method",
+          "modifiers": [
+            "abstract",
+            "public"
+          ],
+          "name": "shouldContinue",
+          "nativeDescriptor": "()Z",
+          "returnType": {
+            "kind": "primitive",
+            "name": "boolean"
+          },
+          "support": "supported",
+          "visibility": "public"
+        }
+      ],
+      "modifiers": [
+        "public"
+      ],
+      "name": "CallbackInterface",
+      "namespace": "com.example.fixtures",
+      "provenance": {
+        "artifactEntry": "com/example/fixtures/CallbackInterface.class",
+        "localArtifact": "fixtures",
+        "platform": "android",
+        "sdkVersion": "fixture",
+        "sourceKind": "fixture"
+      },
+      "support": "supported",
+      "visibility": "public"
+    },
+    {
+      "annotations": [
+        {
+          "classification": "semantic",
+          "source": "classfile",
+          "type": "java.lang.Deprecated"
+        }
+      ],
+      "availability": {
+        "introduced": "1"
+      },
+      "id": "com.example.fixtures.DeprecatedClass",
+      "kind": "classType",
+      "methods": [
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.DeprecatedClass#<init>()",
+          "kind": "constructor",
+          "modifiers": [
+            "public"
+          ],
+          "name": "<init>",
+          "nativeDescriptor": "()V",
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.DeprecatedClass#run()",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "run",
+          "nativeDescriptor": "()V",
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        }
+      ],
+      "modifiers": [
+        "public"
+      ],
+      "name": "DeprecatedClass",
+      "namespace": "com.example.fixtures",
+      "provenance": {
+        "artifactEntry": "com/example/fixtures/DeprecatedClass.class",
+        "localArtifact": "fixtures",
+        "platform": "android",
+        "sdkVersion": "fixture",
+        "sourceKind": "fixture"
+      },
+      "superClass": {
+        "kind": "declared",
+        "name": "java.lang.Object",
+        "nullability": "unknown"
+      },
+      "support": "supported",
+      "visibility": "public"
+    },
+    {
+      "availability": {
+        "introduced": "1"
+      },
+      "fields": [
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.EnumClass#FIRST",
+          "modifiers": [
+            "final",
+            "public",
+            "static"
+          ],
+          "name": "FIRST",
+          "nativeDescriptor": "Lcom/example/fixtures/EnumClass;",
+          "support": "supported",
+          "type": {
+            "kind": "declared",
+            "name": "com.example.fixtures.EnumClass",
+            "nullability": "unknown"
+          },
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.EnumClass#SECOND",
+          "modifiers": [
+            "final",
+            "public",
+            "static"
+          ],
+          "name": "SECOND",
+          "nativeDescriptor": "Lcom/example/fixtures/EnumClass;",
+          "support": "supported",
+          "type": {
+            "kind": "declared",
+            "name": "com.example.fixtures.EnumClass",
+            "nullability": "unknown"
+          },
+          "visibility": "public"
+        }
+      ],
+      "id": "com.example.fixtures.EnumClass",
+      "kind": "enumType",
+      "methods": [
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.EnumClass#code()",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "code",
+          "nativeDescriptor": "()I",
+          "returnType": {
+            "kind": "primitive",
+            "name": "int"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.EnumClass#valueOf(java.lang.String)",
+          "kind": "method",
+          "modifiers": [
+            "public",
+            "static"
+          ],
+          "name": "valueOf",
+          "nativeDescriptor": "(Ljava/lang/String;)Lcom/example/fixtures/EnumClass;",
+          "parameters": [
+            {
+              "name": "name",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "declared",
+                "name": "java.lang.String",
+                "nullability": "unknown"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "declared",
+            "name": "com.example.fixtures.EnumClass",
+            "nullability": "unknown"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.EnumClass#values()",
+          "kind": "method",
+          "modifiers": [
+            "public",
+            "static"
+          ],
+          "name": "values",
+          "nativeDescriptor": "()[Lcom/example/fixtures/EnumClass;",
+          "returnType": {
+            "component": {
+              "kind": "declared",
+              "name": "com.example.fixtures.EnumClass",
+              "nullability": "unknown"
+            },
+            "kind": "array",
+            "nullability": "unknown"
+          },
+          "support": "supported",
+          "visibility": "public"
+        }
+      ],
+      "modifiers": [
+        "final",
+        "public"
+      ],
+      "name": "EnumClass",
+      "namespace": "com.example.fixtures",
+      "provenance": {
+        "artifactEntry": "com/example/fixtures/EnumClass.class",
+        "localArtifact": "fixtures",
+        "platform": "android",
+        "sdkVersion": "fixture",
+        "sourceKind": "fixture"
+      },
+      "superClass": {
+        "kind": "declared",
+        "name": "java.lang.Enum",
+        "nullability": "unknown",
+        "typeArguments": [
+          {
+            "kind": "declared",
+            "name": "com.example.fixtures.EnumClass",
+            "nullability": "unknown"
+          }
+        ]
+      },
+      "support": "supported",
+      "visibility": "public"
+    },
+    {
+      "availability": {
+        "introduced": "1"
+      },
+      "id": "com.example.fixtures.GenericClass",
+      "kind": "classType",
+      "methods": [
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.GenericClass#<init>(java.lang.CharSequence)",
+          "kind": "constructor",
+          "modifiers": [
+            "public"
+          ],
+          "name": "<init>",
+          "nativeDescriptor": "(Ljava/lang/CharSequence;)V",
+          "parameters": [
+            {
+              "name": "value",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "typeVariable",
+                "name": "T",
+                "nullability": "unknown"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.GenericClass#first(java.util.List)",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "first",
+          "nativeDescriptor": "(Ljava/util/List;)Ljava/lang/Object;",
+          "parameters": [
+            {
+              "name": "items",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "declared",
+                "name": "java.util.List",
+                "nullability": "unknown",
+                "typeArguments": [
+                  {
+                    "kind": "typeVariable",
+                    "name": "E",
+                    "nullability": "unknown"
+                  }
+                ]
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "typeVariable",
+            "name": "E",
+            "nullability": "unknown"
+          },
+          "support": "supported",
+          "typeParameters": [
+            {
+              "bounds": [
+                {
+                  "kind": "declared",
+                  "name": "java.lang.Object",
+                  "nullability": "unknown"
+                }
+              ],
+              "name": "E"
+            }
+          ],
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.GenericClass#get()",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "get",
+          "nativeDescriptor": "()Ljava/lang/CharSequence;",
+          "returnType": {
+            "kind": "typeVariable",
+            "name": "T",
+            "nullability": "unknown"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.GenericClass#index(java.util.List,java.util.List)",
+          "kind": "method",
+          "modifiers": [
+            "public",
+            "static"
+          ],
+          "name": "index",
+          "nativeDescriptor": "(Ljava/util/List;Ljava/util/List;)Ljava/util/Map;",
+          "parameters": [
+            {
+              "name": "keys",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "declared",
+                "name": "java.util.List",
+                "nullability": "unknown",
+                "typeArguments": [
+                  {
+                    "bound": {
+                      "kind": "typeVariable",
+                      "name": "K",
+                      "nullability": "unknown"
+                    },
+                    "kind": "wildcard"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "values",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "declared",
+                "name": "java.util.List",
+                "nullability": "unknown",
+                "typeArguments": [
+                  {
+                    "bound": {
+                      "kind": "typeVariable",
+                      "name": "V",
+                      "nullability": "unknown"
+                    },
+                    "kind": "wildcard",
+                    "super": true
+                  }
+                ]
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "declared",
+            "name": "java.util.Map",
+            "nullability": "unknown",
+            "typeArguments": [
+              {
+                "kind": "typeVariable",
+                "name": "K",
+                "nullability": "unknown"
+              },
+              {
+                "kind": "typeVariable",
+                "name": "V",
+                "nullability": "unknown"
+              }
+            ]
+          },
+          "support": "supported",
+          "typeParameters": [
+            {
+              "bounds": [
+                {
+                  "kind": "declared",
+                  "name": "java.lang.Object",
+                  "nullability": "unknown"
+                }
+              ],
+              "name": "K"
+            },
+            {
+              "bounds": [
+                {
+                  "kind": "declared",
+                  "name": "java.lang.Comparable",
+                  "nullability": "unknown",
+                  "typeArguments": [
+                    {
+                      "kind": "typeVariable",
+                      "name": "V",
+                      "nullability": "unknown"
+                    }
+                  ]
+                }
+              ],
+              "name": "V"
+            }
+          ],
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.GenericClass#set(java.lang.CharSequence)",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "set",
+          "nativeDescriptor": "(Ljava/lang/CharSequence;)V",
+          "parameters": [
+            {
+              "name": "value",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "typeVariable",
+                "name": "T",
+                "nullability": "unknown"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        }
+      ],
+      "modifiers": [
+        "public"
+      ],
+      "name": "GenericClass",
+      "namespace": "com.example.fixtures",
+      "provenance": {
+        "artifactEntry": "com/example/fixtures/GenericClass.class",
+        "localArtifact": "fixtures",
+        "platform": "android",
+        "sdkVersion": "fixture",
+        "sourceKind": "fixture"
+      },
+      "superClass": {
+        "kind": "declared",
+        "name": "java.lang.Object",
+        "nullability": "unknown"
+      },
+      "support": "supported",
+      "typeParameters": [
+        {
+          "bounds": [
+            {
+              "kind": "declared",
+              "name": "java.lang.CharSequence",
+              "nullability": "unknown"
+            }
+          ],
+          "name": "T"
+        }
+      ],
+      "visibility": "public"
+    },
+    {
+      "diagnostics": [
+        {
+          "code": "E006",
+          "label": "NON_SDK_API",
+          "message": "Not listed in api-versions.xml (not part of the public SDK API)",
+          "severity": "warning",
+          "symbolId": "com.example.fixtures.HiddenClass"
+        }
+      ],
+      "id": "com.example.fixtures.HiddenClass",
+      "kind": "classType",
+      "methods": [
+        {
+          "id": "com.example.fixtures.HiddenClass#<init>()",
+          "kind": "constructor",
+          "modifiers": [
+            "public"
+          ],
+          "name": "<init>",
+          "nativeDescriptor": "()V",
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "id": "com.example.fixtures.HiddenClass#secret()",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "secret",
+          "nativeDescriptor": "()V",
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        }
+      ],
+      "modifiers": [
+        "public"
+      ],
+      "name": "HiddenClass",
+      "namespace": "com.example.fixtures",
+      "provenance": {
+        "artifactEntry": "com/example/fixtures/HiddenClass.class",
+        "localArtifact": "fixtures",
+        "platform": "android",
+        "sdkVersion": "fixture",
+        "sourceKind": "fixture"
+      },
+      "superClass": {
+        "kind": "declared",
+        "name": "java.lang.Object",
+        "nullability": "unknown"
+      },
+      "support": "unsupported",
+      "visibility": "hiddenOrNonSdk"
+    },
+    {
+      "availability": {
+        "introduced": "1"
+      },
+      "id": "com.example.fixtures.NestedClass",
+      "kind": "classType",
+      "methods": [
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.NestedClass#<init>()",
+          "kind": "constructor",
+          "modifiers": [
+            "public"
+          ],
+          "name": "<init>",
+          "nativeDescriptor": "()V",
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        }
+      ],
+      "modifiers": [
+        "public"
+      ],
+      "name": "NestedClass",
+      "namespace": "com.example.fixtures",
+      "nestedTypes": [
+        "com.example.fixtures.NestedClass$Builder",
+        "com.example.fixtures.NestedClass$Inner",
+        "com.example.fixtures.NestedClass$Listener"
+      ],
+      "provenance": {
+        "artifactEntry": "com/example/fixtures/NestedClass.class",
+        "localArtifact": "fixtures",
+        "platform": "android",
+        "sdkVersion": "fixture",
+        "sourceKind": "fixture"
+      },
+      "superClass": {
+        "kind": "declared",
+        "name": "java.lang.Object",
+        "nullability": "unknown"
+      },
+      "support": "supported",
+      "visibility": "public"
+    },
+    {
+      "availability": {
+        "introduced": "1"
+      },
+      "enclosingType": "com.example.fixtures.NestedClass",
+      "id": "com.example.fixtures.NestedClass$Builder",
+      "kind": "classType",
+      "methods": [
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.NestedClass$Builder#<init>()",
+          "kind": "constructor",
+          "modifiers": [
+            "public"
+          ],
+          "name": "<init>",
+          "nativeDescriptor": "()V",
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.NestedClass$Builder#build()",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "build",
+          "nativeDescriptor": "()Lcom/example/fixtures/NestedClass;",
+          "returnType": {
+            "kind": "declared",
+            "name": "com.example.fixtures.NestedClass",
+            "nullability": "unknown"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.NestedClass$Builder#name(java.lang.String)",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "name",
+          "nativeDescriptor": "(Ljava/lang/String;)Lcom/example/fixtures/NestedClass$Builder;",
+          "parameters": [
+            {
+              "name": "name",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "declared",
+                "name": "java.lang.String",
+                "nullability": "unknown"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "declared",
+            "name": "com.example.fixtures.NestedClass$Builder",
+            "nullability": "unknown"
+          },
+          "support": "supported",
+          "visibility": "public"
+        }
+      ],
+      "modifiers": [
+        "public",
+        "static"
+      ],
+      "name": "Builder",
+      "namespace": "com.example.fixtures",
+      "provenance": {
+        "artifactEntry": "com/example/fixtures/NestedClass$Builder.class",
+        "localArtifact": "fixtures",
+        "platform": "android",
+        "sdkVersion": "fixture",
+        "sourceKind": "fixture"
+      },
+      "superClass": {
+        "kind": "declared",
+        "name": "java.lang.Object",
+        "nullability": "unknown"
+      },
+      "support": "supported",
+      "visibility": "public"
+    },
+    {
+      "availability": {
+        "introduced": "1"
+      },
+      "enclosingType": "com.example.fixtures.NestedClass",
+      "id": "com.example.fixtures.NestedClass$Inner",
+      "kind": "classType",
+      "methods": [
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.NestedClass$Inner#<init>(com.example.fixtures.NestedClass)",
+          "kind": "constructor",
+          "modifiers": [
+            "public"
+          ],
+          "name": "<init>",
+          "nativeDescriptor": "(Lcom/example/fixtures/NestedClass;)V",
+          "parameters": [
+            {
+              "name": "this$0",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "declared",
+                "name": "com.example.fixtures.NestedClass",
+                "nullability": "unknown"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.NestedClass$Inner#value()",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "value",
+          "nativeDescriptor": "()I",
+          "returnType": {
+            "kind": "primitive",
+            "name": "int"
+          },
+          "support": "supported",
+          "visibility": "public"
+        }
+      ],
+      "modifiers": [
+        "public"
+      ],
+      "name": "Inner",
+      "namespace": "com.example.fixtures",
+      "provenance": {
+        "artifactEntry": "com/example/fixtures/NestedClass$Inner.class",
+        "localArtifact": "fixtures",
+        "platform": "android",
+        "sdkVersion": "fixture",
+        "sourceKind": "fixture"
+      },
+      "superClass": {
+        "kind": "declared",
+        "name": "java.lang.Object",
+        "nullability": "unknown"
+      },
+      "support": "supported",
+      "visibility": "public"
+    },
+    {
+      "availability": {
+        "introduced": "1"
+      },
+      "enclosingType": "com.example.fixtures.NestedClass",
+      "id": "com.example.fixtures.NestedClass$Listener",
+      "kind": "interfaceType",
+      "methods": [
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.NestedClass$Listener#onChange(com.example.fixtures.NestedClass)",
+          "kind": "method",
+          "modifiers": [
+            "abstract",
+            "public"
+          ],
+          "name": "onChange",
+          "nativeDescriptor": "(Lcom/example/fixtures/NestedClass;)V",
+          "parameters": [
+            {
+              "name": "p0",
+              "nameSource": "synthesized",
+              "type": {
+                "kind": "declared",
+                "name": "com.example.fixtures.NestedClass",
+                "nullability": "unknown"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        }
+      ],
+      "modifiers": [
+        "public",
+        "static"
+      ],
+      "name": "Listener",
+      "namespace": "com.example.fixtures",
+      "provenance": {
+        "artifactEntry": "com/example/fixtures/NestedClass$Listener.class",
+        "localArtifact": "fixtures",
+        "platform": "android",
+        "sdkVersion": "fixture",
+        "sourceKind": "fixture"
+      },
+      "support": "supported",
+      "visibility": "public"
+    },
+    {
+      "availability": {
+        "introduced": "1"
+      },
+      "fields": [
+        {
+          "annotations": [
+            {
+              "classification": "semantic",
+              "source": "classfile-invisible",
+              "type": "androidx.annotation.NonNull"
+            }
+          ],
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.NullableClass#definitely",
+          "modifiers": [
+            "public"
+          ],
+          "name": "definitely",
+          "nativeDescriptor": "Ljava/lang/String;",
+          "support": "supported",
+          "type": {
+            "kind": "declared",
+            "name": "java.lang.String",
+            "nullability": "nonnull"
+          },
+          "visibility": "public"
+        },
+        {
+          "annotations": [
+            {
+              "classification": "semantic",
+              "source": "classfile-invisible",
+              "type": "androidx.annotation.Nullable"
+            }
+          ],
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.NullableClass#maybe",
+          "modifiers": [
+            "public"
+          ],
+          "name": "maybe",
+          "nativeDescriptor": "Ljava/lang/String;",
+          "support": "supported",
+          "type": {
+            "kind": "declared",
+            "name": "java.lang.String",
+            "nullability": "nullable"
+          },
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.NullableClass#unknown",
+          "modifiers": [
+            "public"
+          ],
+          "name": "unknown",
+          "nativeDescriptor": "Ljava/lang/String;",
+          "support": "supported",
+          "type": {
+            "kind": "declared",
+            "name": "java.lang.String",
+            "nullability": "unknown"
+          },
+          "visibility": "public"
+        }
+      ],
+      "id": "com.example.fixtures.NullableClass",
+      "kind": "classType",
+      "methods": [
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.NullableClass#<init>()",
+          "kind": "constructor",
+          "modifiers": [
+            "public"
+          ],
+          "name": "<init>",
+          "nativeDescriptor": "()V",
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "annotations": [
+            {
+              "classification": "semantic",
+              "source": "classfile-invisible",
+              "type": "androidx.annotation.NonNull"
+            }
+          ],
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.NullableClass#describe(java.lang.String,java.lang.Object,java.lang.String)",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "describe",
+          "nativeDescriptor": "(Ljava/lang/String;Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/String;",
+          "parameters": [
+            {
+              "annotations": [
+                {
+                  "classification": "semantic",
+                  "source": "classfile-invisible",
+                  "type": "androidx.annotation.Nullable"
+                }
+              ],
+              "name": "prefix",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "declared",
+                "name": "java.lang.String",
+                "nullability": "nullable"
+              }
+            },
+            {
+              "annotations": [
+                {
+                  "classification": "semantic",
+                  "source": "classfile-invisible",
+                  "type": "androidx.annotation.NonNull"
+                }
+              ],
+              "name": "value",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "declared",
+                "name": "java.lang.Object",
+                "nullability": "nonnull"
+              }
+            },
+            {
+              "name": "unannotated",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "declared",
+                "name": "java.lang.String",
+                "nullability": "unknown"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "declared",
+            "name": "java.lang.String",
+            "nullability": "nonnull"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "annotations": [
+            {
+              "classification": "semantic",
+              "source": "classfile-invisible",
+              "type": "androidx.annotation.Nullable"
+            }
+          ],
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.NullableClass#find(java.lang.String)",
+          "kind": "method",
+          "modifiers": [
+            "public",
+            "static"
+          ],
+          "name": "find",
+          "nativeDescriptor": "(Ljava/lang/String;)Lcom/example/fixtures/NullableClass;",
+          "parameters": [
+            {
+              "annotations": [
+                {
+                  "classification": "semantic",
+                  "source": "classfile-invisible",
+                  "type": "androidx.annotation.NonNull"
+                }
+              ],
+              "name": "key",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "declared",
+                "name": "java.lang.String",
+                "nullability": "nonnull"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "declared",
+            "name": "com.example.fixtures.NullableClass",
+            "nullability": "nullable"
+          },
+          "support": "supported",
+          "visibility": "public"
+        }
+      ],
+      "modifiers": [
+        "public"
+      ],
+      "name": "NullableClass",
+      "namespace": "com.example.fixtures",
+      "provenance": {
+        "artifactEntry": "com/example/fixtures/NullableClass.class",
+        "localArtifact": "fixtures",
+        "platform": "android",
+        "sdkVersion": "fixture",
+        "sourceKind": "fixture"
+      },
+      "superClass": {
+        "kind": "declared",
+        "name": "java.lang.Object",
+        "nullability": "unknown"
+      },
+      "support": "supported",
+      "visibility": "public"
+    },
+    {
+      "availability": {
+        "introduced": "1"
+      },
+      "id": "com.example.fixtures.OverloadedClass",
+      "kind": "classType",
+      "methods": [
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.OverloadedClass#<init>()",
+          "kind": "constructor",
+          "modifiers": [
+            "public"
+          ],
+          "name": "<init>",
+          "nativeDescriptor": "()V",
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.OverloadedClass#<init>(int)",
+          "kind": "constructor",
+          "modifiers": [
+            "public"
+          ],
+          "name": "<init>",
+          "nativeDescriptor": "(I)V",
+          "parameters": [
+            {
+              "name": "value",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "primitive",
+                "name": "int"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.OverloadedClass#<init>(java.lang.String)",
+          "kind": "constructor",
+          "modifiers": [
+            "public"
+          ],
+          "name": "<init>",
+          "nativeDescriptor": "(Ljava/lang/String;)V",
+          "parameters": [
+            {
+              "name": "value",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "declared",
+                "name": "java.lang.String",
+                "nullability": "unknown"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.OverloadedClass#add(double,double)",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "add",
+          "nativeDescriptor": "(DD)D",
+          "parameters": [
+            {
+              "name": "a",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "primitive",
+                "name": "double"
+              }
+            },
+            {
+              "name": "b",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "primitive",
+                "name": "double"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "double"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.OverloadedClass#add(int,int)",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "add",
+          "nativeDescriptor": "(II)I",
+          "parameters": [
+            {
+              "name": "a",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "primitive",
+                "name": "int"
+              }
+            },
+            {
+              "name": "b",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "primitive",
+                "name": "int"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "int"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.OverloadedClass#add(java.lang.String,java.lang.String)",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "add",
+          "nativeDescriptor": "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;",
+          "parameters": [
+            {
+              "name": "a",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "declared",
+                "name": "java.lang.String",
+                "nullability": "unknown"
+              }
+            },
+            {
+              "name": "b",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "declared",
+                "name": "java.lang.String",
+                "nullability": "unknown"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "declared",
+            "name": "java.lang.String",
+            "nullability": "unknown"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.OverloadedClass#add(long,long)",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "add",
+          "nativeDescriptor": "(JJ)J",
+          "parameters": [
+            {
+              "name": "a",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "primitive",
+                "name": "long"
+              }
+            },
+            {
+              "name": "b",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "primitive",
+                "name": "long"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "long"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.OverloadedClass#join(java.lang.String,java.lang.String[])",
+          "kind": "method",
+          "modifiers": [
+            "public",
+            "static",
+            "varargs"
+          ],
+          "name": "join",
+          "nativeDescriptor": "(Ljava/lang/String;[Ljava/lang/String;)Ljava/lang/String;",
+          "parameters": [
+            {
+              "name": "separator",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "declared",
+                "name": "java.lang.String",
+                "nullability": "unknown"
+              }
+            },
+            {
+              "name": "parts",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "component": {
+                  "kind": "declared",
+                  "name": "java.lang.String",
+                  "nullability": "unknown"
+                },
+                "kind": "array",
+                "nullability": "unknown"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "declared",
+            "name": "java.lang.String",
+            "nullability": "unknown"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.OverloadedClass#put(java.lang.String,boolean)",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "put",
+          "nativeDescriptor": "(Ljava/lang/String;Z)V",
+          "parameters": [
+            {
+              "name": "key",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "declared",
+                "name": "java.lang.String",
+                "nullability": "unknown"
+              }
+            },
+            {
+              "name": "value",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "primitive",
+                "name": "boolean"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.OverloadedClass#put(java.lang.String,byte)",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "put",
+          "nativeDescriptor": "(Ljava/lang/String;B)V",
+          "parameters": [
+            {
+              "name": "key",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "declared",
+                "name": "java.lang.String",
+                "nullability": "unknown"
+              }
+            },
+            {
+              "name": "value",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "primitive",
+                "name": "byte"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.OverloadedClass#put(java.lang.String,char)",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "put",
+          "nativeDescriptor": "(Ljava/lang/String;C)V",
+          "parameters": [
+            {
+              "name": "key",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "declared",
+                "name": "java.lang.String",
+                "nullability": "unknown"
+              }
+            },
+            {
+              "name": "value",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "primitive",
+                "name": "char"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.OverloadedClass#put(java.lang.String,float)",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "put",
+          "nativeDescriptor": "(Ljava/lang/String;F)V",
+          "parameters": [
+            {
+              "name": "key",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "declared",
+                "name": "java.lang.String",
+                "nullability": "unknown"
+              }
+            },
+            {
+              "name": "value",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "primitive",
+                "name": "float"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.OverloadedClass#put(java.lang.String,int)",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "put",
+          "nativeDescriptor": "(Ljava/lang/String;I)V",
+          "parameters": [
+            {
+              "name": "key",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "declared",
+                "name": "java.lang.String",
+                "nullability": "unknown"
+              }
+            },
+            {
+              "name": "value",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "primitive",
+                "name": "int"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.OverloadedClass#put(java.lang.String,int[])",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "put",
+          "nativeDescriptor": "(Ljava/lang/String;[I)V",
+          "parameters": [
+            {
+              "name": "key",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "declared",
+                "name": "java.lang.String",
+                "nullability": "unknown"
+              }
+            },
+            {
+              "name": "value",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "component": {
+                  "kind": "primitive",
+                  "name": "int"
+                },
+                "kind": "array",
+                "nullability": "unknown"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.OverloadedClass#put(java.lang.String,java.lang.String)",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "put",
+          "nativeDescriptor": "(Ljava/lang/String;Ljava/lang/String;)V",
+          "parameters": [
+            {
+              "name": "key",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "declared",
+                "name": "java.lang.String",
+                "nullability": "unknown"
+              }
+            },
+            {
+              "name": "value",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "declared",
+                "name": "java.lang.String",
+                "nullability": "unknown"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.OverloadedClass#put(java.lang.String,short)",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "put",
+          "nativeDescriptor": "(Ljava/lang/String;S)V",
+          "parameters": [
+            {
+              "name": "key",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "declared",
+                "name": "java.lang.String",
+                "nullability": "unknown"
+              }
+            },
+            {
+              "name": "value",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "primitive",
+                "name": "short"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        }
+      ],
+      "modifiers": [
+        "public"
+      ],
+      "name": "OverloadedClass",
+      "namespace": "com.example.fixtures",
+      "provenance": {
+        "artifactEntry": "com/example/fixtures/OverloadedClass.class",
+        "localArtifact": "fixtures",
+        "platform": "android",
+        "sdkVersion": "fixture",
+        "sourceKind": "fixture"
+      },
+      "superClass": {
+        "kind": "declared",
+        "name": "java.lang.Object",
+        "nullability": "unknown"
+      },
+      "support": "supported",
+      "visibility": "public"
+    },
+    {
+      "availability": {
+        "introduced": "1"
+      },
+      "fields": [
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "constantValue": {
+            "literal": "1",
+            "type": "int"
+          },
+          "id": "com.example.fixtures.ReservedWords#in",
+          "modifiers": [
+            "final",
+            "public",
+            "static"
+          ],
+          "name": "in",
+          "nativeDescriptor": "I",
+          "support": "supported",
+          "type": {
+            "kind": "primitive",
+            "name": "int"
+          },
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "constantValue": {
+            "literal": "2",
+            "type": "int"
+          },
+          "id": "com.example.fixtures.ReservedWords#is",
+          "modifiers": [
+            "final",
+            "public",
+            "static"
+          ],
+          "name": "is",
+          "nativeDescriptor": "I",
+          "support": "supported",
+          "type": {
+            "kind": "primitive",
+            "name": "int"
+          },
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "constantValue": {
+            "literal": "3",
+            "type": "int"
+          },
+          "id": "com.example.fixtures.ReservedWords#type",
+          "modifiers": [
+            "final",
+            "public",
+            "static"
+          ],
+          "name": "type",
+          "nativeDescriptor": "I",
+          "support": "supported",
+          "type": {
+            "kind": "primitive",
+            "name": "int"
+          },
+          "visibility": "public"
+        }
+      ],
+      "id": "com.example.fixtures.ReservedWords",
+      "kind": "classType",
+      "methods": [
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.ReservedWords#<init>()",
+          "kind": "constructor",
+          "modifiers": [
+            "public"
+          ],
+          "name": "<init>",
+          "nativeDescriptor": "()V",
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.ReservedWords#equals(java.lang.Object)",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "equals",
+          "nativeDescriptor": "(Ljava/lang/Object;)Z",
+          "parameters": [
+            {
+              "name": "other",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "declared",
+                "name": "java.lang.Object",
+                "nullability": "unknown"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "boolean"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.ReservedWords#get(int,int,int)",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "get",
+          "nativeDescriptor": "(III)V",
+          "parameters": [
+            {
+              "name": "extension",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "primitive",
+                "name": "int"
+              }
+            },
+            {
+              "name": "switch_",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "primitive",
+                "name": "int"
+              }
+            },
+            {
+              "name": "with",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "primitive",
+                "name": "int"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.ReservedWords#hashCode()",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "hashCode",
+          "nativeDescriptor": "()I",
+          "returnType": {
+            "kind": "primitive",
+            "name": "int"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.ReservedWords#late(int)",
+          "kind": "method",
+          "modifiers": [
+            "public",
+            "static"
+          ],
+          "name": "late",
+          "nativeDescriptor": "(I)V",
+          "parameters": [
+            {
+              "name": "required",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "primitive",
+                "name": "int"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.ReservedWords#release()",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "release",
+          "nativeDescriptor": "()V",
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.ReservedWords#toString()",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "toString",
+          "nativeDescriptor": "()Ljava/lang/String;",
+          "returnType": {
+            "kind": "declared",
+            "name": "java.lang.String",
+            "nullability": "unknown"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.ReservedWords#yield()",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "yield",
+          "nativeDescriptor": "()V",
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        }
+      ],
+      "modifiers": [
+        "public"
+      ],
+      "name": "ReservedWords",
+      "namespace": "com.example.fixtures",
+      "provenance": {
+        "artifactEntry": "com/example/fixtures/ReservedWords.class",
+        "localArtifact": "fixtures",
+        "platform": "android",
+        "sdkVersion": "fixture",
+        "sourceKind": "fixture"
+      },
+      "superClass": {
+        "kind": "declared",
+        "name": "java.lang.Object",
+        "nullability": "unknown"
+      },
+      "support": "supported",
+      "visibility": "public"
+    },
+    {
+      "availability": {
+        "introduced": "1"
+      },
+      "id": "com.example.fixtures.ThrowsClass",
+      "kind": "classType",
+      "methods": [
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.ThrowsClass#<init>()",
+          "kind": "constructor",
+          "modifiers": [
+            "public"
+          ],
+          "name": "<init>",
+          "nativeDescriptor": "()V",
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.ThrowsClass#parse(java.lang.String)",
+          "kind": "method",
+          "modifiers": [
+            "public",
+            "static"
+          ],
+          "name": "parse",
+          "nativeDescriptor": "(Ljava/lang/String;)I",
+          "parameters": [
+            {
+              "name": "text",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "declared",
+                "name": "java.lang.String",
+                "nullability": "unknown"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "int"
+          },
+          "support": "supported",
+          "throws": [
+            {
+              "kind": "declared",
+              "name": "java.lang.NumberFormatException",
+              "nullability": "unknown"
+            },
+            {
+              "kind": "declared",
+              "name": "java.lang.IllegalStateException",
+              "nullability": "unknown"
+            }
+          ],
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.ThrowsClass#read()",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "read",
+          "nativeDescriptor": "()V",
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "throws": [
+            {
+              "kind": "declared",
+              "name": "java.io.IOException",
+              "nullability": "unknown"
+            }
+          ],
+          "visibility": "public"
+        }
+      ],
+      "modifiers": [
+        "public"
+      ],
+      "name": "ThrowsClass",
+      "namespace": "com.example.fixtures",
+      "provenance": {
+        "artifactEntry": "com/example/fixtures/ThrowsClass.class",
+        "localArtifact": "fixtures",
+        "platform": "android",
+        "sdkVersion": "fixture",
+        "sourceKind": "fixture"
+      },
+      "superClass": {
+        "kind": "declared",
+        "name": "java.lang.Object",
+        "nullability": "unknown"
+      },
+      "support": "supported",
+      "visibility": "public"
+    }
+  ]
+}
