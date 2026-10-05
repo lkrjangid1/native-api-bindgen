@@ -8,8 +8,9 @@
     "lint": "eslint .",
     "start": "react-native start",
     "test": "jest",
-    "generate:bindings": "cd ../../.. && dart run native_api_bindgen --project examples/react-native/android_slice generate react-native",
-    "test:device": "../../../tools/run_rn_device_tests.sh"
+    "generate:bindings": "cd ../../.. && dart run native_api_bindgen --project examples/react-native/slice generate react-native",
+    "test:device": "../../../tools/run_rn_device_tests.sh",
+    "test:device:ios": "../../../tools/run_rn_ios_tests.sh"
   },
   "dependencies": {
     "react": "19.2.3",
@@ -47,6 +48,11 @@
     "jsSrcsDir": "native-api-bindings/specs",
     "android": {
       "javaPackageName": "dev.nativeapibindgen.specs"
+    },
+    "ios": {
+      "modulesProvider": {
+        "NativeApiBindgen": "NabModuleProvider"
+      }
     }
   }
 }

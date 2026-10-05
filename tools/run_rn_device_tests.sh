@@ -5,7 +5,7 @@
 # With several devices attached, select one with ANDROID_SERIAL=<serial>.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-APP="$ROOT/examples/react-native/android_slice"
+APP="$ROOT/examples/react-native/slice"
 if [ -z "${ANDROID_HOME:-}" ]; then
   for d in "${ANDROID_SDK_ROOT:-}" "$HOME/Library/Android/sdk" "$HOME/Android/Sdk"; do
     if [ -n "$d" ] && [ -d "$d/platforms" ]; then export ANDROID_HOME="$d"; break; fi
@@ -16,7 +16,7 @@ PKG=com.nabrnslice
 TIMEOUT="${NAB_TEST_TIMEOUT:-180}"
 
 cd "$ROOT"
-dart run native_api_bindgen --quiet --project examples/react-native/android_slice generate react-native
+dart run native_api_bindgen --quiet --project examples/react-native/slice generate react-native
 cd "$APP"
 [ -d node_modules ] || npm install
 npx tsc --noEmit

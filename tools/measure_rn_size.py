@@ -23,7 +23,7 @@ import tempfile
 import zipfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-EXAMPLE = os.path.join(ROOT, "examples", "react-native", "android_slice")
+EXAMPLE = os.path.join(ROOT, "examples", "react-native", "slice")
 ONE_API_APP = """import React from 'react';
 import {Text} from 'react-native';
 import {applicationContext} from './native-api-bindings';

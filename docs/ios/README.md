@@ -1,6 +1,6 @@
 # iOS / Apple (Flutter)
 
-Status: **experimental**. Flutter on iOS works end to end for Objective-C APIs from Foundation and UIKit (see below for what has been tested). React Native on iOS and `diff ios` still return `E015 NOT_IMPLEMENTED` (exit code 2).
+Status: **experimental**. Flutter and React Native on iOS work end to end for Objective-C APIs from Foundation and UIKit (see below for what has been tested). React Native details: `docs/react-native/README.md`. `diff ios` still returns `E015 NOT_IMPLEMENTED` (exit code 2).
 
 ## How it works
 
@@ -67,6 +67,8 @@ The app needs `objective_c` (^9.5) and `ffi` (^2.1) as dependencies. Android and
 | Swift-only APIs | not visible in Objective-C headers |
 
 ## Tested (2026-10-05, maintainer machine)
+
+- React Native 0.87.1 (`examples/react-native/slice`, release build with bundled JS): **12/12 self-tests passing** on the same iPhone 17 / iOS 26.4 simulator (`tools/run_rn_ios_tests.sh`). All of Foundation + UIKit as React Native bindings: 15,401 bound members, TypeScript type-checks with zero errors, C++ tables compile with `-Werror`.
 
 - Xcode 27.0, iPhoneSimulator SDK 27.0; `examples/flutter/ios_slice` integration tests: **12/12 passing** on an iPhone 17 simulator running iOS 26.4 (`flutter test integration_test -d <udid>`). The availability-guard test calls an iOS 27.0 API on the iOS 26.4 runtime and expects `OsVersionError`.
 - Foundation + UIKit generated entirely: 1,527 types, 14,362 bound members, extraction + emission ≈ 0.5–0.6 s, `dart analyze`: 0 issues (`packages/native_api_flutter_ios/tool/gen_sdk.dart`). Only the example's APIs are runtime-tested.

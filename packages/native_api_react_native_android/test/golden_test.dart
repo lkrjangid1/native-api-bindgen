@@ -128,11 +128,11 @@ void main() {
     'generated TypeScript type-checks and C++ compiles (when toolchains are present)',
     () async {
       final root = findRepoRoot();
-      final rnApp = p.join(root, 'examples', 'react-native', 'android_slice');
+      final rnApp = p.join(root, 'examples', 'react-native', 'slice');
       final tsc = File(p.join(rnApp, 'node_modules', '.bin', 'tsc'));
       if (!tsc.existsSync()) {
         markTestSkipped(
-          'examples/react-native/android_slice/node_modules not installed',
+          'examples/react-native/slice/node_modules not installed',
         );
         return;
       }

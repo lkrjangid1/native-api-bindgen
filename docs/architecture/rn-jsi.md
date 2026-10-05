@@ -1,4 +1,4 @@
-# React Native target: TypeScript → JSI → C++ → JNI
+# React Native target: TypeScript → JSI → C++ → JNI / Objective-C
 
 ```
 src/generated/<package>.ts             one TS module per Java package; members call
@@ -23,3 +23,25 @@ Design choices (see `docs/technical-design.md` for the decision log):
 - **Threading**: JSI values are only touched on the JS thread; worker threads only see JNI global references.
 
 Measured: full android-36 SDK (6,196 types) generates 283 modules / 97.7 MB of TypeScript (largest: `android/widget.ts`, 11.1 MB) that type-check with zero errors and 9.4 MB of C++ tables that compile with `-Wall -Wextra -Werror`.
+
+## iOS: TypeScript → JSI → Objective-C++ → NSInvocation
+
+```
+src/generated/apple/<module>.ts        one TS module per framework; members call
+   UIView.$t()['-addSubview:'](async, self, ...args)
+        ▼
+global.__nab  (same Turbo Module; on Apple platforms it installs the Objective-C runtime)
+        │  lookupClass() binary search in NabBindingsObjC.cpp → host functions
+        ▼
+NabObjCRuntime.mm  NSMethodSignature from the runtime → converts JS values per type
+                   encoding (+ the generated conversion code: string, object, bigint,
+                   struct name) → NSInvocation, on the main thread for UIKit members;
+                   NSException / NSError** → JS errors; Promise variants settle via CallInvoker
+```
+
+- **The ABI comes from the Objective-C runtime**, not from the generator: the table only says which JS shape each value has (`s`, `o`, `j`, `S<Name>;`, …). A selector missing at runtime (older OS, optional protocol method) raises `E010` instead of crashing.
+- **Ownership**: alloc/new/copy/mutableCopy results are adopted (+1), `init…` consumes its receiver, everything else is retained on return. Argument objects stay strongly referenced until `-[NSInvocation retainArguments]` (a JS string converted to `NSString` has no other owner).
+- **Threading**: JSI values are only touched on the JS thread. UIKit invocations are dispatched to the main queue; handles release their object on the main queue.
+- **Registration**: `NabModuleProvider` (`RCTModuleProvider`) creates the shared `NativeApiBindgen` C++ Turbo Module; the app maps it in `codegenConfig.ios.modulesProvider`.
+
+Measured: all of Foundation + UIKit (1,527 types) generates 15,401 bound members, 20 MB of TypeScript that type-checks with zero errors, and 1.4 MB of C++ tables that compile with `-Wall -Wextra -Werror`.

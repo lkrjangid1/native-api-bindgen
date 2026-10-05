@@ -1,4 +1,4 @@
-# native-api-bindgen configuration for the React Native Android slice.
+# native-api-bindgen configuration for the React Native slice (Android + iOS).
 platform:
   android:
     sdk: auto
@@ -15,6 +15,20 @@ platform:
       - java.lang.Runnable
       - android.os.Handler.Callback
       - android.os.Message
+    depth: 0
+
+  ios:
+    sdk: auto
+    minVersion: "15.1"   # React Native 0.87 minimum; newer APIs get runtime guards
+    frameworks: [Foundation, UIKit]
+    classes:
+      - UIDevice
+      - UIView
+      - UIViewController
+      - UIColor
+      - NSProcessInfo
+      - NSFileManager
+      - NSArray
     depth: 0
 
 targets:

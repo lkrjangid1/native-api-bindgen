@@ -26,18 +26,32 @@ jobs:
         with:
           sdk: stable
       - run: dart pub get
-      - working-directory: examples/react-native/android_slice
+      - working-directory: examples/react-native/slice
         run: npm ci
       - name: RN goldens + tsc + clang++ syntax check
         run: dart test packages/native_api_react_native_android
       - name: Jest (TypeScript runtime)
-        working-directory: examples/react-native/android_slice
+        working-directory: examples/react-native/slice
         run: npx jest
-      - name: iOS generation must report E015 (exit code 2)
-        run: |
-          set +e
-          dart run native_api_bindgen generate ios
-          test $? -eq 2
+
+  ios:
+    name: RN iOS goldens + example self-tests on a simulator
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+      - run: dart pub get
+      - working-directory: examples/react-native/slice
+        run: npm ci
+      - name: RN iOS goldens + tsc + Objective-C++ syntax check
+        run: dart test packages/native_api_react_native_ios
+      - name: Build for the simulator and run self-tests
+        run: tools/run_rn_ios_tests.sh
 
   device:
     name: RN example self-tests on an Android emulator
@@ -56,7 +70,7 @@ jobs:
           sdk: stable
       - run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36"
       - run: dart pub get
-      - working-directory: examples/react-native/android_slice
+      - working-directory: examples/react-native/slice
         run: npm ci
       - name: Enable KVM
         run: |
@@ -69,5 +83,5 @@ jobs:
           arch: x86_64
           target: google_apis
           script: |
-            sed -i 's/reactNativeArchitectures=arm64-v8a/reactNativeArchitectures=x86_64/' examples/react-native/android_slice/android/gradle.properties
+            sed -i 's/reactNativeArchitectures=arm64-v8a/reactNativeArchitectures=x86_64/' examples/react-native/slice/android/gradle.properties
             tools/run_rn_device_tests.sh

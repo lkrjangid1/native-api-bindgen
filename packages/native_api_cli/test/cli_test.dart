@@ -139,6 +139,52 @@ void main() {
       skip: xcode ? false : 'Xcode not available',
     );
 
+    test(
+      'generate react-native-ios writes TS, member tables, podspec',
+      () async {
+        File(p.join(project.path, 'native_api_bindgen.yaml')).writeAsStringSync(
+          'platform:\n  ios:\n    frameworks: [Foundation, UIKit]\n'
+          '    classes: [UIDevice]\n    depth: 0\n'
+          'output:\n  reactNativeDir: bindings\n',
+        );
+        final r = await cli([
+          '--json',
+          'generate',
+          'react-native-ios',
+        ], cwd: project.path);
+        expect(r.code, ExitCodes.ok, reason: r.err);
+        final files = (jsonDecode(r.out) as Map)['files'] as List;
+        expect(
+          files,
+          containsAll([
+            'ios.ts',
+            'src/generated/apple/uikit.ts',
+            'cpp/generated/NabBindingsObjC.cpp',
+            'cpp/runtime-objc/NabObjCRuntime.mm',
+            'NativeApiBindings.podspec',
+          ]),
+        );
+        final podspec = File(
+          p.join(project.path, 'bindings', 'NativeApiBindings.podspec'),
+        ).readAsStringSync();
+        expect(podspec, contains("s.frameworks = ['Foundation', 'UIKit']"));
+        expect(
+          File(
+            p.join(
+              project.path,
+              'bindings',
+              'src',
+              'generated',
+              'apple',
+              'uikit.ts',
+            ),
+          ).readAsStringSync(),
+          contains('export class UIDevice extends ObjCObject'),
+        );
+      },
+      skip: xcode ? false : 'Xcode not available',
+    );
+
     test('unknown iOS class is E001', () async {
       final r = await cli([
         '--json',

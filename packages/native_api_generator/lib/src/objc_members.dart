@@ -64,6 +64,7 @@ final class ObjCMemberResolver {
     this.types, {
     required this.escape,
     required this.reserved,
+    this.staticReserved = const {},
   });
 
   /// All types by id.
@@ -74,6 +75,9 @@ final class ObjCMemberResolver {
 
   /// Names never assigned to members.
   final Set<String> reserved;
+
+  /// Additional names never assigned to class (static) members.
+  final Set<String> staticReserved;
 
   final _cache = <String, ObjCMemberNames>{};
 
@@ -164,6 +168,7 @@ final class ObjCMemberResolver {
       r.visible[m.key] = m;
       r.declared.add((m, name));
     }
+    taken.addAll(staticReserved);
     for (final m in declared.where((m) => m.isStatic)) {
       r.declared.add((m, fresh(base(m), kw(m))));
     }
