@@ -1,0 +1,354 @@
+import 'dart:io';
+
+import 'package:yaml/yaml.dart';
+
+import 'project_info.dart';
+
+/// Thrown for invalid configuration (diagnostic `E018`).
+final class ConfigException implements Exception {
+  /// Creates the exception.
+  ConfigException(this.message);
+
+  /// Explanation.
+  final String message;
+
+  @override
+  String toString() => 'E018 CONFIG_INVALID: $message';
+}
+
+/// Type-mapping mode (TRD §14).
+enum GenerationMode {
+  /// Native semantics visible (JString, explicit release). Default.
+  strictNative('strict-native'),
+
+  /// Dart-friendly conveniences where lossless.
+  ergonomicDart('ergonomic-dart'),
+
+  /// TypeScript strict (planned).
+  strictTypescript('strict-typescript'),
+
+  /// TypeScript ergonomic (planned).
+  ergonomicTypescript('ergonomic-typescript');
+
+  const GenerationMode(this.key);
+
+  /// YAML spelling.
+  final String key;
+}
+
+/// Documentation mode.
+enum DocumentationMode {
+  /// Only metadata and links to official references. Default.
+  linksOnly('links-only'),
+
+  /// Project-authored summaries plus links.
+  summary('summary');
+
+  const DocumentationMode(this.key);
+
+  /// YAML spelling.
+  final String key;
+}
+
+/// Whether generated bindings may be published.
+enum GeneratedArtifactsPolicy {
+  /// Keep generated bindings in the user's project only. Default.
+  localOnly('local-only'),
+
+  /// Generated bindings may be published (requires legal review).
+  allowed('allowed');
+
+  const GeneratedArtifactsPolicy(this.key);
+
+  /// YAML spelling.
+  final String key;
+}
+
+/// Android platform configuration.
+final class AndroidConfig {
+  /// Creates Android configuration.
+  const AndroidConfig({
+    this.sdk = 'auto',
+    this.platform = 'auto',
+    this.minApi = 24,
+    this.include = const [],
+    this.classes = const [],
+    this.entries = const [],
+    this.depth = 1,
+  });
+
+  /// `auto` or an SDK root path.
+  final String sdk;
+
+  /// `auto` (highest stable installed) or a platform such as `36`.
+  final String platform;
+
+  /// Minimum API level of the consuming app; newer APIs get guards.
+  final int minApi;
+
+  /// Java packages to generate entirely (e.g. `android.net`).
+  final List<String> include;
+
+  /// Individual classes to generate.
+  final List<String> classes;
+
+  /// Entry classes for dependency-aware generation.
+  final List<String> entries;
+
+  /// Dependency depth from entries (0 = entries only).
+  final int depth;
+}
+
+/// Full `native_api_bindgen.yaml` configuration.
+final class BindgenConfig {
+  /// Creates a configuration.
+  const BindgenConfig({
+    this.android = const AndroidConfig(),
+    this.iosFrameworks = const [],
+    this.flutter = true,
+    this.reactNative = false,
+    this.mode = GenerationMode.strictNative,
+    this.docs = DocumentationMode.linksOnly,
+    this.preserveAnnotations = true,
+    this.callbacks = true,
+    this.outputDir = 'lib/src/generated',
+    this.generatedArtifacts = GeneratedArtifactsPolicy.localOnly,
+  });
+
+  /// Parses YAML text. Unknown keys are rejected so typos are not ignored.
+  factory BindgenConfig.parse(String text) {
+    final Object? doc;
+    try {
+      doc = loadYaml(text);
+    } on YamlException catch (e) {
+      throw ConfigException('YAML error: ${e.message}');
+    }
+    if (doc == null) return const BindgenConfig();
+    final root = _map(doc, 'root');
+    _keys(root, 'root', {
+      'platform',
+      'targets',
+      'generation',
+      'output',
+      'distribution',
+    });
+
+    final platform = _optMap(root['platform'], 'platform');
+    _keys(platform, 'platform', {'android', 'ios'});
+    final a = _optMap(platform['android'], 'platform.android');
+    _keys(a, 'platform.android', {
+      'sdk',
+      'platform',
+      'minApi',
+      'include',
+      'classes',
+      'entries',
+      'depth',
+    });
+    final ios = _optMap(platform['ios'], 'platform.ios');
+    _keys(ios, 'platform.ios', {'sdk', 'frameworks'});
+
+    final targets = _optMap(root['targets'], 'targets');
+    _keys(targets, 'targets', {'flutter', 'reactNative'});
+    final gen = _optMap(root['generation'], 'generation');
+    _keys(gen, 'generation', {'mode', 'docs', 'annotations', 'callbacks'});
+    final output = _optMap(root['output'], 'output');
+    _keys(output, 'output', {'dir'});
+    final dist = _optMap(root['distribution'], 'distribution');
+    _keys(dist, 'distribution', {'generatedArtifacts', 'documentationMode'});
+
+    final minApi = _int(a['minApi'], 'platform.android.minApi', 24);
+    if (minApi < 1 || minApi > 1000) {
+      throw ConfigException('platform.android.minApi out of range: $minApi');
+    }
+    final depth = _int(a['depth'], 'platform.android.depth', 1);
+    if (depth < 0 || depth > 8) {
+      throw ConfigException('platform.android.depth must be 0..8');
+    }
+    final docsKey = dist['documentationMode'] ?? gen['docs'];
+    final annotations = gen['annotations'] ?? 'preserve';
+    if (annotations != 'preserve' && annotations != 'drop') {
+      throw ConfigException('generation.annotations must be preserve|drop');
+    }
+    return BindgenConfig(
+      android: AndroidConfig(
+        sdk: _str(a['sdk'], 'platform.android.sdk', 'auto'),
+        platform: '${a['platform'] ?? 'auto'}',
+        minApi: minApi,
+        include: _names(a['include'], 'platform.android.include'),
+        classes: _names(a['classes'], 'platform.android.classes'),
+        entries: _names(a['entries'], 'platform.android.entries'),
+        depth: depth,
+      ),
+      iosFrameworks: _names(ios['frameworks'], 'platform.ios.frameworks'),
+      flutter: _bool(targets['flutter'], 'targets.flutter', true),
+      reactNative: _bool(targets['reactNative'], 'targets.reactNative', false),
+      mode: _enum(gen['mode'], GenerationMode.values, (m) => m.key, 'mode'),
+      docs: _enum(
+        docsKey,
+        DocumentationMode.values,
+        (m) => m.key,
+        'documentationMode',
+      ),
+      preserveAnnotations: annotations == 'preserve',
+      callbacks: _bool(gen['callbacks'], 'generation.callbacks', true),
+      outputDir: _str(output['dir'], 'output.dir', 'lib/src/generated'),
+      generatedArtifacts: _enum(
+        dist['generatedArtifacts'],
+        GeneratedArtifactsPolicy.values,
+        (m) => m.key,
+        'generatedArtifacts',
+      ),
+    );
+  }
+
+  /// Loads [path] if it exists, otherwise returns defaults.
+  static BindgenConfig loadOrDefault(String path) {
+    final f = File(path);
+    return f.existsSync()
+        ? BindgenConfig.parse(f.readAsStringSync())
+        : const BindgenConfig();
+  }
+
+  /// Android settings.
+  final AndroidConfig android;
+
+  /// Apple frameworks (not yet used).
+  final List<String> iosFrameworks;
+
+  /// Generate Flutter bindings.
+  final bool flutter;
+
+  /// Generate React Native bindings (not yet implemented).
+  final bool reactNative;
+
+  /// Type-mapping mode.
+  final GenerationMode mode;
+
+  /// Documentation mode.
+  final DocumentationMode docs;
+
+  /// Preserve annotation metadata in generated docs.
+  final bool preserveAnnotations;
+
+  /// Generate callback implementations.
+  final bool callbacks;
+
+  /// Output directory, relative to the project root.
+  final String outputDir;
+
+  /// Distribution policy for generated bindings.
+  final GeneratedArtifactsPolicy generatedArtifacts;
+
+  /// Stable fingerprint of options that influence generated output.
+  String get fingerprint => [
+    android.platform,
+    android.minApi,
+    android.include.join(','),
+    android.classes.join(','),
+    android.entries.join(','),
+    android.depth,
+    mode.key,
+    docs.key,
+    preserveAnnotations,
+    callbacks,
+  ].join('|');
+
+  /// Default configuration file written by `init`.
+  static String defaultYaml() =>
+      '''
+# ${ProjectInfo.configFileName} — configuration for ${ProjectInfo.name}.
+# Generated bindings are derived from SDKs installed on this machine.
+
+platform:
+  android:
+    sdk: auto          # or an SDK path; ANDROID_HOME / ANDROID_SDK_ROOT are honoured
+    platform: auto     # highest stable installed platform, or e.g. 36
+    minApi: 24         # APIs newer than this get runtime availability guards
+    include: []        # whole Java packages, e.g. [android.net]
+    classes: []        # individual classes
+    entries:           # dependency-aware generation roots
+      - android.content.Intent
+    depth: 1           # how far to follow referenced types from entries
+
+  ios:
+    sdk: auto          # not yet implemented
+    frameworks: []
+
+targets:
+  flutter: true
+  reactNative: false   # not yet implemented
+
+generation:
+  mode: strict-native
+  annotations: preserve
+  callbacks: true
+
+output:
+  dir: lib/src/generated
+
+distribution:
+  generatedArtifacts: local-only   # safest default; see docs/legal
+  documentationMode: links-only
+''';
+}
+
+final _javaName = RegExp(
+  r'^[A-Za-z_$][A-Za-z0-9_$]*(\.[A-Za-z_$][A-Za-z0-9_$]*)*$',
+);
+
+Map<Object?, Object?> _map(Object? v, String where) {
+  if (v is Map) return v;
+  throw ConfigException('$where must be a mapping');
+}
+
+Map<Object?, Object?> _optMap(Object? v, String where) =>
+    v == null ? const {} : _map(v, where);
+
+void _keys(Map<Object?, Object?> m, String where, Set<String> allowed) {
+  for (final k in m.keys) {
+    if (!allowed.contains(k)) {
+      throw ConfigException('Unknown key "$k" in $where');
+    }
+  }
+}
+
+String _str(Object? v, String where, String fallback) {
+  if (v == null) return fallback;
+  if (v is String && v.isNotEmpty) return v;
+  throw ConfigException('$where must be a non-empty string');
+}
+
+int _int(Object? v, String where, int fallback) {
+  if (v == null) return fallback;
+  if (v is int) return v;
+  throw ConfigException('$where must be an integer');
+}
+
+bool _bool(Object? v, String where, bool fallback) {
+  if (v == null) return fallback;
+  if (v is bool) return v;
+  throw ConfigException('$where must be true or false');
+}
+
+List<String> _names(Object? v, String where) {
+  if (v == null) return const [];
+  if (v is! List) throw ConfigException('$where must be a list');
+  return [
+    for (final e in v)
+      if (e is String && _javaName.hasMatch(e))
+        e
+      else
+        throw ConfigException('$where contains an invalid name: $e'),
+  ];
+}
+
+T _enum<T>(Object? v, List<T> values, String Function(T) key, String where) {
+  if (v == null) return values.first;
+  for (final e in values) {
+    if (key(e) == v) return e;
+  }
+  throw ConfigException(
+    'Invalid $where "$v"; expected one of ${values.map(key).join(', ')}',
+  );
+}
