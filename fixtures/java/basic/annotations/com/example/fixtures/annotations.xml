@@ -1,0 +1,50 @@
+<root>
+  <item name="com.example.fixtures.TypedConstants int getMode()">
+    <annotation name="androidx.annotation.IntDef">
+      <val name="value" val="{com.example.fixtures.TypedConstants.MODE_OFF, com.example.fixtures.TypedConstants.MODE_ON, com.example.fixtures.TypedConstants.MODE_AUTO}" />
+    </annotation>
+  </item>
+  <item name="com.example.fixtures.TypedConstants void setMode(int) 0">
+    <annotation name="androidx.annotation.IntDef">
+      <val name="value" val="{com.example.fixtures.TypedConstants.MODE_OFF, com.example.fixtures.TypedConstants.MODE_ON, com.example.fixtures.TypedConstants.MODE_AUTO}" />
+    </annotation>
+  </item>
+  <item name="com.example.fixtures.TypedConstants int getStyle()">
+    <annotation name="androidx.annotation.IntDef">
+      <val name="value" val="{com.example.fixtures.TypedConstants.STYLE_BOLD, com.example.fixtures.TypedConstants.STYLE_ITALIC, com.example.fixtures.TypedConstants.STYLE_UNDERLINE}" />
+      <val name="flag" val="true" />
+    </annotation>
+  </item>
+  <item name="com.example.fixtures.TypedConstants void setStyle(int) 0">
+    <annotation name="androidx.annotation.IntDef">
+      <val name="value" val="{com.example.fixtures.TypedConstants.STYLE_BOLD, com.example.fixtures.TypedConstants.STYLE_ITALIC, com.example.fixtures.TypedConstants.STYLE_UNDERLINE}" />
+      <val name="flag" val="true" />
+    </annotation>
+  </item>
+  <item name="com.example.fixtures.TypedConstants boolean isBold(int) 0">
+    <annotation name="androidx.annotation.IntDef">
+      <val name="value" val="{com.example.fixtures.TypedConstants.STYLE_BOLD, com.example.fixtures.TypedConstants.STYLE_ITALIC, com.example.fixtures.TypedConstants.STYLE_UNDERLINE}" />
+      <val name="flag" val="true" />
+    </annotation>
+  </item>
+  <item name="com.example.fixtures.TypedConstants long getSize()">
+    <annotation name="androidx.annotation.LongDef">
+      <val name="value" val="{com.example.fixtures.TypedConstants.SIZE_SMALL, com.example.fixtures.TypedConstants.SIZE_LARGE}" />
+    </annotation>
+  </item>
+  <item name="com.example.fixtures.TypedConstants void setSize(long) 0">
+    <annotation name="androidx.annotation.LongDef">
+      <val name="value" val="{com.example.fixtures.TypedConstants.SIZE_SMALL, com.example.fixtures.TypedConstants.SIZE_LARGE}" />
+    </annotation>
+  </item>
+  <item name="com.example.fixtures.TypedConstants java.lang.String getColor()">
+    <annotation name="androidx.annotation.StringDef">
+      <val name="value" val="{com.example.fixtures.TypedConstants.COLOR_RED, com.example.fixtures.TypedConstants.COLOR_BLUE}" />
+    </annotation>
+  </item>
+  <item name="com.example.fixtures.TypedConstants void setColor(java.lang.String) 0">
+    <annotation name="androidx.annotation.StringDef">
+      <val name="value" val="{com.example.fixtures.TypedConstants.COLOR_RED, com.example.fixtures.TypedConstants.COLOR_BLUE}" />
+    </annotation>
+  </item>
+</root>

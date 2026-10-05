@@ -85,6 +85,29 @@ void main() {
       expect(first!.toDartString(), 'a');
     });
 
+    test(
+      'typed constants (@IntDef/@LongDef/@StringDef) pass as raw values',
+      () {
+        final t = TypedConstants();
+        t.setMode(TypedConstants$Mode.MODE_AUTO);
+        expect(t.getMode(), TypedConstants$Mode.MODE_AUTO);
+        expect(t.getMode(), TypedConstants.MODE_AUTO);
+        final style =
+            TypedConstants$Style.STYLE_BOLD |
+            TypedConstants$Style.STYLE_UNDERLINE;
+        expect(style.has(TypedConstants$Style.STYLE_BOLD), isTrue);
+        expect(style.has(TypedConstants$Style.STYLE_ITALIC), isFalse);
+        t.style = style;
+        expect(t.getStyle(), 5);
+        expect(TypedConstants.isBold(style), isTrue);
+        t.size = TypedConstants$Size.SIZE_LARGE;
+        expect(t.getSize(), 1 << 40);
+        expect(TypedConstants$Color.COLOR_BLUE, 'blue');
+        t.setColor(TypedConstants$Color.COLOR_BLUE.toJString());
+        expect(t.getColor()!.toDartString(), 'blue');
+      },
+    );
+
     test('bean properties delegate to native getters/setters', () {
       final b = BeanClass();
       expect(b.title!.toDartString(), 'untitled');

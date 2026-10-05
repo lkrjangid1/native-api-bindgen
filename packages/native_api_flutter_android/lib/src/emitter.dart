@@ -80,6 +80,26 @@ final class DartJniEmitter {
   final _diagnostics = <Diagnostic>[];
   final _namesCache = <String, _TypeNames>{};
 
+  /// `@IntDef`/`@LongDef`/`@StringDef` constant sets (TRD §61).
+  late final ConstantSets _sets = ConstantSets.of(module);
+
+  /// Resolver of the library being emitted.
+  late _Resolver _resolver;
+
+  /// Dart names of the emitted constant-set wrappers (sets whose name would
+  /// clash with a generated type are documented only).
+  late final Map<ConstantSet, String> _setNames = () {
+    final taken = <String>{
+      for (final t in _types.values) ...[dartName(t), '\$${dartName(t)}'],
+    };
+    return {
+      for (final s in _sets.all)
+        if (_types.containsKey(s.owner.id) &&
+            !taken.contains('${dartName(s.owner)}\$${s.name}'))
+          s: '${dartName(s.owner)}\$${s.name}',
+    };
+  }();
+
   /// Output-relative library path for a namespace.
   static String libraryPath(String namespace) =>
       '${namespace.isEmpty ? r'$default' : namespace.replaceAll('.', '/')}.dart';
@@ -147,7 +167,7 @@ final class DartJniEmitter {
 
   String _library(String ns, List<ApiType> types) {
     final path = libraryPath(ns);
-    final resolver = _Resolver(this, ns);
+    final resolver = _resolver = _Resolver(this, ns);
     final mapper = DartJniTypeMapper(resolver, mode: options.mode);
     final body = StringBuffer();
     for (final t in types) {
@@ -444,6 +464,81 @@ final class DartJniEmitter {
     b.writeln('}');
     b.writeln();
     if (implementable) _emitInterfaceMixin(b, ctx);
+    for (final s in _sets.declaredBy(t.id)) {
+      if (_setNames.containsKey(s)) _emitConstantSet(b, s, file);
+    }
+  }
+
+  /// A zero-cost extension type over the constants of an `@IntDef`-style
+  /// set. It implements `int`/`String`, so values pass wherever the native
+  /// API takes the raw type, and the raw values are never altered.
+  void _emitConstantSet(StringBuffer b, ConstantSet s, String file) {
+    final name = _setNames[s]!;
+    final rep = s.kind == 'string' ? 'String' : 'int';
+    final ann = switch (s.kind) {
+      'int' => 'IntDef',
+      'long' => 'LongDef',
+      _ => 'StringDef',
+    };
+    final uses = s.usages.toList()..sort();
+    b.writeln(
+      '/// Typed `@$ann` constants of `${s.owner.id}`${s.flag ? ' (flags: combine with `|`)' : ''}.',
+    );
+    b.writeln('///');
+    b.writeln(
+      '/// Values are the SDK constants; every [$name] is ${rep == 'int' ? 'an' : 'a'} `$rep`, so it can be passed wherever the API takes `$rep`.',
+    );
+    b.writeln('/// Used by:');
+    for (final u in uses.take(8)) {
+      b.writeln('/// - `${_docSafe(u)}`');
+    }
+    if (uses.length > 8) b.writeln('/// - and ${uses.length - 8} more');
+    b.writeln('extension type const $name($rep value) implements $rep {');
+    for (final f in s.members) {
+      final cv = f.constantValue!;
+      final lit = s.kind == 'string'
+          ? dartStringLiteral(cv.literal)
+          : cv.literal;
+      final member = Identifiers.dartMember(f.name);
+      if (member == 'value' || member == 'has') continue;
+      b.writeln('  /// `${f.id}`');
+      b.writeln('  static const $member = $name($lit);');
+    }
+    if (s.flag && s.kind != 'string') {
+      b.writeln();
+      b.writeln('  /// Union of two flag sets.');
+      b.writeln(
+        '  $name operator |($name other) => $name(value | other.value);',
+      );
+      b.writeln();
+      b.writeln('  /// Whether every bit of [flag] is set.');
+      b.writeln(
+        '  bool has($name flag) => (value & flag.value) == flag.value;',
+      );
+    }
+    b.writeln('}');
+    b.writeln();
+    _binding(
+      '${s.owner.id}\$${s.name}<constants>',
+      name,
+      file,
+      'typed constants (@$ann)',
+    );
+  }
+
+  /// The wrapper typing a result of Dart type [base] (`int`, `String`, with
+  /// optional `?`) in `ergonomic-dart` mode, qualified for the current
+  /// library; null otherwise. Wrappers are subtypes of [base].
+  String? _setType(ConstantSet? s, String base) {
+    if (s == null || options.mode != GenerationMode.ergonomicDart) return null;
+    final n = _setNames[s];
+    if (n == null) return null;
+    final raw = base.endsWith('?') ? base.substring(0, base.length - 1) : base;
+    if (raw != (s.kind == 'string' ? 'String' : 'int')) return null;
+    final q = base.endsWith('?') ? '?' : '';
+    if (s.owner.namespace == _resolver.namespace) return '$n$q';
+    _resolver.usedNamespaces.add(s.owner.namespace);
+    return '${Identifiers.packagePrefix(s.owner.namespace)}.$n$q';
   }
 
   /// `<$T extends jni$.JObject?, ...>` for [params], or '' when empty.
@@ -547,6 +642,20 @@ final class DartJniEmitter {
         lines.writeln('/// - Varargs: pass the last argument as an array');
       }
       final suspend = isSuspend(n);
+      for (var i = 0; i < n.parameters.length && !suspend; i++) {
+        final s = _sets.forParameter(n.id, i);
+        if (s != null && _setNames.containsKey(s)) {
+          lines.writeln(
+            '/// - `${Identifiers.dartMember(n.parameters[i].name)}`: one of `${_setNames[s]}`${s.flag ? ' (flags)' : ''}',
+          );
+        }
+      }
+      final rs = _sets.forReturn(n.id);
+      if (rs != null && _setNames.containsKey(rs)) {
+        lines.writeln(
+          '/// - Result: one of `${_setNames[rs]}`${rs.flag ? ' (flags)' : ''}',
+        );
+      }
       for (final p in suspend ? suspendParameters(n) : n.parameters) {
         if (p.type is! PrimitiveTypeRef) {
           lines.writeln(
@@ -561,6 +670,14 @@ final class DartJniEmitter {
       } else if (!n.isConstructor && n.returnType is! PrimitiveTypeRef) {
         lines.writeln(
           '/// - Returns `${n.returnType.display}`, ${_nullText(n.returnType.nullability)}',
+        );
+      }
+    }
+    if (n is ApiField) {
+      final fs = _sets.forField(n.id);
+      if (fs != null && _setNames.containsKey(fs)) {
+        lines.writeln(
+          '/// - Value: one of `${_setNames[fs]}`${fs.flag ? ' (flags)' : ''}',
         );
       }
     }
@@ -626,16 +743,19 @@ final class DartJniEmitter {
     final idName = '_\$f\$$dart';
     final nullable =
         !m.isPrimitive && f.type.nullability != Nullability.nonnull;
-    final dartType = _apiType(f.type, m);
+    final baseType = _apiType(f.type, m);
+    final setType = _setType(_sets.forField(f.id), baseType);
+    final dartType = setType ?? baseType;
     final getter = nullable ? 'getNullable' : 'get';
     final jType = m.ergonomicString ? 'jni\$.JString.type' : m.jniType;
     String read(String target) {
       final raw = '$idName.$getter($target, $jType)';
-      return m.ergonomicString
+      final v = m.ergonomicString
           ? '$raw${nullable ? '?' : ''}.toDartString(releaseOriginal: true)'
           : m.needsCast
           ? '($raw as $dartType)'
           : raw;
+      return setType == null ? v : '($v as $setType)';
     }
 
     if (f.isStatic) {
@@ -650,7 +770,7 @@ final class DartJniEmitter {
       b.writeln('  }');
       if (!f.isFinal) {
         b.writeln(
-          '  static set $dart($dartType value) ${_setterBody(_fieldSet(idName, '_\$class', jType, m, nullable))}',
+          '  static set $dart($baseType value) ${_setterBody(_fieldSet(idName, '_\$class', jType, m, nullable))}',
         );
       }
     } else {
@@ -661,7 +781,7 @@ final class DartJniEmitter {
       b.writeln('  $dartType get $dart => ${read('this')};');
       if (!f.isFinal) {
         b.writeln(
-          '  set $dart($dartType value) ${_setterBody(_fieldSet(idName, 'this', jType, m, nullable))}',
+          '  set $dart($baseType value) ${_setterBody(_fieldSet(idName, 'this', jType, m, nullable))}',
         );
       }
     }
@@ -828,7 +948,9 @@ final class DartJniEmitter {
         (m.returnType as PrimitiveTypeRef).kind == PrimitiveKind.void_;
     final nullable =
         !ret.isPrimitive && m.returnType.nullability != Nullability.nonnull;
-    final dartRet = isVoid ? 'void' : _apiType(m.returnType, ret);
+    final baseRet = isVoid ? 'void' : _apiType(m.returnType, ret);
+    final setRet = isVoid ? null : _setType(_sets.forReturn(m.id), baseRet);
+    final dartRet = setRet ?? baseRet;
     final idName = '_\$m\$$dart';
     final kind = m.isStatic ? 'staticMethodId' : 'instanceMethodId';
     final target = m.isStatic ? '_\$class' : 'this';
@@ -840,6 +962,7 @@ final class DartJniEmitter {
     } else if (ret.needsCast && !isVoid) {
       call = '($call as $dartRet)';
     }
+    if (setRet != null) call = '($call as $setRet)';
     b.writeln();
     b.writeln(
       "  static final $idName = _\$class.$kind(r'${m.name}', r'${m.nativeDescriptor}');",
@@ -1002,7 +1125,9 @@ final class DartJniEmitter {
       typeVariableBounds: tv,
       typeVariables: scope,
     );
-    final getterType = _apiType(g.returnType, gm);
+    final getterBase = _apiType(g.returnType, gm);
+    final getterType =
+        _setType(_sets.forReturn(g.id), getterBase) ?? getterBase;
     final getterName = ownerNames.methodNames[g.id]!;
     b.writeln();
     b.writeln(
@@ -1025,7 +1150,7 @@ final class DartJniEmitter {
       );
       final setterType = _apiType(p.type, pm);
       // Dart requires the getter type to be assignable to the setter type.
-      if (setterType == getterType || setterType == '$getterType?') {
+      if (setterType == getterBase || setterType == '$getterBase?') {
         if (st.isDeprecated) {
           b.writeln("  @Deprecated('${_deprecationText(st.availability)}')");
         }

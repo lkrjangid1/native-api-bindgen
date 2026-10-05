@@ -253,6 +253,9 @@ final class RnJsiEmitter {
       body.writeln();
       for (final t in e.value) {
         _emitClass(body, t);
+        for (final s in _sets.declaredBy(t.id)) {
+          if (_setNames.containsKey(s)) _emitConstantSet(body, s);
+        }
       }
       _emitContextHelpers(body);
       final out = StringBuffer(generatedHeader(module))
@@ -430,6 +433,20 @@ final class RnJsiEmitter {
       lines.add('- Deprecated in Android API ${a.deprecated}');
     }
     if (n is ApiMethod) {
+      for (var i = 0; i < n.parameters.length; i++) {
+        final s = _sets.forParameter(n.id, i);
+        if (s != null && _setNames.containsKey(s)) {
+          lines.add(
+            '- `${Identifiers.typescript(n.parameters[i].name)}`: one of `${_setNames[s]}`${s.flag ? ' (flags)' : ''}',
+          );
+        }
+      }
+      final rs = _sets.forReturn(n.id);
+      if (rs != null && _setNames.containsKey(rs)) {
+        lines.add(
+          '- Result: one of `${_setNames[rs]}`${rs.flag ? ' (flags)' : ''}',
+        );
+      }
       if (n.threading != Threading.unspecified) {
         lines.add('- Threading: ${n.threading.name}');
       }
@@ -464,6 +481,82 @@ final class RnJsiEmitter {
   }
 
   final _namesCache = <String, _RnNames>{};
+
+  /// `@IntDef`/`@LongDef`/`@StringDef` constant sets (TRD §61).
+  late final ConstantSets _sets = ConstantSets.of(module);
+
+  /// TS names of the emitted constant sets (`Owner$Name`); sets whose name
+  /// would clash with a generated declaration, or whose `long` values are not
+  /// exact JavaScript numbers in ergonomic mode, are documented only.
+  late final Map<ConstantSet, String> _setNames = () {
+    final taken = <String>{
+      for (final n in _tsNames.values) ...[n, '$n\$Like', '$n\$Impl'],
+    };
+    return {
+      for (final s in _sets.all)
+        if (_types.containsKey(s.owner.id) &&
+            !taken.contains('${_tsName(s.owner)}\$${s.name}') &&
+            s.members.every((f) => _tsLiteral(f.constantValue!) != null) &&
+            (s.kind != 'long' ||
+                options.mode == TypescriptMode.strict ||
+                s.members.every((f) => _safeInt(f.constantValue!.literal))))
+          s: '${_tsName(s.owner)}\$${s.name}',
+    };
+  }();
+
+  /// `as const` object of a constant set, plus (unless it holds flags) a
+  /// union type of its values. Values are the SDK constants.
+  void _emitConstantSet(StringBuffer b, ConstantSet s) {
+    final name = _setNames[s]!;
+    final ann = switch (s.kind) {
+      'int' => 'IntDef',
+      'long' => 'LongDef',
+      _ => 'StringDef',
+    };
+    final uses = s.usages.toList()..sort();
+    b.writeln();
+    b.writeln('/**');
+    b.writeln(
+      ' * Typed `@$ann` constants of `${s.owner.id}`${s.flag ? ' (flags: combine with `|`)' : ''}. Values are the SDK constants.',
+    );
+    b.writeln(' * Used by:');
+    for (final u in uses.take(8)) {
+      b.writeln(' * - `${u.replaceAll('*/', '* /')}`');
+    }
+    if (uses.length > 8) b.writeln(' * - and ${uses.length - 8} more');
+    b.writeln(' */');
+    b.writeln('export const $name = {');
+    for (final f in s.members) {
+      b.writeln('  ${f.name}: ${_tsLiteral(f.constantValue!)},');
+    }
+    b.writeln('} as const;');
+    if (!s.flag) {
+      b.writeln('/** One of the values of {@link $name}. */');
+      b.writeln('export type $name = (typeof $name)[keyof typeof $name];');
+    }
+    _bindings.add(
+      BindingMapEntry(
+        symbolId: '${s.owner.id}\$${s.name}<constants>',
+        generated: name,
+        file: _file,
+        generator: _generatorId,
+        runtimeAdapter: 'typed constants (@$ann)',
+      ),
+    );
+  }
+
+  /// The union type typing [m]'s result in ergonomic mode (non-flag sets
+  /// only), qualified for the current module; null otherwise.
+  String? _setReturnType(ApiMethod m) {
+    if (options.mode != TypescriptMode.ergonomic) return null;
+    final s = _sets.forReturn(m.id);
+    if (s == null || s.flag) return null;
+    final n = _setNames[s];
+    if (n == null) return null;
+    if (s.owner.namespace == _ns) return n;
+    _usedNs.add(s.owner.namespace);
+    return '${Identifiers.packagePrefix(s.owner.namespace)}.$n';
+  }
 
   /// Instance member names for [t]: declared members get names over the
   /// visible overload set; overrides keep the ancestor's name so prototype
@@ -917,6 +1010,13 @@ final class RnJsiEmitter {
       convert = isVoid
           ? (r) => r
           : (r) => _convertReturn(r, m.returnType, rt, m.id);
+      final setType = isVoid ? null : _setReturnType(m);
+      if (setType != null) {
+        final nullable = retType.endsWith(' | null');
+        retType = nullable ? '$setType | null' : setType;
+        final base = convert;
+        convert = (r) => '(${base(r)}) as $retType';
+      }
     }
     if (async) {
       b.writeln(

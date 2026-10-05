@@ -1751,3 +1751,253 @@ final class _$ThrowsClass$Type extends jni$.JType<ThrowsClass> {
   @override
   String get signature => r'Lcom/example/fixtures/ThrowsClass;';
 }
+
+/// Native API: `com.example.fixtures.TypedConstants` (class)
+///
+/// - Android API: 1+
+/// - Superclass: `java.lang.Object`
+extension type TypedConstants._(jni$.JObject _$TypedConstants) implements jni$.JObject {
+  static final _$class = jni$.JClass.forName(r'com/example/fixtures/TypedConstants');
+
+  /// `package:jni` type descriptor for `com.example.fixtures.TypedConstants`.
+  static const jni$.JType<TypedConstants> type = _$TypedConstants$Type();
+
+  /// Native API: `com.example.fixtures.TypedConstants#COLOR_BLUE`
+  ///
+  /// - Android API: 1+
+  /// - Constant value (inlined from the SDK): `blue`
+  static const String COLOR_BLUE = 'blue';
+
+  /// Native API: `com.example.fixtures.TypedConstants#COLOR_RED`
+  ///
+  /// - Android API: 1+
+  /// - Constant value (inlined from the SDK): `red`
+  static const String COLOR_RED = 'red';
+
+  /// Native API: `com.example.fixtures.TypedConstants#MODE_AUTO`
+  ///
+  /// - Android API: 1+
+  /// - Constant value (inlined from the SDK): `2`
+  static const int MODE_AUTO = 2;
+
+  /// Native API: `com.example.fixtures.TypedConstants#MODE_OFF`
+  ///
+  /// - Android API: 1+
+  /// - Constant value (inlined from the SDK): `0`
+  static const int MODE_OFF = 0;
+
+  /// Native API: `com.example.fixtures.TypedConstants#MODE_ON`
+  ///
+  /// - Android API: 1+
+  /// - Constant value (inlined from the SDK): `1`
+  static const int MODE_ON = 1;
+
+  /// Native API: `com.example.fixtures.TypedConstants#SIZE_LARGE`
+  ///
+  /// - Android API: 1+
+  /// - Constant value (inlined from the SDK): `1099511627776`
+  static const int SIZE_LARGE = 1099511627776;
+
+  /// Native API: `com.example.fixtures.TypedConstants#SIZE_SMALL`
+  ///
+  /// - Android API: 1+
+  /// - Constant value (inlined from the SDK): `1`
+  static const int SIZE_SMALL = 1;
+
+  /// Native API: `com.example.fixtures.TypedConstants#STYLE_BOLD`
+  ///
+  /// - Android API: 1+
+  /// - Constant value (inlined from the SDK): `1`
+  static const int STYLE_BOLD = 1;
+
+  /// Native API: `com.example.fixtures.TypedConstants#STYLE_ITALIC`
+  ///
+  /// - Android API: 1+
+  /// - Constant value (inlined from the SDK): `2`
+  static const int STYLE_ITALIC = 2;
+
+  /// Native API: `com.example.fixtures.TypedConstants#STYLE_UNDERLINE`
+  ///
+  /// - Android API: 1+
+  /// - Constant value (inlined from the SDK): `4`
+  static const int STYLE_UNDERLINE = 4;
+
+  static final _$c$ = _$class.constructorId(r'()V');
+  /// Native API: `com.example.fixtures.TypedConstants#<init>()`
+  ///
+  /// - Android API: 1+
+  factory TypedConstants() {
+    return rt$.guardJni(() => _$c$.call<TypedConstants>(_$class, []));
+  }
+
+  static final _$m$getColor = _$class.instanceMethodId(r'getColor', r'()Ljava/lang/String;');
+  /// Native API: `com.example.fixtures.TypedConstants#getColor()`
+  ///
+  /// - Android API: 1+
+  /// - Result: one of `TypedConstants$Color`
+  /// - Returns `java.lang.String`, nullability unknown (treated as nullable)
+  /// - Annotation: `@StringDef` value={com.example.fixtures.TypedConstants.COLOR_RED, com.example.fixtures.TypedConstants.COLOR_BLUE}
+  jni$.JString? getColor() {
+    return rt$.guardJni(() => _$m$getColor.callNullable(this, jni$.JString.type, []));
+  }
+
+  static final _$m$getMode = _$class.instanceMethodId(r'getMode', r'()I');
+  /// Native API: `com.example.fixtures.TypedConstants#getMode()`
+  ///
+  /// - Android API: 1+
+  /// - Result: one of `TypedConstants$Mode`
+  /// - Annotation: `@IntDef` value={com.example.fixtures.TypedConstants.MODE_OFF, com.example.fixtures.TypedConstants.MODE_ON, com.example.fixtures.TypedConstants.MODE_AUTO}
+  int getMode() {
+    return rt$.guardJni(() => _$m$getMode.call(this, jni$.jint.type, []));
+  }
+
+  static final _$m$getSize = _$class.instanceMethodId(r'getSize', r'()J');
+  /// Native API: `com.example.fixtures.TypedConstants#getSize()`
+  ///
+  /// - Android API: 1+
+  /// - Result: one of `TypedConstants$Size`
+  /// - Annotation: `@LongDef` value={com.example.fixtures.TypedConstants.SIZE_SMALL, com.example.fixtures.TypedConstants.SIZE_LARGE}
+  int getSize() {
+    return rt$.guardJni(() => _$m$getSize.call(this, jni$.jlong.type, []));
+  }
+
+  static final _$m$getStyle = _$class.instanceMethodId(r'getStyle', r'()I');
+  /// Native API: `com.example.fixtures.TypedConstants#getStyle()`
+  ///
+  /// - Android API: 1+
+  /// - Result: one of `TypedConstants$Style` (flags)
+  /// - Annotation: `@IntDef` value={com.example.fixtures.TypedConstants.STYLE_BOLD, com.example.fixtures.TypedConstants.STYLE_ITALIC, com.example.fixtures.TypedConstants.STYLE_UNDERLINE}, flag=true
+  int getStyle() {
+    return rt$.guardJni(() => _$m$getStyle.call(this, jni$.jint.type, []));
+  }
+
+  static final _$m$isBold = _$class.staticMethodId(r'isBold', r'(I)Z');
+  /// Native API: `com.example.fixtures.TypedConstants#isBold(int)`
+  ///
+  /// - Android API: 1+
+  /// - `style`: one of `TypedConstants$Style` (flags)
+  static bool isBold(int style) {
+    return rt$.guardJni(() => _$m$isBold.call(_$class, jni$.jboolean.type, [jni$.JValueInt(style)]));
+  }
+
+  static final _$m$setColor = _$class.instanceMethodId(r'setColor', r'(Ljava/lang/String;)V');
+  /// Native API: `com.example.fixtures.TypedConstants#setColor(java.lang.String)`
+  ///
+  /// - Android API: 1+
+  /// - `color`: `java.lang.String`, nullability unknown (treated as nullable)
+  void setColor(jni$.JString? color) {
+    rt$.guardJni(() => _$m$setColor.call(this, jni$.jvoid.type, [color]));
+  }
+
+  static final _$m$setMode = _$class.instanceMethodId(r'setMode', r'(I)V');
+  /// Native API: `com.example.fixtures.TypedConstants#setMode(int)`
+  ///
+  /// - Android API: 1+
+  /// - `mode`: one of `TypedConstants$Mode`
+  void setMode(int mode) {
+    rt$.guardJni(() => _$m$setMode.call(this, jni$.jvoid.type, [jni$.JValueInt(mode)]));
+  }
+
+  static final _$m$setSize = _$class.instanceMethodId(r'setSize', r'(J)V');
+  /// Native API: `com.example.fixtures.TypedConstants#setSize(long)`
+  ///
+  /// - Android API: 1+
+  /// - `size`: one of `TypedConstants$Size`
+  void setSize(int size) {
+    rt$.guardJni(() => _$m$setSize.call(this, jni$.jvoid.type, [size]));
+  }
+
+  static final _$m$setStyle = _$class.instanceMethodId(r'setStyle', r'(I)V');
+  /// Native API: `com.example.fixtures.TypedConstants#setStyle(int)`
+  ///
+  /// - Android API: 1+
+  /// - `style`: one of `TypedConstants$Style` (flags)
+  void setStyle(int style) {
+    rt$.guardJni(() => _$m$setStyle.call(this, jni$.jvoid.type, [jni$.JValueInt(style)]));
+  }
+
+  /// Java bean property `color`: read-write, backed by the native getter `getColor` and setter `setColor`.
+  jni$.JString? get color => getColor();
+  set color(jni$.JString? value) => setColor(value);
+
+  /// Java bean property `mode`: read-write, backed by the native getter `getMode` and setter `setMode`.
+  int get mode => getMode();
+  set mode(int value) => setMode(value);
+
+  /// Java bean property `size`: read-write, backed by the native getter `getSize` and setter `setSize`.
+  int get size => getSize();
+  set size(int value) => setSize(value);
+
+  /// Java bean property `style`: read-write, backed by the native getter `getStyle` and setter `setStyle`.
+  int get style => getStyle();
+  set style(int value) => setStyle(value);
+}
+
+final class _$TypedConstants$Type extends jni$.JType<TypedConstants> {
+  const _$TypedConstants$Type();
+
+  @override
+  String get signature => r'Lcom/example/fixtures/TypedConstants;';
+}
+
+/// Typed `@StringDef` constants of `com.example.fixtures.TypedConstants`.
+///
+/// Values are the SDK constants; every [TypedConstants$Color] is a `String`, so it can be passed wherever the API takes `String`.
+/// Used by:
+/// - `com.example.fixtures.TypedConstants#getColor()`
+extension type const TypedConstants$Color(String value) implements String {
+  /// `com.example.fixtures.TypedConstants#COLOR_BLUE`
+  static const COLOR_BLUE = TypedConstants$Color('blue');
+  /// `com.example.fixtures.TypedConstants#COLOR_RED`
+  static const COLOR_RED = TypedConstants$Color('red');
+}
+
+/// Typed `@IntDef` constants of `com.example.fixtures.TypedConstants`.
+///
+/// Values are the SDK constants; every [TypedConstants$Mode] is an `int`, so it can be passed wherever the API takes `int`.
+/// Used by:
+/// - `com.example.fixtures.TypedConstants#getMode()`
+/// - `com.example.fixtures.TypedConstants#setMode(int) parameter 0`
+extension type const TypedConstants$Mode(int value) implements int {
+  /// `com.example.fixtures.TypedConstants#MODE_AUTO`
+  static const MODE_AUTO = TypedConstants$Mode(2);
+  /// `com.example.fixtures.TypedConstants#MODE_OFF`
+  static const MODE_OFF = TypedConstants$Mode(0);
+  /// `com.example.fixtures.TypedConstants#MODE_ON`
+  static const MODE_ON = TypedConstants$Mode(1);
+}
+
+/// Typed `@LongDef` constants of `com.example.fixtures.TypedConstants`.
+///
+/// Values are the SDK constants; every [TypedConstants$Size] is an `int`, so it can be passed wherever the API takes `int`.
+/// Used by:
+/// - `com.example.fixtures.TypedConstants#getSize()`
+/// - `com.example.fixtures.TypedConstants#setSize(long) parameter 0`
+extension type const TypedConstants$Size(int value) implements int {
+  /// `com.example.fixtures.TypedConstants#SIZE_LARGE`
+  static const SIZE_LARGE = TypedConstants$Size(1099511627776);
+  /// `com.example.fixtures.TypedConstants#SIZE_SMALL`
+  static const SIZE_SMALL = TypedConstants$Size(1);
+}
+
+/// Typed `@IntDef` constants of `com.example.fixtures.TypedConstants` (flags: combine with `|`).
+///
+/// Values are the SDK constants; every [TypedConstants$Style] is an `int`, so it can be passed wherever the API takes `int`.
+/// Used by:
+/// - `com.example.fixtures.TypedConstants#getStyle()`
+/// - `com.example.fixtures.TypedConstants#isBold(int) parameter 0`
+/// - `com.example.fixtures.TypedConstants#setStyle(int) parameter 0`
+extension type const TypedConstants$Style(int value) implements int {
+  /// `com.example.fixtures.TypedConstants#STYLE_BOLD`
+  static const STYLE_BOLD = TypedConstants$Style(1);
+  /// `com.example.fixtures.TypedConstants#STYLE_ITALIC`
+  static const STYLE_ITALIC = TypedConstants$Style(2);
+  /// `com.example.fixtures.TypedConstants#STYLE_UNDERLINE`
+  static const STYLE_UNDERLINE = TypedConstants$Style(4);
+
+  /// Union of two flag sets.
+  TypedConstants$Style operator |(TypedConstants$Style other) => TypedConstants$Style(value | other.value);
+
+  /// Whether every bit of [flag] is set.
+  bool has(TypedConstants$Style flag) => (value & flag.value) == flag.value;
+}

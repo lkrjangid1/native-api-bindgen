@@ -59,6 +59,8 @@ export type Sizable$Like = JavaObject & {readonly __brand_com_example_fixtures_S
 export type SuspendShaped$Like = JavaObject & {readonly __brand_com_example_fixtures_SuspendShaped: true};
 /** Any object that is a `com.example.fixtures.ThrowsClass` (subclasses and implementations included). */
 export type ThrowsClass$Like = JavaObject & {readonly __brand_com_example_fixtures_ThrowsClass: true};
+/** Any object that is a `com.example.fixtures.TypedConstants` (subclasses and implementations included). */
+export type TypedConstants$Like = JavaObject & {readonly __brand_com_example_fixtures_TypedConstants: true};
 
 /**
  * Native API: `com.example.fixtures.AnnotatedClass`
@@ -1541,3 +1543,262 @@ export class ThrowsClass extends JavaObject {
     return (ThrowsClass.$t()['read()V'](true, this.$h) as Promise<unknown>).then(r => undefined);
   }
 }
+
+/**
+ * Native API: `com.example.fixtures.TypedConstants`
+ * - Android API: 1+
+ * - Kind: class
+ */
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
+export interface TypedConstants {
+  readonly __brand_com_example_fixtures_TypedConstants: true;
+}
+export class TypedConstants extends JavaObject {
+  static readonly javaInternalName: string = 'com/example/fixtures/TypedConstants';
+  /** @internal */ static readonly $t = $rt.classTable('com.example.fixtures.TypedConstants');
+  /**
+   * Native API: `com.example.fixtures.TypedConstants#COLOR_BLUE`
+   * - Android API: 1+
+   */
+  static readonly COLOR_BLUE: string = "blue";
+  /**
+   * Native API: `com.example.fixtures.TypedConstants#COLOR_RED`
+   * - Android API: 1+
+   */
+  static readonly COLOR_RED: string = "red";
+  /**
+   * Native API: `com.example.fixtures.TypedConstants#MODE_AUTO`
+   * - Android API: 1+
+   */
+  static readonly MODE_AUTO: number = 2;
+  /**
+   * Native API: `com.example.fixtures.TypedConstants#MODE_OFF`
+   * - Android API: 1+
+   */
+  static readonly MODE_OFF: number = 0;
+  /**
+   * Native API: `com.example.fixtures.TypedConstants#MODE_ON`
+   * - Android API: 1+
+   */
+  static readonly MODE_ON: number = 1;
+  /**
+   * Native API: `com.example.fixtures.TypedConstants#SIZE_LARGE`
+   * - Android API: 1+
+   */
+  static readonly SIZE_LARGE: bigint = 1099511627776n;
+  /**
+   * Native API: `com.example.fixtures.TypedConstants#SIZE_SMALL`
+   * - Android API: 1+
+   */
+  static readonly SIZE_SMALL: bigint = 1n;
+  /**
+   * Native API: `com.example.fixtures.TypedConstants#STYLE_BOLD`
+   * - Android API: 1+
+   */
+  static readonly STYLE_BOLD: number = 1;
+  /**
+   * Native API: `com.example.fixtures.TypedConstants#STYLE_ITALIC`
+   * - Android API: 1+
+   */
+  static readonly STYLE_ITALIC: number = 2;
+  /**
+   * Native API: `com.example.fixtures.TypedConstants#STYLE_UNDERLINE`
+   * - Android API: 1+
+   */
+  static readonly STYLE_UNDERLINE: number = 4;
+  /**
+   * Native API: `com.example.fixtures.TypedConstants#<init>()`
+   * - Android API: 1+
+   */
+  static new(): TypedConstants {
+    return $rt.wrapNonNull(TypedConstants, TypedConstants.$t()['<init>()V'](false), 'com.example.fixtures.TypedConstants#<init>()');
+  }
+  /**
+   * Native API: `com.example.fixtures.TypedConstants#isBold(int)`
+   * - Android API: 1+
+   * - `style`: one of `TypedConstants$Style` (flags)
+   */
+  static isBold(style: number): boolean {
+    return TypedConstants.$t()['isBold(int)Z'](false, style) as boolean;
+  }
+  /** Promise variant of `com.example.fixtures.TypedConstants#isBold(int)`: the JNI call runs on a background thread. */
+  static isBoldAsync(style: number): Promise<boolean> {
+    return (TypedConstants.$t()['isBold(int)Z'](true, style) as Promise<unknown>).then(r => r as boolean);
+  }
+  /**
+   * Native API: `com.example.fixtures.TypedConstants#getColor()`
+   * - Android API: 1+
+   * - Result: one of `TypedConstants$Color`
+   */
+  getColor(): string | null {
+    return TypedConstants.$t()['getColor()Ljava/lang/String;'](false, this.$h) as string | null;
+  }
+  /** Promise variant of `com.example.fixtures.TypedConstants#getColor()`: the JNI call runs on a background thread. */
+  getColorAsync(): Promise<string | null> {
+    return (TypedConstants.$t()['getColor()Ljava/lang/String;'](true, this.$h) as Promise<unknown>).then(r => r as string | null);
+  }
+  /**
+   * Native API: `com.example.fixtures.TypedConstants#getMode()`
+   * - Android API: 1+
+   * - Result: one of `TypedConstants$Mode`
+   */
+  getMode(): number {
+    return TypedConstants.$t()['getMode()I'](false, this.$h) as number;
+  }
+  /** Promise variant of `com.example.fixtures.TypedConstants#getMode()`: the JNI call runs on a background thread. */
+  getModeAsync(): Promise<number> {
+    return (TypedConstants.$t()['getMode()I'](true, this.$h) as Promise<unknown>).then(r => r as number);
+  }
+  /**
+   * Native API: `com.example.fixtures.TypedConstants#getSize()`
+   * - Android API: 1+
+   * - Result: one of `TypedConstants$Size`
+   */
+  getSize(): bigint {
+    return TypedConstants.$t()['getSize()J'](false, this.$h) as bigint;
+  }
+  /** Promise variant of `com.example.fixtures.TypedConstants#getSize()`: the JNI call runs on a background thread. */
+  getSizeAsync(): Promise<bigint> {
+    return (TypedConstants.$t()['getSize()J'](true, this.$h) as Promise<unknown>).then(r => r as bigint);
+  }
+  /**
+   * Native API: `com.example.fixtures.TypedConstants#getStyle()`
+   * - Android API: 1+
+   * - Result: one of `TypedConstants$Style` (flags)
+   */
+  getStyle(): number {
+    return TypedConstants.$t()['getStyle()I'](false, this.$h) as number;
+  }
+  /** Promise variant of `com.example.fixtures.TypedConstants#getStyle()`: the JNI call runs on a background thread. */
+  getStyleAsync(): Promise<number> {
+    return (TypedConstants.$t()['getStyle()I'](true, this.$h) as Promise<unknown>).then(r => r as number);
+  }
+  /**
+   * Native API: `com.example.fixtures.TypedConstants#setColor(java.lang.String)`
+   * - Android API: 1+
+   */
+  setColor(color: string | null): void {
+    TypedConstants.$t()['setColor(java.lang.String)V'](false, this.$h, color);
+  }
+  /** Promise variant of `com.example.fixtures.TypedConstants#setColor(java.lang.String)`: the JNI call runs on a background thread. */
+  setColorAsync(color: string | null): Promise<void> {
+    return (TypedConstants.$t()['setColor(java.lang.String)V'](true, this.$h, color) as Promise<unknown>).then(r => undefined);
+  }
+  /**
+   * Native API: `com.example.fixtures.TypedConstants#setMode(int)`
+   * - Android API: 1+
+   * - `mode`: one of `TypedConstants$Mode`
+   */
+  setMode(mode: number): void {
+    TypedConstants.$t()['setMode(int)V'](false, this.$h, mode);
+  }
+  /** Promise variant of `com.example.fixtures.TypedConstants#setMode(int)`: the JNI call runs on a background thread. */
+  setModeAsync(mode: number): Promise<void> {
+    return (TypedConstants.$t()['setMode(int)V'](true, this.$h, mode) as Promise<unknown>).then(r => undefined);
+  }
+  /**
+   * Native API: `com.example.fixtures.TypedConstants#setSize(long)`
+   * - Android API: 1+
+   * - `size`: one of `TypedConstants$Size`
+   */
+  setSize(size: bigint): void {
+    TypedConstants.$t()['setSize(long)V'](false, this.$h, size);
+  }
+  /** Promise variant of `com.example.fixtures.TypedConstants#setSize(long)`: the JNI call runs on a background thread. */
+  setSizeAsync(size: bigint): Promise<void> {
+    return (TypedConstants.$t()['setSize(long)V'](true, this.$h, size) as Promise<unknown>).then(r => undefined);
+  }
+  /**
+   * Native API: `com.example.fixtures.TypedConstants#setStyle(int)`
+   * - Android API: 1+
+   * - `style`: one of `TypedConstants$Style` (flags)
+   */
+  setStyle(style: number): void {
+    TypedConstants.$t()['setStyle(int)V'](false, this.$h, style);
+  }
+  /** Promise variant of `com.example.fixtures.TypedConstants#setStyle(int)`: the JNI call runs on a background thread. */
+  setStyleAsync(style: number): Promise<void> {
+    return (TypedConstants.$t()['setStyle(int)V'](true, this.$h, style) as Promise<unknown>).then(r => undefined);
+  }
+  /** Bean property backed by `getColor()` / `setColor()`. */
+  get color(): string | null {
+    return this.getColor();
+  }
+  set color(value: string | null) {
+    this.setColor(value);
+  }
+  /** Bean property backed by `getMode()` / `setMode()`. */
+  get mode(): number {
+    return this.getMode();
+  }
+  set mode(value: number) {
+    this.setMode(value);
+  }
+  /** Bean property backed by `getSize()` / `setSize()`. */
+  get size(): bigint {
+    return this.getSize();
+  }
+  set size(value: bigint) {
+    this.setSize(value);
+  }
+  /** Bean property backed by `getStyle()` / `setStyle()`. */
+  get style(): number {
+    return this.getStyle();
+  }
+  set style(value: number) {
+    this.setStyle(value);
+  }
+}
+
+
+/**
+ * Typed `@StringDef` constants of `com.example.fixtures.TypedConstants`. Values are the SDK constants.
+ * Used by:
+ * - `com.example.fixtures.TypedConstants#getColor()`
+ */
+export const TypedConstants$Color = {
+  COLOR_BLUE: "blue",
+  COLOR_RED: "red",
+} as const;
+/** One of the values of {@link TypedConstants$Color}. */
+export type TypedConstants$Color = (typeof TypedConstants$Color)[keyof typeof TypedConstants$Color];
+
+/**
+ * Typed `@IntDef` constants of `com.example.fixtures.TypedConstants`. Values are the SDK constants.
+ * Used by:
+ * - `com.example.fixtures.TypedConstants#getMode()`
+ * - `com.example.fixtures.TypedConstants#setMode(int) parameter 0`
+ */
+export const TypedConstants$Mode = {
+  MODE_AUTO: 2,
+  MODE_OFF: 0,
+  MODE_ON: 1,
+} as const;
+/** One of the values of {@link TypedConstants$Mode}. */
+export type TypedConstants$Mode = (typeof TypedConstants$Mode)[keyof typeof TypedConstants$Mode];
+
+/**
+ * Typed `@LongDef` constants of `com.example.fixtures.TypedConstants`. Values are the SDK constants.
+ * Used by:
+ * - `com.example.fixtures.TypedConstants#getSize()`
+ * - `com.example.fixtures.TypedConstants#setSize(long) parameter 0`
+ */
+export const TypedConstants$Size = {
+  SIZE_LARGE: 1099511627776n,
+  SIZE_SMALL: 1n,
+} as const;
+/** One of the values of {@link TypedConstants$Size}. */
+export type TypedConstants$Size = (typeof TypedConstants$Size)[keyof typeof TypedConstants$Size];
+
+/**
+ * Typed `@IntDef` constants of `com.example.fixtures.TypedConstants` (flags: combine with `|`). Values are the SDK constants.
+ * Used by:
+ * - `com.example.fixtures.TypedConstants#getStyle()`
+ * - `com.example.fixtures.TypedConstants#isBold(int) parameter 0`
+ * - `com.example.fixtures.TypedConstants#setStyle(int) parameter 0`
+ */
+export const TypedConstants$Style = {
+  STYLE_BOLD: 1,
+  STYLE_ITALIC: 2,
+  STYLE_UNDERLINE: 4,
+} as const;

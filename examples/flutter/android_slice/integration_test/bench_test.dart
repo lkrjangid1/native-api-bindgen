@@ -57,14 +57,20 @@ void main() {
     });
 
     const channel = MethodChannel('nab/bench');
-    results['methodchannel_noop_us'] = await usPerAsyncCall(5000, () => channel.invokeMethod<void>('noop'));
+    results['methodchannel_noop_us'] = await usPerAsyncCall(
+      5000,
+      () => channel.invokeMethod<void>('noop'),
+    );
     results['methodchannel_bundle_size_us'] = await usPerAsyncCall(
       5000,
       () => channel.invokeMethod<int>('bundleSize'),
     );
     results['methodchannel_string_roundtrip_us'] = await usPerAsyncCall(
       5000,
-      () => channel.invokeMethod<String>('parseUri', 'https://example.com/path?q=1'),
+      () => channel.invokeMethod<String>(
+        'parseUri',
+        'https://example.com/path?q=1',
+      ),
     );
 
     // Java -> Dart callback latency: Handler.post on the main Looper.
@@ -73,7 +79,9 @@ void main() {
     for (var i = 0; i < 300; i++) {
       final done = Completer<void>();
       final sw = Stopwatch()..start();
-      final r = Runnable.implement($Runnable(run: done.complete, run$async: true));
+      final r = Runnable.implement(
+        $Runnable(run: done.complete, run$async: true),
+      );
       handler.post(r);
       await done.future;
       samples.add(sw.elapsedMicroseconds);
@@ -86,10 +94,14 @@ void main() {
     for (var i = 0; i < 300; i++) {
       final done = Completer<void>();
       final sw = Stopwatch()..start();
-      final r = Runnable.implement($Runnable(run: () {
-        syncSamples.add(sw.elapsedMicroseconds);
-        done.complete();
-      }));
+      final r = Runnable.implement(
+        $Runnable(
+          run: () {
+            syncSamples.add(sw.elapsedMicroseconds);
+            done.complete();
+          },
+        ),
+      );
       handler.post(r);
       await done.future;
       r.release();
@@ -99,15 +111,20 @@ void main() {
     // Pure Java -> Dart callback cost: Handler.dispatchMessage invokes the
     // Dart-implemented Handler.Callback synchronously on the calling thread.
     var handled = 0;
-    final cb = Handler_Callback.implement($Handler_Callback(
-      handleMessage: (msg) {
-        handled++;
-        return true;
-      },
-    ));
+    final cb = Handler_Callback.implement(
+      $Handler_Callback(
+        handleMessage: (msg) {
+          handled++;
+          return true;
+        },
+      ),
+    );
     final direct = Handler.new$Looper$Callback(Looper.getMainLooper()!, cb);
     final msg = Message.obtain()!;
-    results['callback_sync_dispatch_ns'] = nsPerCall(20000, () => direct.dispatchMessage(msg));
+    results['callback_sync_dispatch_ns'] = nsPerCall(
+      20000,
+      () => direct.dispatchMessage(msg),
+    );
     expect(handled, greaterThan(20000));
 
     // ignore: avoid_print

@@ -183,6 +183,19 @@ const MemberSpec k_com_example_fixtures_ThrowsClass[] = {
     {"read()V", "read", "()V", MemberKind::InstanceMethod},
 };
 
+const MemberSpec k_com_example_fixtures_TypedConstants[] = {
+    {"<init>()V", "<init>", "()V", MemberKind::Constructor},
+    {"getColor()Ljava/lang/String;", "getColor", "()Ljava/lang/String;", MemberKind::InstanceMethod},
+    {"getMode()I", "getMode", "()I", MemberKind::InstanceMethod},
+    {"getSize()J", "getSize", "()J", MemberKind::InstanceMethod},
+    {"getStyle()I", "getStyle", "()I", MemberKind::InstanceMethod},
+    {"isBold(int)Z", "isBold", "(I)Z", MemberKind::StaticMethod},
+    {"setColor(java.lang.String)V", "setColor", "(Ljava/lang/String;)V", MemberKind::InstanceMethod},
+    {"setMode(int)V", "setMode", "(I)V", MemberKind::InstanceMethod},
+    {"setSize(long)V", "setSize", "(J)V", MemberKind::InstanceMethod},
+    {"setStyle(int)V", "setStyle", "(I)V", MemberKind::InstanceMethod},
+};
+
 // Sorted by key (byte order) for binary search.
 const ClassSpec kClasses[] = {
     {"com.example.fixtures.AnnotatedClass", "com/example/fixtures/AnnotatedClass", k_com_example_fixtures_AnnotatedClass, std::size(k_com_example_fixtures_AnnotatedClass)},
@@ -207,13 +220,14 @@ const ClassSpec kClasses[] = {
     {"com.example.fixtures.Sizable", "com/example/fixtures/Sizable", k_com_example_fixtures_Sizable, std::size(k_com_example_fixtures_Sizable)},
     {"com.example.fixtures.SuspendShaped", "com/example/fixtures/SuspendShaped", k_com_example_fixtures_SuspendShaped, std::size(k_com_example_fixtures_SuspendShaped)},
     {"com.example.fixtures.ThrowsClass", "com/example/fixtures/ThrowsClass", k_com_example_fixtures_ThrowsClass, std::size(k_com_example_fixtures_ThrowsClass)},
+    {"com.example.fixtures.TypedConstants", "com/example/fixtures/TypedConstants", k_com_example_fixtures_TypedConstants, std::size(k_com_example_fixtures_TypedConstants)},
 };
 
 } // namespace
 
 const ClassSpec* lookupClass(const std::string& key) {
   std::size_t lo = 0;
-  std::size_t hi = 22;
+  std::size_t hi = 23;
   while (lo < hi) {
     const std::size_t mid = (lo + hi) / 2;
     const int c = std::strcmp(kClasses[mid].key, key.c_str());

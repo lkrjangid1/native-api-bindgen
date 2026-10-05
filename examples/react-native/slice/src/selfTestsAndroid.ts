@@ -9,6 +9,7 @@ import {
   Handler,
   Handler_Callback,
   Intent,
+  Intent$Flag,
   Looper,
   NativeApiUnavailableError,
   NativeCallbacks,
@@ -86,6 +87,21 @@ const tests: Array<[string, () => void | Promise<void>]> = [
         intent.setAction('a.b.C').getAction(),
         'a.b.C',
         'chained setter',
+      );
+    },
+  ],
+
+  [
+    'Typed @IntDef constants pass as raw values',
+    () => {
+      const intent = Intent.new();
+      intent.setFlags(
+        Intent$Flag.FLAG_ACTIVITY_NEW_TASK | Intent$Flag.FLAG_ACTIVITY_CLEAR_TOP,
+      );
+      expectEqual(
+        intent.getFlags(),
+        Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP,
+        'flags',
       );
     },
   ],

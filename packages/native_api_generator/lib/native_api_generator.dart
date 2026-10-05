@@ -3,6 +3,7 @@
 library;
 
 export 'src/bean_properties.dart';
+export 'src/constant_sets.dart';
 export 'src/identifiers.dart';
 export 'src/jvm_planner.dart';
 export 'src/kotlin.dart';

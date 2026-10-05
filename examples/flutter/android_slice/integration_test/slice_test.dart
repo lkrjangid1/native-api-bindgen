@@ -34,6 +34,21 @@ void main() {
     expect(intent.setAction(js('a.b.C')).getAction()!.toDartString(), 'a.b.C');
   });
 
+  test('Typed @IntDef/@StringDef constants pass as raw values', () {
+    final intent = Intent();
+    final flags =
+        Intent$Flag.FLAG_ACTIVITY_NEW_TASK |
+        Intent$Flag.FLAG_ACTIVITY_CLEAR_TOP;
+    intent.setFlags(flags);
+    expect(
+      intent.getFlags(),
+      Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP,
+    );
+    expect(flags.has(Intent$Flag.FLAG_ACTIVITY_NEW_TASK), isTrue);
+    expect(flags.has(Intent$Flag.FLAG_ACTIVITY_CLEAR_TASK), isFalse);
+    expect(Context$Service.ALARM_SERVICE, Context.ALARM_SERVICE);
+  });
+
   test('Bean properties delegate to the native getters', () {
     final uri = Uri.parse(js('https://example.com/p?q=1'))!;
     expect(uri.scheme!.toDartString(), 'https');
@@ -70,7 +85,10 @@ void main() {
   test('Uri static factories and getters', () {
     // withAppendedPath appends an *encoded* path segment verbatim (Android
     // semantics), so the space is not re-encoded.
-    final uri = Uri.withAppendedPath(Uri.parse(js('https://example.com')), js('a%20b'))!;
+    final uri = Uri.withAppendedPath(
+      Uri.parse(js('https://example.com')),
+      js('a%20b'),
+    )!;
     expect(uri.getEncodedPath()!.toDartString(), '/a%20b');
     expect(uri.getPath()!.toDartString(), '/a b');
     expect(uri.getScheme()!.toDartString(), 'https');
@@ -83,37 +101,60 @@ void main() {
     expect(Slice.activityClassName(), 'MainActivity');
   });
 
-  test('Handler.post(Runnable): Dart callback runs on the main Looper', () async {
-    final result = await Slice.postToMainLooper().timeout(const Duration(seconds: 10));
-    expect(result, 'Runnable ran (main looper: true)');
-  });
+  test(
+    'Handler.post(Runnable): Dart callback runs on the main Looper',
+    () async {
+      final result = await Slice.postToMainLooper().timeout(
+        const Duration(seconds: 10),
+      );
+      expect(result, 'Runnable ran (main looper: true)');
+    },
+  );
 
   test('Handler.Callback: Dart handles a Message sent from Java', () async {
     final received = Completer<int>();
-    final callback = Handler_Callback.implement($Handler_Callback(
-      handleMessage: (msg) {
-        received.complete(msg.what);
-        return true;
-      },
-    ));
-    final handler = Handler.new$Looper$Callback(Looper.getMainLooper()!, callback);
+    final callback = Handler_Callback.implement(
+      $Handler_Callback(
+        handleMessage: (msg) {
+          received.complete(msg.what);
+          return true;
+        },
+      ),
+    );
+    final handler = Handler.new$Looper$Callback(
+      Looper.getMainLooper()!,
+      callback,
+    );
     expect(handler.sendEmptyMessage(42), isTrue);
     expect(await received.future.timeout(const Duration(seconds: 10)), 42);
   });
 
-  test('a throwing void callback is reported and does not crash the app', () async {
-    final reported = Completer<String>();
-    NativeCallbacks.onError = (e, st, symbol) => reported.complete(symbol);
-    addTearDown(() => NativeCallbacks.onError = null);
-    final errors = <Object>[];
-    runZonedGuarded(() {
-      final handler = Handler.new$Looper(Looper.getMainLooper()!);
-      handler.post(Runnable.implement($Runnable(run: () => throw StateError('boom'), run$async: true)));
-    }, (e, st) => errors.add(e));
-    expect(await reported.future.timeout(const Duration(seconds: 10)), 'java.lang.Runnable#run()');
-    // The app (and the main Looper) keep working afterwards.
-    expect(await Slice.postToMainLooper().timeout(const Duration(seconds: 10)), contains('main looper: true'));
-  });
+  test(
+    'a throwing void callback is reported and does not crash the app',
+    () async {
+      final reported = Completer<String>();
+      NativeCallbacks.onError = (e, st, symbol) => reported.complete(symbol);
+      addTearDown(() => NativeCallbacks.onError = null);
+      final errors = <Object>[];
+      runZonedGuarded(() {
+        final handler = Handler.new$Looper(Looper.getMainLooper()!);
+        handler.post(
+          Runnable.implement(
+            $Runnable(run: () => throw StateError('boom'), run$async: true),
+          ),
+        );
+      }, (e, st) => errors.add(e));
+      expect(
+        await reported.future.timeout(const Duration(seconds: 10)),
+        'java.lang.Runnable#run()',
+      );
+      // The app (and the main Looper) keep working afterwards.
+      expect(
+        await Slice.postToMainLooper().timeout(const Duration(seconds: 10)),
+        contains('main looper: true'),
+      );
+    },
+  );
 
   test('Java exceptions surface as NativeJavaException', () {
     final b = Bundle();
@@ -121,7 +162,13 @@ void main() {
     // so use an API that throws: Intent.parseUri with a malformed URI.
     expect(
       () => Intent.parseUri(js('#Intent;nope'), 0),
-      throwsA(isA<NativeJavaException>().having((e) => e.className, 'className', 'java.net.URISyntaxException')),
+      throwsA(
+        isA<NativeJavaException>().having(
+          (e) => e.className,
+          'className',
+          'java.net.URISyntaxException',
+        ),
+      ),
     );
     b.release();
   });
@@ -133,20 +180,29 @@ void main() {
     addTearDown(() => AndroidApi.debugOverrideFullVersion = null);
     expect(
       () => Intent().removeLaunchSecurityProtection(),
-      throwsA(isA<NativeApiUnavailableException>().having((e) => e.required, 'required', '36')),
+      throwsA(
+        isA<NativeApiUnavailableException>().having(
+          (e) => e.required,
+          'required',
+          '36',
+        ),
+      ),
     );
   });
 
-  test('lifecycle: 10k create/release, use-after-release, idempotent dispose', () {
-    for (var i = 0; i < 10000; i++) {
-      Bundle().release();
-    }
-    final b = Bundle();
-    b.dispose();
-    b.dispose();
-    expect(b.isAlive, isFalse);
-    expect(() => b.size(), throwsA(isA<UseAfterReleaseError>()));
-  });
+  test(
+    'lifecycle: 10k create/release, use-after-release, idempotent dispose',
+    () {
+      for (var i = 0; i < 10000; i++) {
+        Bundle().release();
+      }
+      final b = Bundle();
+      b.dispose();
+      b.dispose();
+      expect(b.isAlive, isFalse);
+      expect(() => b.size(), throwsA(isA<UseAfterReleaseError>()));
+    },
+  );
 
   group('Kotlin suspend functions (library jar)', () {
     test('a suspending call completes the Future', () async {
@@ -156,11 +212,20 @@ void main() {
       await g.pause(10);
     });
 
-    test('a Kotlin exception fails the Future with NativeJavaException', () async {
-      await expectLater(
-        Greeter.create(js('x')).failLater(js('boom')),
-        throwsA(isA<NativeJavaException>().having((e) => e.className, 'className', 'java.lang.IllegalStateException')),
-      );
-    });
+    test(
+      'a Kotlin exception fails the Future with NativeJavaException',
+      () async {
+        await expectLater(
+          Greeter.create(js('x')).failLater(js('boom')),
+          throwsA(
+            isA<NativeJavaException>().having(
+              (e) => e.className,
+              'className',
+              'java.lang.IllegalStateException',
+            ),
+          ),
+        );
+      },
+    );
   });
 }

@@ -26,6 +26,7 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 - IR schema 2: Apple module-qualified IDs, per-platform availability, unsigned primitives, pointer and block type references (schema 1 still reads).
 
 ### Changed
+- Typed constants (Android, Flutter + React Native): `@IntDef`/`@LongDef`/`@StringDef` sets from `annotations.zip` generate Dart `const` extension types implementing `int`/`String` (flags: `|`, `has`) and TS `as const` objects + union types; ergonomic modes type results with them; parameters are unchanged. android-36: 851 sets, 2,109 typed use sites; full outputs analyze / type-check with zero errors in strict and ergonomic modes.
 - Bean properties (Android, Flutter + React Native): `getX`/`isX` + matching `setX` also generate a property backed by those methods (additive; the methods remain). android-36: 12,513 Dart / 11,886 TypeScript properties; full outputs analyze / type-check with zero errors.
 - **Breaking (generated Dart, Android):** Java generics are Dart type parameters instead of erasure (`GenericClass<$T>`, generic methods, `JList<JString?>`); `java.util` collections and boxed numbers use `package:jni` wrappers. Full android-36 output analyzes with zero issues.
 - iOS parity in the CLI: `diff ios` (IR snapshots `ir-ios-<sdk>.json` or `current`), `update` regenerates configured iOS targets (and works without an Android selection), `coverage --target`, and `explain` / `why-*` / `inspect <symbol>` read the iOS, React Native iOS and Swift states. No command returns `E015` any more.

@@ -7,9 +7,11 @@ import 'dart:io';
 import 'package:native_api_ir/native_api_ir.dart';
 import 'package:path/path.dart' as p;
 
+import 'src/annotations_index.dart';
 import 'src/api_versions.dart';
 import 'src/classfile/class_file.dart';
 import 'src/extractor.dart';
+import 'src/zip_reader.dart';
 
 /// Repository root, located by walking up to the workspace pubspec.
 String findRepoRoot([String? start]) {
@@ -146,20 +148,54 @@ String fixtureApiVersionsXml(DirectoryClassSource classes) {
   final dir = compileFixtures();
   final source = DirectoryClassSource(dir.path);
   final versions = ApiVersionsIndex.parse(fixtureApiVersionsXml(source));
-  return (
-    extractor: AndroidApiExtractor(
-      classes: source,
-      sdkVersion: 'fixture',
-      sourceKind: 'fixture',
-      apiVersions: versions,
-      linkOfficialDocs: false,
-    ),
-    classesDir: dir,
+  late final AndroidApiExtractor extractor;
+  final zip = fixtureAnnotationsZip(dir);
+  extractor = AndroidApiExtractor(
+    classes: source,
+    sdkVersion: 'fixture',
+    sourceKind: 'fixture',
+    apiVersions: versions,
+    annotations: zip == null
+        ? null
+        : AnnotationsIndex(
+            ZipReader.open(zip),
+            (n) => extractor.resolveClassName(n),
+          ),
+    linkOfficialDocs: false,
   );
+  return (extractor: extractor, classesDir: dir);
 }
 
 /// All fixture API classes (excluding annotation stubs).
 const fixturePackages = ['com.example.fixtures'];
+
+/// Packs `fixtures/java/basic/annotations` (external annotations in the
+/// `annotations.zip` layout) into `<dir>/annotations.zip` with the JDK's
+/// `jar` tool. Returns null when `jar` is unavailable.
+String? fixtureAnnotationsZip(Directory dir) {
+  final src = p.join(
+    findRepoRoot(),
+    'fixtures',
+    'java',
+    'basic',
+    'annotations',
+  );
+  final out = p.join(dir.path, 'annotations.zip');
+  try {
+    final r = Process.runSync('jar', [
+      '--create',
+      '--no-manifest',
+      '--file',
+      out,
+      '-C',
+      src,
+      '.',
+    ]);
+    return r.exitCode == 0 ? out : null;
+  } on ProcessException {
+    return null;
+  }
+}
 
 /// Convenience: extract the whole fixture package.
 ApiModule extractFixtures(AndroidApiExtractor extractor) => extractor

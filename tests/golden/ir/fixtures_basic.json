@@ -3821,6 +3821,584 @@
       },
       "support": "supported",
       "visibility": "public"
+    },
+    {
+      "availability": {
+        "introduced": "1"
+      },
+      "fields": [
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "constantValue": {
+            "literal": "blue",
+            "type": "string"
+          },
+          "id": "com.example.fixtures.TypedConstants#COLOR_BLUE",
+          "modifiers": [
+            "final",
+            "public",
+            "static"
+          ],
+          "name": "COLOR_BLUE",
+          "nativeDescriptor": "Ljava/lang/String;",
+          "support": "supported",
+          "type": {
+            "kind": "declared",
+            "name": "java.lang.String",
+            "nullability": "nonnull"
+          },
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "constantValue": {
+            "literal": "red",
+            "type": "string"
+          },
+          "id": "com.example.fixtures.TypedConstants#COLOR_RED",
+          "modifiers": [
+            "final",
+            "public",
+            "static"
+          ],
+          "name": "COLOR_RED",
+          "nativeDescriptor": "Ljava/lang/String;",
+          "support": "supported",
+          "type": {
+            "kind": "declared",
+            "name": "java.lang.String",
+            "nullability": "nonnull"
+          },
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "constantValue": {
+            "literal": "2",
+            "type": "int"
+          },
+          "id": "com.example.fixtures.TypedConstants#MODE_AUTO",
+          "modifiers": [
+            "final",
+            "public",
+            "static"
+          ],
+          "name": "MODE_AUTO",
+          "nativeDescriptor": "I",
+          "support": "supported",
+          "type": {
+            "kind": "primitive",
+            "name": "int"
+          },
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "constantValue": {
+            "literal": "0",
+            "type": "int"
+          },
+          "id": "com.example.fixtures.TypedConstants#MODE_OFF",
+          "modifiers": [
+            "final",
+            "public",
+            "static"
+          ],
+          "name": "MODE_OFF",
+          "nativeDescriptor": "I",
+          "support": "supported",
+          "type": {
+            "kind": "primitive",
+            "name": "int"
+          },
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "constantValue": {
+            "literal": "1",
+            "type": "int"
+          },
+          "id": "com.example.fixtures.TypedConstants#MODE_ON",
+          "modifiers": [
+            "final",
+            "public",
+            "static"
+          ],
+          "name": "MODE_ON",
+          "nativeDescriptor": "I",
+          "support": "supported",
+          "type": {
+            "kind": "primitive",
+            "name": "int"
+          },
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "constantValue": {
+            "literal": "1099511627776",
+            "type": "long"
+          },
+          "id": "com.example.fixtures.TypedConstants#SIZE_LARGE",
+          "modifiers": [
+            "final",
+            "public",
+            "static"
+          ],
+          "name": "SIZE_LARGE",
+          "nativeDescriptor": "J",
+          "support": "supported",
+          "type": {
+            "kind": "primitive",
+            "name": "long"
+          },
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "constantValue": {
+            "literal": "1",
+            "type": "long"
+          },
+          "id": "com.example.fixtures.TypedConstants#SIZE_SMALL",
+          "modifiers": [
+            "final",
+            "public",
+            "static"
+          ],
+          "name": "SIZE_SMALL",
+          "nativeDescriptor": "J",
+          "support": "supported",
+          "type": {
+            "kind": "primitive",
+            "name": "long"
+          },
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "constantValue": {
+            "literal": "1",
+            "type": "int"
+          },
+          "id": "com.example.fixtures.TypedConstants#STYLE_BOLD",
+          "modifiers": [
+            "final",
+            "public",
+            "static"
+          ],
+          "name": "STYLE_BOLD",
+          "nativeDescriptor": "I",
+          "support": "supported",
+          "type": {
+            "kind": "primitive",
+            "name": "int"
+          },
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "constantValue": {
+            "literal": "2",
+            "type": "int"
+          },
+          "id": "com.example.fixtures.TypedConstants#STYLE_ITALIC",
+          "modifiers": [
+            "final",
+            "public",
+            "static"
+          ],
+          "name": "STYLE_ITALIC",
+          "nativeDescriptor": "I",
+          "support": "supported",
+          "type": {
+            "kind": "primitive",
+            "name": "int"
+          },
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "constantValue": {
+            "literal": "4",
+            "type": "int"
+          },
+          "id": "com.example.fixtures.TypedConstants#STYLE_UNDERLINE",
+          "modifiers": [
+            "final",
+            "public",
+            "static"
+          ],
+          "name": "STYLE_UNDERLINE",
+          "nativeDescriptor": "I",
+          "support": "supported",
+          "type": {
+            "kind": "primitive",
+            "name": "int"
+          },
+          "visibility": "public"
+        }
+      ],
+      "id": "com.example.fixtures.TypedConstants",
+      "kind": "classType",
+      "methods": [
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.TypedConstants#<init>()",
+          "kind": "constructor",
+          "modifiers": [
+            "public"
+          ],
+          "name": "<init>",
+          "nativeDescriptor": "()V",
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "annotations": [
+            {
+              "classification": "preservable",
+              "source": "annotations.zip",
+              "type": "androidx.annotation.StringDef",
+              "values": {
+                "value": "{com.example.fixtures.TypedConstants.COLOR_RED, com.example.fixtures.TypedConstants.COLOR_BLUE}"
+              }
+            }
+          ],
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.TypedConstants#getColor()",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "getColor",
+          "nativeDescriptor": "()Ljava/lang/String;",
+          "returnType": {
+            "kind": "declared",
+            "name": "java.lang.String",
+            "nullability": "unknown"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "annotations": [
+            {
+              "classification": "preservable",
+              "source": "annotations.zip",
+              "type": "androidx.annotation.IntDef",
+              "values": {
+                "value": "{com.example.fixtures.TypedConstants.MODE_OFF, com.example.fixtures.TypedConstants.MODE_ON, com.example.fixtures.TypedConstants.MODE_AUTO}"
+              }
+            }
+          ],
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.TypedConstants#getMode()",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "getMode",
+          "nativeDescriptor": "()I",
+          "returnType": {
+            "kind": "primitive",
+            "name": "int"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "annotations": [
+            {
+              "classification": "preservable",
+              "source": "annotations.zip",
+              "type": "androidx.annotation.LongDef",
+              "values": {
+                "value": "{com.example.fixtures.TypedConstants.SIZE_SMALL, com.example.fixtures.TypedConstants.SIZE_LARGE}"
+              }
+            }
+          ],
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.TypedConstants#getSize()",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "getSize",
+          "nativeDescriptor": "()J",
+          "returnType": {
+            "kind": "primitive",
+            "name": "long"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "annotations": [
+            {
+              "classification": "preservable",
+              "source": "annotations.zip",
+              "type": "androidx.annotation.IntDef",
+              "values": {
+                "flag": "true",
+                "value": "{com.example.fixtures.TypedConstants.STYLE_BOLD, com.example.fixtures.TypedConstants.STYLE_ITALIC, com.example.fixtures.TypedConstants.STYLE_UNDERLINE}"
+              }
+            }
+          ],
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.TypedConstants#getStyle()",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "getStyle",
+          "nativeDescriptor": "()I",
+          "returnType": {
+            "kind": "primitive",
+            "name": "int"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.TypedConstants#isBold(int)",
+          "kind": "method",
+          "modifiers": [
+            "public",
+            "static"
+          ],
+          "name": "isBold",
+          "nativeDescriptor": "(I)Z",
+          "parameters": [
+            {
+              "annotations": [
+                {
+                  "classification": "preservable",
+                  "source": "annotations.zip",
+                  "type": "androidx.annotation.IntDef",
+                  "values": {
+                    "flag": "true",
+                    "value": "{com.example.fixtures.TypedConstants.STYLE_BOLD, com.example.fixtures.TypedConstants.STYLE_ITALIC, com.example.fixtures.TypedConstants.STYLE_UNDERLINE}"
+                  }
+                }
+              ],
+              "name": "style",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "primitive",
+                "name": "int"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "boolean"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.TypedConstants#setColor(java.lang.String)",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "setColor",
+          "nativeDescriptor": "(Ljava/lang/String;)V",
+          "parameters": [
+            {
+              "name": "color",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "declared",
+                "name": "java.lang.String",
+                "nullability": "unknown"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.TypedConstants#setMode(int)",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "setMode",
+          "nativeDescriptor": "(I)V",
+          "parameters": [
+            {
+              "annotations": [
+                {
+                  "classification": "preservable",
+                  "source": "annotations.zip",
+                  "type": "androidx.annotation.IntDef",
+                  "values": {
+                    "value": "{com.example.fixtures.TypedConstants.MODE_OFF, com.example.fixtures.TypedConstants.MODE_ON, com.example.fixtures.TypedConstants.MODE_AUTO}"
+                  }
+                }
+              ],
+              "name": "mode",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "primitive",
+                "name": "int"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.TypedConstants#setSize(long)",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "setSize",
+          "nativeDescriptor": "(J)V",
+          "parameters": [
+            {
+              "annotations": [
+                {
+                  "classification": "preservable",
+                  "source": "annotations.zip",
+                  "type": "androidx.annotation.LongDef",
+                  "values": {
+                    "value": "{com.example.fixtures.TypedConstants.SIZE_SMALL, com.example.fixtures.TypedConstants.SIZE_LARGE}"
+                  }
+                }
+              ],
+              "name": "size",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "primitive",
+                "name": "long"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.TypedConstants#setStyle(int)",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "setStyle",
+          "nativeDescriptor": "(I)V",
+          "parameters": [
+            {
+              "annotations": [
+                {
+                  "classification": "preservable",
+                  "source": "annotations.zip",
+                  "type": "androidx.annotation.IntDef",
+                  "values": {
+                    "flag": "true",
+                    "value": "{com.example.fixtures.TypedConstants.STYLE_BOLD, com.example.fixtures.TypedConstants.STYLE_ITALIC, com.example.fixtures.TypedConstants.STYLE_UNDERLINE}"
+                  }
+                }
+              ],
+              "name": "style",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "primitive",
+                "name": "int"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        }
+      ],
+      "modifiers": [
+        "public"
+      ],
+      "name": "TypedConstants",
+      "namespace": "com.example.fixtures",
+      "provenance": {
+        "artifactEntry": "com/example/fixtures/TypedConstants.class",
+        "localArtifact": "fixtures",
+        "platform": "android",
+        "sdkVersion": "fixture",
+        "sourceKind": "fixture"
+      },
+      "superClass": {
+        "kind": "declared",
+        "name": "java.lang.Object",
+        "nullability": "unknown"
+      },
+      "support": "supported",
+      "visibility": "public"
     }
   ]
 }
