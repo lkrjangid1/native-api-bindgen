@@ -1,0 +1,34 @@
+{
+  "command": "native-api-bindgen coverage --sdk --platform 36 --json",
+  "discovered": {
+    "annotations": 20368,
+    "callbacks": 931,
+    "classes": 5142,
+    "constants": 25484,
+    "constructors": 5515,
+    "fields": 5948,
+    "interfaces": 1080,
+    "methods": 52938
+  },
+  "excludedByReason": {
+    "E002 UNSUPPORTED_TYPE": 2413
+  },
+  "generated": {
+    "annotations": 20329,
+    "callbacks": 931,
+    "classes": 5117,
+    "constants": 25450,
+    "constructors": 4845,
+    "fields": 5773,
+    "interfaces": 1080,
+    "methods": 51429
+  },
+  "measured": "2026-10-05",
+  "partialByReason": {
+    "E012 AVAILABILITY_MISMATCH": 37
+  },
+  "platform": "android",
+  "scope": "entire android.jar of android-36 (Flutter/Dart JNI target)",
+  "sdkVersion": "36",
+  "target": "Flutter (Dart over package:jni)"
+}

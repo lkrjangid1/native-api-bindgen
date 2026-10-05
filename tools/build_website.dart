@@ -5,14 +5,20 @@
 // site never states figures that were not measured.
 //
 // Usage: dart run tools/build_website.dart [--site-url https://host/base]
+//        [--repo-url https://github.com/owner/repo]
 //   --site-url (or NAB_SITE_URL) enables absolute canonical/Open Graph URLs
 //   and sitemap.xml; without it they are omitted.
+//   --repo-url (or NAB_REPO_URL) enables the GitHub button and repository
+//   links (license, security, contributing); without it they are omitted
+//   rather than pointing at a placeholder.
 import 'dart:convert';
 import 'dart:io';
 
 const _pages = [
   'index',
   'getting-started',
+  'docs',
+  'examples',
   'architecture',
   'flutter',
   'react-native',
@@ -26,6 +32,8 @@ const _pages = [
 
 const _nav = [
   ('getting-started', 'Get started'),
+  ('docs', 'Docs'),
+  ('examples', 'Examples'),
   ('architecture', 'Architecture'),
   ('flutter', 'Flutter'),
   ('react-native', 'React Native'),
@@ -49,6 +57,14 @@ void main(List<String> args) {
   if (siteUrl != null && siteUrl.endsWith('/')) {
     siteUrl = siteUrl.substring(0, siteUrl.length - 1);
   }
+  final repoArg = args.indexOf('--repo-url');
+  var repoUrl = repoArg >= 0 && repoArg + 1 < args.length
+      ? args[repoArg + 1]
+      : Platform.environment['NAB_REPO_URL'];
+  if (repoUrl != null && repoUrl.endsWith('/')) {
+    repoUrl = repoUrl.substring(0, repoUrl.length - 1);
+  }
+  _repoUrl = repoUrl;
   final src = '$root/website/src';
   final out = Directory('$root/website/build');
   if (out.existsSync()) out.deleteSync(recursive: true);
@@ -86,6 +102,11 @@ void main(List<String> args) {
       );
     }
     var body = raw.substring(raw.indexOf('-->') + 3).trim();
+    // Repository-only fragments (<!--repo-->...<!--/repo-->, `{{repo}}`).
+    body = body.replaceAllMapped(
+      RegExp(r'<!--repo-->([\s\S]*?)<!--/repo-->'),
+      (m) => repoUrl == null ? '' : m[1]!.replaceAll('{{repo}}', repoUrl),
+    );
     body = body.replaceAllMapped(RegExp(r'\{\{([a-z0-9_.]+)\}\}'), (m) {
       final v = data[m[1]];
       if (v == null) problems.add('$slug: unknown data key ${m[1]}');
@@ -312,13 +333,33 @@ $body
   </main>
   <footer class="site">
     <div class="wrap">
-      <p>Apache-2.0. Generated bindings are derived from SDKs installed on your machine and stay local by default.</p>
-      <p>Independent open-source project, not affiliated with or endorsed by Google, Apple, Meta or the Dart/Flutter teams. Android is a trademark of Google LLC. Apple, iOS, Xcode, Objective-C and Swift are trademarks of Apple Inc. Flutter and Dart are trademarks of Google LLC. React and React Native are trademarks of Meta Platforms, Inc.</p>
+${_footer()}
+      <p>Android is a trademark of Google LLC. Apple, iOS, Xcode, Objective-C and Swift are trademarks of Apple Inc. Flutter and Dart are trademarks of Google LLC. React and React Native are trademarks of Meta Platforms, Inc.</p>
     </div>
   </footer>
 </body>
 </html>
 ''';
+}
+
+String? _repoUrl;
+
+String _footer() {
+  final repo = _repoUrl;
+  final links = <String>[
+    if (repo != null) '<a href="$repo">GitHub</a>',
+    '<a href="docs.html">Documentation</a>',
+    if (repo != null) ...[
+      '<a href="$repo/blob/main/LICENSE">License (Apache-2.0)</a>',
+      '<a href="$repo/blob/main/SECURITY.md">Security</a>',
+      '<a href="$repo/blob/main/CONTRIBUTING.md">Contributing</a>',
+    ],
+    '<a href="legal.html">Legal &amp; source policy</a>',
+  ];
+  return '''
+      <p class="links">${links.join(' · ')}</p>
+      <p>Apache-2.0${repo == null ? ' (LICENSE, SECURITY.md and CONTRIBUTING.md are in the repository root)' : ''}. Generated bindings are derived from SDKs installed on your machine and stay local by default.</p>
+      <p>Native API Bindgen is an independent open-source project. It is not affiliated with or endorsed by Google, Apple, Meta, or the Dart/Flutter project. Platform SDKs, documentation, trademarks, and other third-party materials remain the property of their respective owners and are subject to their applicable licenses and terms.</p>''';
 }
 
 String _int(num n) {
@@ -348,7 +389,46 @@ Map<String, String> _data(String root) {
   final ra = med('perf-2026-10-05-rn-android.json');
   final ri = med('perf-2026-10-05-rn-ios.json');
   num n(Map<String, Object?> m, String k) => m[k]! as num;
+  final covA = j('coverage-2026-10-05-android36.json');
+  final covI = j('coverage-2026-10-05-ios-foundation-uikit.json');
+  String cov(Map<String, Object?> c, String section, String k) =>
+      _int((c[section]! as Map)[k] as num);
+  String pct(Map<String, Object?> c, String k) => _fixed(
+    100 *
+        ((c['generated']! as Map)[k] as num) /
+        ((c['discovered']! as Map)[k] as num),
+    1,
+  );
+  final wp7 = j('size-startup-2026-10-05-wp7.json');
+  final iosSize = wp7['ios_release_device_arm64']! as Map<String, Object?>;
+  num app(String k) => (iosSize[k]! as Map)['runner_app_bytes'] as num;
+  final bytes = j('bytes-2026-10-05.json');
+  num b(String section, String k) => (bytes[section]! as Map)[k] as num;
   return {
+    'coverage.android.methods_generated': cov(covA, 'generated', 'methods'),
+    'coverage.android.methods_discovered': cov(covA, 'discovered', 'methods'),
+    'coverage.android.methods_pct': pct(covA, 'methods'),
+    'coverage.android.classes_generated': cov(covA, 'generated', 'classes'),
+    'coverage.android.classes_discovered': cov(covA, 'discovered', 'classes'),
+    'coverage.ios.methods_generated': cov(covI, 'generated', 'methods'),
+    'coverage.ios.methods_discovered': cov(covI, 'discovered', 'methods'),
+    'coverage.ios.methods_pct': pct(covI, 'methods'),
+    'coverage.ios.classes_generated': cov(covI, 'generated', 'classes'),
+    'coverage.ios.classes_discovered': cov(covI, 'discovered', 'classes'),
+    'size.ios.baseline_app': _int(app('baseline')),
+    'size.ios.one_api_full_app': _int(app('one-api-full')),
+    'size.ios.one_api_delta': _int(app('one-api-full') - app('baseline')),
+    'bytes.flutter_android.jni_1mb_ms': _fixed(
+      b('flutter_android_profile_emulator', 'jni_bytes_roundtrip_1mb_ms'),
+      2,
+    ),
+    'bytes.flutter_android.channel_1mb_ms': _fixed(
+      b(
+        'flutter_android_profile_emulator',
+        'methodchannel_bytes_roundtrip_1mb_ms',
+      ),
+      2,
+    ),
     'size.flutter.baseline_apk': _int(apk(size, 'baseline')),
     'size.flutter.one_api_slice_apk': _int(apk(size, 'one-api-slice')),
     'size.flutter.one_api_fullsdk_apk': _int(apk(size, 'one-api-fullsdk')),

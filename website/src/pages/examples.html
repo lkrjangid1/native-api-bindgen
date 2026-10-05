@@ -1,0 +1,54 @@
+<!--
+title: Examples
+description: Example code for native-api-bindgen in Flutter and React Native on Android and iOS: calls, callbacks, Kotlin coroutines, blocks, Swift APIs and native views.
+-->
+<h1>Examples</h1>
+<p class="lead">From the example apps in the repository (<code>examples/flutter/android_slice</code>, <code>examples/flutter/ios_slice</code>, <code>examples/react-native/slice</code>), each with an on-device test suite.</p>
+
+<h2>Flutter on Android</h2>
+<pre><code>final uri = Uri.parse('https://example.com/p?q=1'.toJString())!;
+print(uri.scheme);                           // bean property over getScheme()
+
+final intent = Intent()
+  ..setFlags(Intent$Flag.FLAG_ACTIVITY_NEW_TASK | Intent$Flag.FLAG_ACTIVITY_CLEAR_TOP);
+
+// A Java interface implemented in Dart.
+final handler = Handler.new$Looper(Looper.getMainLooper()!);
+handler.post(Runnable.implement($Runnable(run: () => print('on the main looper'))));
+
+// Kotlin: suspend -> Future, Flow -> Stream.
+final greeting = await greeter.greetLater(20);
+await for (final i in greeter.countTo(3)) print(i);</code></pre>
+
+<h2>Flutter on iOS</h2>
+<pre><code>final device = ios.UIDevice.currentDevice;
+print(device.systemName.toDartString());
+
+try {
+  fileManager.contentsOfDirectoryAtPath('/missing'.toNSString());
+} on ios.NativeObjCError catch (e) {
+  print(e.domain);                          // NSCocoaErrorDomain
+}
+
+// Blocks: completion handler as a Future.
+final finished = await ios.UIView.animateWithDuration$animations$completionAsync(
+    0.2, animations: () {});
+
+// A native view in the widget tree (package native_api_ui).
+NativeView.ios(view: ios.UILabel.new$()..text = 'Hello'.toNSString());</code></pre>
+
+<h2>React Native</h2>
+<pre><code>// Android
+const intent = Intent.new$String$Uri(Intent.ACTION_VIEW, Uri.parse('https://example.com'));
+const copy = Arrays.copyOf(new Uint8Array([1, 2, 3]), 2);   // byte[] as Uint8Array
+const name = await greeter.greetLater(20n);                 // Kotlin suspend -> Promise
+
+// iOS
+const sorted = views.sortedArrayUsingComparator((a, b) =>
+  a!.as(UIView).tag < b!.as(UIView).tag ? -1n : 1n);        // block from JS
+fileManager.delegate = NSFileManagerDelegate.implement({
+  fileManager$shouldRemoveItemAtPath: (manager, path) => false,
+});                                                         // protocol in JS
+
+// Both platforms: show a native view.
+&lt;NativeView view={label} style={{ width: 200, height: 48 }} /&gt;</code></pre>

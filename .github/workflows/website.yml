@@ -40,6 +40,7 @@ jobs:
         run: dart run tools/build_website.dart
         env:
           NAB_SITE_URL: ${{ steps.pages.outputs.base_url }}
+          NAB_REPO_URL: ${{ github.server_url }}/${{ github.repository }}
       - name: External links
         run: dart run tools/check_links.dart website/build
       - if: github.event_name != 'pull_request'

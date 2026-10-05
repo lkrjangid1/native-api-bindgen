@@ -1,0 +1,41 @@
+{
+  "command": "native-api-bindgen generate ios --framework Foundation --framework UIKit; coverage --target ios --json",
+  "discovered": {
+    "annotations": 963,
+    "callbacks": 238,
+    "classes": 1270,
+    "constants": 2621,
+    "constructors": 929,
+    "fields": 74,
+    "interfaces": 257,
+    "methods": 11937
+  },
+  "excludedByReason": {
+    "E002 UNSUPPORTED_TYPE": 281,
+    "E004 UNSUPPORTED_CALLBACK": 394,
+    "E005 PRIVATE_API": 2,
+    "E011 ABI_MISMATCH": 1,
+    "E012 AVAILABILITY_MISMATCH": 466,
+    "E013 THREADING_CONSTRAINT": 1,
+    "E016 OUTSIDE_CLOSURE": 6
+  },
+  "generated": {
+    "annotations": 963,
+    "classes": 1262,
+    "constants": 2593,
+    "constructors": 670,
+    "fields": 74,
+    "interfaces": 257,
+    "methods": 11092
+  },
+  "measured": "2026-10-05",
+  "partialByReason": {
+    "E002 UNSUPPORTED_TYPE": 356,
+    "E004 UNSUPPORTED_CALLBACK": 257,
+    "E013 THREADING_CONSTRAINT": 180,
+    "E016 OUTSIDE_CLOSURE": 70
+  },
+  "platform": "apple",
+  "sdkVersion": "27.0",
+  "target": "Flutter (Dart over package:objective_c)"
+}

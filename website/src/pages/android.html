@@ -23,7 +23,7 @@ description: What native-api-bindgen reads from the Android SDK, which Java and 
   <tr><td>Protected members, constructors of abstract classes</td><td>E002</td></tr>
   <tr><td>Generic type parameters on generated types (erased to bounds)</td><td>E003</td></tr>
   <tr><td>Types outside the selected closure (exposed as plain objects)</td><td>E016</td></tr>
-  <tr><td>Kotlin <code>Flow</code>, default arguments, property syntax; suspend on React Native</td><td>— / E004</td></tr>
+  <tr><td>Kotlin default arguments (not applied through JNI; pass every argument); <code>Flow</code> on React Native (opaque object)</td><td>E002 note / E016</td></tr>
 </table>
 <h2>Hidden and non-SDK APIs</h2>
 <p>A class absent from <code>api-versions.xml</code> is classified as hidden or non-SDK (<code>E006</code>) and never generated, nor are its members. Library jars are not classified this way: their APIs are your library's APIs.</p>

@@ -246,6 +246,20 @@ void main() {
           (await cli(['generate', 'ios'], cwd: project.path)).code,
           ExitCodes.ok,
         );
+        final docs = await cli(['--json', 'docs'], cwd: project.path);
+        expect(docs.code, ExitCodes.ok, reason: docs.err);
+        final page = File(
+          p.join(project.path, 'generated-docs', 'ios', 'UIKit.UIDevice.html'),
+        ).readAsStringSync();
+        expect(page, contains('UIDevice.systemName'));
+        expect(page, contains('developer.apple.com'));
+        expect(
+          File(
+            p.join(project.path, 'generated-docs', 'index.html'),
+          ).readAsStringSync(),
+          contains('UIKit.UIDevice'),
+        );
+
         final cov = await cli([
           '--json',
           'coverage',

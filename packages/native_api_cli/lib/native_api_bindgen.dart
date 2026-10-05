@@ -75,6 +75,7 @@ Future<int> runCli(
       'why-skipped',
       'Show the reason codes for a symbol that was not generated.',
     ),
+    DocsCommand(),
     AuditCommand(),
     VerifyReproducibleCommand(),
     CleanCommand(),

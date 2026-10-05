@@ -11,6 +11,7 @@ import 'package:native_api_react_native_android/native_api_react_native_android.
 import 'package:path/path.dart' as p;
 
 import 'context.dart';
+import 'docs_site.dart';
 import 'ios_generation.dart';
 import 'toolchain.dart';
 
@@ -983,6 +984,41 @@ final class CoverageCommand extends BindgenCommand {
       'scope': scope,
       ...report.toJson(),
     });
+    return ExitCodes.ok;
+  }
+}
+
+/// `docs`: static per-symbol API documentation from the generation state.
+final class DocsCommand extends BindgenCommand {
+  /// Creates the command.
+  DocsCommand() {
+    argParser.addOption(
+      'output',
+      defaultsTo: 'generated-docs',
+      help: 'Output directory (project-relative).',
+    );
+  }
+
+  @override
+  String get name => 'docs';
+
+  @override
+  String get description =>
+      'Write static API documentation (native symbol, generated symbol, availability, threading, reasons, reference links) for the last generation.';
+
+  @override
+  Future<int> run() async {
+    final states = ctx.allStates();
+    if (states.isEmpty) {
+      _log.error('No generation state found; run "generate" first.');
+      return ExitCodes.failure;
+    }
+    final out = p.normalize(p.join(ctx.projectDir, _opt('output')!));
+    final pages = DocsSite(states).write(OutputGuard(out));
+    _log.result(
+      'Wrote $pages pages to ${p.relative(out, from: ctx.projectDir)} (metadata and reference links only; keep local: derived from the installed SDK)',
+      {'pages': pages, 'output': out},
+    );
     return ExitCodes.ok;
   }
 }

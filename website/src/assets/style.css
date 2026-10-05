@@ -24,3 +24,7 @@ th,td{border:1px solid var(--line);padding:.4rem .6rem;text-align:left;vertical-
 .card{border:1px solid var(--line);border-radius:8px;padding:1rem;background:var(--alt)}.card h3{margin-top:0}
 .note{border-left:4px solid var(--warn);background:var(--alt);padding:.5rem 1rem;margin:1rem 0}
 footer.site{border-top:1px solid var(--line);color:var(--muted);font-size:.85rem;padding:1rem 0}
+.actions{display:flex;flex-wrap:wrap;gap:.6rem;margin:1.25rem 0}
+.button{display:inline-block;padding:.5rem 1rem;border-radius:6px;border:1px solid var(--accent);color:var(--accent);text-decoration:none;font-weight:600}
+.button.primary{background:var(--accent);color:#fff}.button:hover{opacity:.9}
+.hero-sub{font-size:1.3rem;font-weight:600;margin:.25rem 0 .75rem}.links a{margin-right:.15rem}

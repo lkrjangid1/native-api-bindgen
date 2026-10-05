@@ -8,7 +8,7 @@ description: How native-api-bindgen reads Objective-C APIs with the Xcode toolch
 <ul>
   <li>APIs newer than <code>platform.ios.minVersion</code> are guarded at run time.</li>
   <li>Private (<code>_</code>-prefixed) selectors are never generated (<code>E005</code>); iOS-unavailable APIs are skipped (<code>E012</code>).</li>
-  <li>Blocks and implementing protocols are not supported yet (<code>E004</code>).</li>
+  <li>Blocks: Flutter binds <code>NS_NOESCAPE</code> blocks and escaping blocks with primitive arguments (with <code>Future</code> forms for completion handlers); React Native binds all blocks with convertible values. Protocols can be implemented in JavaScript; on Flutter they need native trampolines (<code>E004</code>).</li>
 </ul>
 <h2>Swift-only APIs</h2>
 <p>Swift APIs that Objective-C cannot see are discovered with <code>swift-symbolgraph-extract</code>. For the representable subset (classes and structs; <code>Int</code>, <code>Double</code>, <code>Bool</code>, <code>String</code>, <code>Date</code>, <code>Data</code>, <code>URL</code>, other adapted types), the tool generates <code>@objc</code> adapter classes in Swift plus a podspec, then binds them like any Objective-C API. Closures, <code>async</code>, generics, tuples, collections, enums, protocols and <code>throws</code> are reported with reasons.</p>

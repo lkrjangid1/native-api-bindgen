@@ -12,7 +12,7 @@ description: Generated TypeScript bindings for React Native's New Architecture, 
 <ul>
   <li>Methods (not constructors or properties) also get a <code>…Async()</code> Promise variant that runs off the JS thread; on iOS, UIKit members run on the main queue.</li>
   <li><code>long</code> / <code>NSInteger</code> are <code>bigint</code> in <code>strict-typescript</code> mode, <code>number</code> in <code>ergonomic-typescript</code>.</li>
-  <li>Java interfaces can be implemented in JavaScript on Android. Objective-C blocks and protocol implementations are not supported yet.</li>
+  <li>Java interfaces (Android) and Objective-C protocols (iOS, <code>Proto.implement({...})</code>) can be implemented in JavaScript; Objective-C blocks are JavaScript functions; Kotlin <code>suspend</code> functions return Promises; <code>byte[]</code> is a <code>Uint8Array</code>; <code>&lt;NativeView&gt;</code> shows views created through the bindings.</li>
   <li>Java exceptions, <code>NSError **</code> failures and Objective-C exceptions become JavaScript errors with their native details.</li>
 </ul>
 

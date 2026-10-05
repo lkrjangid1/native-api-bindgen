@@ -1,0 +1,37 @@
+<!--
+title: Documentation
+description: Where to find the native-api-bindgen documentation: guides, platform notes, configuration, error codes, generated API reference and legal policy.
+-->
+<h1>Documentation</h1>
+<p class="lead">The site covers the essentials; the full documentation lives in the repository's <code>docs/</code> directory and is versioned with the code.</p>
+
+<h2>Guides on this site</h2>
+<ul>
+  <li><a href="getting-started.html">Getting started</a> — install, configure, generate.</li>
+  <li><a href="flutter.html">Flutter</a> and <a href="react-native.html">React Native</a> — targets and runtime behaviour.</li>
+  <li><a href="android.html">Android</a> and <a href="ios.html">iOS</a> — what is supported per platform.</li>
+  <li><a href="architecture.html">Architecture</a>, <a href="versioning.html">Versioning</a>, <a href="compatibility.html">Compatibility</a>, <a href="faq.html">FAQ</a>.</li>
+</ul>
+
+<h2>In the repository</h2>
+<table>
+  <tr><th>File</th><th>Contents</th></tr>
+  <tr><td><code>docs/android/README.md</code></td><td>Android extraction, mapping, Kotlin (suspend, Flow, metadata), typed constants, bean properties, limits</td></tr>
+  <tr><td><code>docs/ios/README.md</code></td><td>Apple extraction, threading, blocks, protocols, Swift adapters, limits</td></tr>
+  <tr><td><code>docs/native-ui.md</code></td><td>Showing native views in Flutter and React Native</td></tr>
+  <tr><td><code>docs/error-codes.md</code></td><td>Every reason code (E001–E018)</td></tr>
+  <tr><td><code>docs/benchmarks/</code></td><td>Size, performance, byte-transfer and coverage measurements (raw JSON)</td></tr>
+  <tr><td><code>docs/architecture/</code></td><td>Design notes per component</td></tr>
+</table>
+
+<h2>Generated API reference</h2>
+<p>Run <code>native-api-bindgen docs</code> in your project: it writes <code>generated-docs/</code>, one page per generated type with the native symbol, the generated symbol, availability, threading, permissions, reason codes and a link to the official reference. It contains metadata only — no SDK documentation is copied — and stays local by default because it is derived from the SDK on your machine.</p>
+
+<h2>Commands</h2>
+<pre><code>native-api-bindgen doctor        # SDKs and toolchains found
+native-api-bindgen generate ...  # android | flutter | ios | react-native
+native-api-bindgen update        # regenerate configured targets
+native-api-bindgen coverage      # generated vs. discovered, with reasons
+native-api-bindgen why-skipped   # why a symbol was not generated
+native-api-bindgen docs          # generated-docs/ (local API reference)
+native-api-bindgen audit-license # check inputs and outputs for licensing issues</code></pre>
