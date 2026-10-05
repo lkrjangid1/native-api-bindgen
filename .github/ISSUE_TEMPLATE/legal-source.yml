@@ -1,0 +1,17 @@
+name: Legal / source issue
+description: Report possible redistribution of restricted material, missing attribution, or a non-first-party source.
+labels: [legal]
+body:
+  - type: markdown
+    attributes:
+      value: Please do not paste copyrighted SDK content into this issue. Point to the file/commit instead.
+  - type: textarea
+    id: concern
+    attributes:
+      label: Concern
+    validations:
+      required: true
+  - type: input
+    id: location
+    attributes:
+      label: File / commit / package

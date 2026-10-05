@@ -1,0 +1,22 @@
+name: Generator coverage
+description: A public SDK API was not generated (or generated incorrectly).
+labels: [coverage]
+body:
+  - type: input
+    id: symbol
+    attributes:
+      label: Native symbol ID
+      placeholder: android.content.Intent#setData(android.net.Uri)
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Output of `native-api-bindgen why-skipped '<symbol>'`
+    validations:
+      required: true
+  - type: input
+    id: sdk
+    attributes:
+      label: Platform SDK version
+      placeholder: Android API 36

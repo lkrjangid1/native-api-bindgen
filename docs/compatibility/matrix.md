@@ -1,0 +1,23 @@
+# Compatibility matrix
+
+Only versions **actually exercised** are listed. "Tested" means automated tests ran against that version on 2026-10-05 on the maintainer machine (macOS 27.2 arm64). CI workflows exist (`.github/workflows`) but have not run yet because the repository has no remote; this table will be generated from CI once they do.
+
+| Component | Tested | How |
+|---|---|---|
+| Dart SDK | 3.11.5 | all package tests; workspace requires ≥ 3.9 |
+| Flutter | 3.41.9 (stable) | example app build, widget test, integration tests, release APK builds |
+| `package:jni` / `jni_flutter` | 1.0.3 / 1.0.3 | generated bindings compile and run (host JVM + Android emulator) |
+| Android platform parsed (full android.jar) | 36, 37.2 | full-jar extraction; 36 also full Flutter generation + `dart analyze` |
+| Android platforms in diff | 35 → 36 | `diff android` |
+| Android device (emulator) | API 37 (`Pixel_7` AVD, arm64) | 12 integration tests |
+| Generated `minApi` guards | 24 | guard tests (device + host JVM) |
+| Minor SDK versions | 36.1 availability (fixture), `SDK_INT_FULL` path | unit + host-JVM tests |
+| JDK | OpenJDK 25.0.2 (fixtures compiled with `--release 17`) | fixture, golden, host-JVM runtime tests |
+| CMake (host JNI helper) | 3.22.1 (from Android SDK) | `tools/run_jvm_runtime_tests.sh` |
+| Xcode / iOS SDK | 27.0 / 27.0 | **detected only** (`doctor`); generation not implemented |
+| React Native / Node | — | not implemented |
+
+## Known constraints
+
+- `package:jni` ≥ 1.0 is required (generated code uses its extension-type API and `JImplementer`).
+- Android platforms must include `data/api-versions.xml` for availability and non-SDK detection (all platforms tested do).

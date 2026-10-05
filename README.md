@@ -30,14 +30,15 @@ Calling a single platform API from Flutter or React Native usually means writing
 
 ## Installation
 
-The CLI is a Dart package (not yet published). From a clone:
+The CLI is a Dart package (not yet published to pub.dev). From a clone:
 
 ```bash
 dart pub get
-dart run native_api_bindgen:native-api-bindgen doctor
+dart pub global activate --source path packages/native_api_cli
+native-api-bindgen doctor
 ```
 
-Once published: `dart pub global activate native_api_bindgen`.
+Once published: `dart pub global activate native_api_bindgen`. Step-by-step guide: [docs/getting-started](docs/getting-started/README.md).
 
 ## First commands
 
@@ -46,15 +47,16 @@ native-api-bindgen doctor                       # what SDKs/toolchains are insta
 native-api-bindgen init                         # write native_api_bindgen.yaml
 native-api-bindgen generate flutter --entry android.content.Intent
 native-api-bindgen coverage
-native-api-bindgen why-skipped 'android.os.Bundle#getParcelableArray(java.lang.String,java.lang.Class)'
+native-api-bindgen why-skipped 'android.app.Activity#onCreate'
 ```
 
 ```dart
-import 'generated/android.dart';
+import 'package:jni/jni.dart';
+import 'src/generated/bindings.dart';
 
 final uri = Uri.parse('https://example.com'.toJString());
-final intent = Intent.new$1(Intent.ACTION_VIEW.toJString(), uri);
-print(intent.getData()); // https://example.com
+final intent = Intent.new$String$Uri(Intent.ACTION_VIEW.toJString(), uri);
+print(intent.getData()); // https://example.com  (calls android.content.Intent#getData via JNI)
 ```
 
 ## Architecture

@@ -1,0 +1,16 @@
+name: Platform compatibility
+description: A Flutter/Dart/Android/JDK/Xcode version combination does not work.
+labels: [compatibility]
+body:
+  - type: textarea
+    id: versions
+    attributes:
+      label: Versions (from `native-api-bindgen doctor`)
+    validations:
+      required: true
+  - type: textarea
+    id: failure
+    attributes:
+      label: Failure
+    validations:
+      required: true

@@ -64,7 +64,11 @@ final class CoverageReport {
         if (!typeOk) continue;
         _account(f.constantValue != null ? 'constants' : 'fields', f);
       }
-      if (typeOk && t.isInterface) {
+      // Callbacks: interfaces with at least one instance method (marker
+      // interfaces have nothing to implement).
+      if (typeOk &&
+          t.isInterface &&
+          t.methods.any((m) => !m.isStatic && !m.isConstructor)) {
         _inc(discovered, 'callbacks');
         if (!t.diagnostics.any(
           (d) => d.code == DiagnosticCode.unsupportedCallback,

@@ -1,0 +1,24 @@
+name: Bug report
+description: Something generated or the CLI behaves incorrectly.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction
+      description: Command(s) run, configuration file, and the smallest Dart snippet that shows the problem.
+    validations:
+      required: true
+  - type: textarea
+    id: doctor
+    attributes:
+      label: Output of `native-api-bindgen doctor --json`
+      render: json
+    validations:
+      required: true
