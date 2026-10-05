@@ -69,7 +69,8 @@ String _sig(ApiNode n) => switch (n) {
   final ApiField f =>
     f.type.display + (f.constantValue == null ? '' : ' = ${f.constantValue}'),
   final ApiType t =>
-    '${t.kind.name} extends ${t.superClass?.display} implements ${t.interfaces.map((i) => i.display).join(',')}',
+    '${t.kind.name} extends ${t.superClass?.display} implements '
+        '${(t.interfaces.map((i) => i.display).toList()..sort()).join(',')}',
 };
 
 String _anns(ApiNode n) =>

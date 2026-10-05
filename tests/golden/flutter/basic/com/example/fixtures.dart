@@ -17,7 +17,7 @@ import 'package:native_api_runtime/native_api_runtime.dart' as rt$;
 ///
 /// - Android API: 1+
 /// - Superclass: `java.lang.Object`
-extension type AnnotatedClass._(jni$.JObject _$this) implements jni$.JObject {
+extension type AnnotatedClass._(jni$.JObject _$AnnotatedClass) implements jni$.JObject {
   static final _$class = jni$.JClass.forName(r'com/example/fixtures/AnnotatedClass');
 
   /// `package:jni` type descriptor for `com.example.fixtures.AnnotatedClass`.
@@ -136,7 +136,7 @@ final class _$AnnotatedClass$Type extends jni$.JType<AnnotatedClass> {
 ///
 /// - Android API: 5+
 /// - Superclass: `java.lang.Object`
-extension type ApiLevelClass._(jni$.JObject _$this) implements jni$.JObject {
+extension type ApiLevelClass._(jni$.JObject _$ApiLevelClass) implements jni$.JObject {
   static final _$class = jni$.JClass.forName(r'com/example/fixtures/ApiLevelClass');
 
   /// `package:jni` type descriptor for `com.example.fixtures.ApiLevelClass`.
@@ -199,7 +199,7 @@ final class _$ApiLevelClass$Type extends jni$.JType<ApiLevelClass> {
 ///
 /// - Android API: 1+
 /// - Superclass: `java.lang.Object`
-extension type AsyncClass._(jni$.JObject _$this) implements jni$.JObject {
+extension type AsyncClass._(jni$.JObject _$AsyncClass) implements jni$.JObject {
   static final _$class = jni$.JClass.forName(r'com/example/fixtures/AsyncClass');
 
   /// `package:jni` type descriptor for `com.example.fixtures.AsyncClass`.
@@ -266,7 +266,7 @@ final class _$AsyncClass$Type extends jni$.JType<AsyncClass> {
 /// - Android API: 1+
 ///
 /// Implement in Dart with [CallbackInterface.implement].
-extension type CallbackInterface._(jni$.JObject _$this) implements jni$.JObject {
+extension type CallbackInterface._(jni$.JObject _$CallbackInterface) implements jni$.JObject {
   static final _$class = jni$.JClass.forName(r'com/example/fixtures/CallbackInterface');
 
   /// `package:jni` type descriptor for `com.example.fixtures.CallbackInterface`.
@@ -435,12 +435,114 @@ final class _$CallbackInterface with $CallbackInterface {
 
 }
 
+/// Native API: `com.example.fixtures.Countable` (interface)
+///
+/// - Android API: 1+
+///
+/// Implement in Dart with [Countable.implement].
+extension type Countable._(jni$.JObject _$Countable) implements jni$.JObject {
+  static final _$class = jni$.JClass.forName(r'com/example/fixtures/Countable');
+
+  /// `package:jni` type descriptor for `com.example.fixtures.Countable`.
+  static const jni$.JType<Countable> type = _$Countable$Type();
+
+  static final _$m$size = _$class.instanceMethodId(r'size', r'()I');
+  /// Native API: `com.example.fixtures.Countable#size()`
+  ///
+  /// - Android API: 1+
+  int size() {
+    return rt$.guardJni(() => _$m$size.call(this, jni$.jint.type, []));
+  }
+
+  static final Map<int, $Countable> _$impls = {};
+
+  static jnii$.JObjectPtr _$invoke(int port, jnii$.JObjectPtr descriptor, jnii$.JObjectPtr args) =>
+      _$invokeMethod(port, jnii$.MethodInvocation.fromAddresses(0, descriptor.address, args.address));
+
+  static final jnii$.Pointer<jnii$.NativeFunction<jnii$.JObjectPtr Function(jnii$.Int64, jnii$.JObjectPtr, jnii$.JObjectPtr)>> _$invokePointer =
+      jnii$.Pointer.fromFunction(_$invoke);
+
+  static jnii$.Pointer<jnii$.Void> _$invokeMethod(int $p, jnii$.MethodInvocation $i) {
+    final $d = $i.methodDescriptor.toDartString(releaseOriginal: true);
+    if ($d == r'size()I') {
+      try {
+        final $r = _$impls[$p]!.size();
+        return $r.toJInteger().reference.toPointer();
+      } catch (e, st) {
+        rt$.NativeCallbacks.reportPropagated(e, st, r'com.example.fixtures.Countable#size()');
+        return jnii$.ProtectedJniExtensions.newDartException(e);
+      }
+    }
+    return jnii$.nullptr;
+  }
+
+  /// Adds a Dart implementation of `com.example.fixtures.Countable` to [implementer], for
+  /// objects implementing several interfaces.
+  static void implementIn(jni$.JImplementer implementer, $Countable $impl) {
+    late final jnii$.RawReceivePort $p;
+    $p = jnii$.RawReceivePort(($m) {
+      if ($m == null) {
+        _$impls.remove($p.sendPort.nativePort);
+        $p.close();
+        return;
+      }
+      final $i = jnii$.MethodInvocation.fromMessage($m as List<dynamic>);
+      final $r = _$invokeMethod($p.sendPort.nativePort, $i);
+      $i.args?.release();
+      jnii$.ProtectedJniExtensions.returnResult($i.result, $r);
+    });
+    implementer.add(r'com.example.fixtures.Countable', $p, _$invokePointer, [
+    ]);
+    _$impls[$p.sendPort.nativePort] = $impl;
+  }
+
+  /// Creates a Java object implementing `com.example.fixtures.Countable` backed by [$impl].
+  ///
+  /// The Dart implementation is retained until the Java proxy is
+  /// garbage-collected. A `void` callback that throws is reported through
+  /// `NativeCallbacks` instead of crashing the calling Java thread.
+  factory Countable.implement($Countable $impl) {
+    final $i = jni$.JImplementer();
+    implementIn($i, $impl);
+    return $i.implement<Countable>();
+  }
+}
+
+final class _$Countable$Type extends jni$.JType<Countable> {
+  const _$Countable$Type();
+
+  @override
+  String get signature => r'Lcom/example/fixtures/Countable;';
+}
+
+/// Dart implementation of `com.example.fixtures.Countable`; see [Countable.implement].
+abstract base mixin class $Countable {
+  factory $Countable({
+    required int Function() size,
+  }) = _$Countable;
+
+  /// Implements `com.example.fixtures.Countable#size()`.
+  int size();
+
+}
+
+final class _$Countable with $Countable {
+  _$Countable({
+    required int Function() size,
+  }) : _size = size;
+
+  final int Function() _size;
+  @override
+  int size() => _size();
+
+}
+
 /// Native API: `com.example.fixtures.DeprecatedClass` (class)
 ///
 /// - Android API: 1+
 /// - Superclass: `java.lang.Object`
 @Deprecated('Deprecated in the Android SDK')
-extension type DeprecatedClass._(jni$.JObject _$this) implements jni$.JObject {
+extension type DeprecatedClass._(jni$.JObject _$DeprecatedClass) implements jni$.JObject {
   static final _$class = jni$.JClass.forName(r'com/example/fixtures/DeprecatedClass');
 
   /// `package:jni` type descriptor for `com.example.fixtures.DeprecatedClass`.
@@ -470,11 +572,48 @@ final class _$DeprecatedClass$Type extends jni$.JType<DeprecatedClass> {
   String get signature => r'Lcom/example/fixtures/DeprecatedClass;';
 }
 
+/// Native API: `com.example.fixtures.DualImpl` (class)
+///
+/// - Android API: 1+
+/// - Superclass: `java.lang.Object`
+/// - Interfaces: `com.example.fixtures.Sizable`, `com.example.fixtures.Countable`, `com.example.fixtures.Marker`
+extension type DualImpl._(jni$.JObject _$DualImpl) implements Sizable, Countable, Marker {
+  static final _$class = jni$.JClass.forName(r'com/example/fixtures/DualImpl');
+
+  /// `package:jni` type descriptor for `com.example.fixtures.DualImpl`.
+  static const jni$.JType<DualImpl> type = _$DualImpl$Type();
+
+  static final _$m$create = _$class.staticMethodId(r'create', r'(I)Lcom/example/fixtures/DualImpl;');
+  /// Native API: `com.example.fixtures.DualImpl#create(int)`
+  ///
+  /// - Android API: 1+
+  /// - Returns `com.example.fixtures.DualImpl`, nullability unknown (treated as nullable)
+  static DualImpl? create(int n) {
+    return rt$.guardJni(() => _$m$create.callNullable(_$class, DualImpl.type, [jni$.JValueInt(n)]));
+  }
+
+  static final _$m$size = _$class.instanceMethodId(r'size', r'()I');
+  /// Native API: `com.example.fixtures.Countable#size()`
+  ///
+  /// - Android API: 1+
+  // Redeclared: inherited from more than one supertype.
+  int size() {
+    return rt$.guardJni(() => _$m$size.call(this, jni$.jint.type, []));
+  }
+}
+
+final class _$DualImpl$Type extends jni$.JType<DualImpl> {
+  const _$DualImpl$Type();
+
+  @override
+  String get signature => r'Lcom/example/fixtures/DualImpl;';
+}
+
 /// Native API: `com.example.fixtures.EnumClass` (enum)
 ///
 /// - Android API: 1+
 /// - Superclass: `java.lang.Enum<com.example.fixtures.EnumClass>`
-extension type EnumClass._(jni$.JObject _$this) implements jni$.JObject {
+extension type EnumClass._(jni$.JObject _$EnumClass) implements jni$.JObject {
   static final _$class = jni$.JClass.forName(r'com/example/fixtures/EnumClass');
 
   /// `package:jni` type descriptor for `com.example.fixtures.EnumClass`.
@@ -537,7 +676,7 @@ final class _$EnumClass$Type extends jni$.JType<EnumClass> {
 /// - Type parameters: `<T extends java.lang.CharSequence>` (erased)
 /// - Superclass: `java.lang.Object`
 /// - Note E003 UNSUPPORTED_GENERIC: Type parameters T are erased to their bounds
-extension type GenericClass._(jni$.JObject _$this) implements jni$.JObject {
+extension type GenericClass._(jni$.JObject _$GenericClass) implements jni$.JObject {
   static final _$class = jni$.JClass.forName(r'com/example/fixtures/GenericClass');
 
   /// `package:jni` type descriptor for `com.example.fixtures.GenericClass`.
@@ -606,11 +745,83 @@ final class _$GenericClass$Type extends jni$.JType<GenericClass> {
   String get signature => r'Lcom/example/fixtures/GenericClass;';
 }
 
+/// Native API: `com.example.fixtures.Marker` (interface)
+///
+/// - Android API: 1+
+///
+/// Implement in Dart with [Marker.implement].
+extension type Marker._(jni$.JObject _$Marker) implements jni$.JObject {
+  static final _$class = jni$.JClass.forName(r'com/example/fixtures/Marker');
+
+  /// `package:jni` type descriptor for `com.example.fixtures.Marker`.
+  static const jni$.JType<Marker> type = _$Marker$Type();
+}
+
+final class _$Marker$Type extends jni$.JType<Marker> {
+  const _$Marker$Type();
+
+  @override
+  String get signature => r'Lcom/example/fixtures/Marker;';
+}
+
+/// Native API: `com.example.fixtures.MultiParent` (class)
+///
+/// - Android API: 1+
+/// - Superclass: `com.example.fixtures.NestedClass`
+/// - Interfaces: `java.lang.Comparable<com.example.fixtures.MultiParent>`, `com.example.fixtures.CallbackInterface`, `java.lang.Cloneable`
+extension type MultiParent._(jni$.JObject _$MultiParent) implements NestedClass, CallbackInterface {
+  static final _$class = jni$.JClass.forName(r'com/example/fixtures/MultiParent');
+
+  /// `package:jni` type descriptor for `com.example.fixtures.MultiParent`.
+  static const jni$.JType<MultiParent> type = _$MultiParent$Type();
+
+  static final _$c$ = _$class.constructorId(r'()V');
+  /// Native API: `com.example.fixtures.MultiParent#<init>()`
+  ///
+  /// - Android API: 1+
+  factory MultiParent() {
+    return rt$.guardJni(() => _$c$.call<MultiParent>(_$class, []));
+  }
+
+  static final _$m$compareTo = _$class.instanceMethodId(r'compareTo', r'(Lcom/example/fixtures/MultiParent;)I');
+  /// Native API: `com.example.fixtures.MultiParent#compareTo(com.example.fixtures.MultiParent)`
+  ///
+  /// - Android API: 1+
+  /// - `other`: `com.example.fixtures.MultiParent`, nullability unknown (treated as nullable)
+  int compareTo(MultiParent? other) {
+    return rt$.guardJni(() => _$m$compareTo.call(this, jni$.jint.type, [other]));
+  }
+
+  static final _$m$onEvent = _$class.instanceMethodId(r'onEvent', r'(Ljava/lang/String;I)V');
+  /// Native API: `com.example.fixtures.MultiParent#onEvent(java.lang.String,int)`
+  ///
+  /// - Android API: 1+
+  /// - `name`: `java.lang.String`, nullability unknown (treated as nullable)
+  void onEvent(jni$.JString? name, int code) {
+    rt$.guardJni(() => _$m$onEvent.call(this, jni$.jvoid.type, [name, jni$.JValueInt(code)]));
+  }
+
+  static final _$m$shouldContinue = _$class.instanceMethodId(r'shouldContinue', r'()Z');
+  /// Native API: `com.example.fixtures.MultiParent#shouldContinue()`
+  ///
+  /// - Android API: 1+
+  bool shouldContinue() {
+    return rt$.guardJni(() => _$m$shouldContinue.call(this, jni$.jboolean.type, []));
+  }
+}
+
+final class _$MultiParent$Type extends jni$.JType<MultiParent> {
+  const _$MultiParent$Type();
+
+  @override
+  String get signature => r'Lcom/example/fixtures/MultiParent;';
+}
+
 /// Native API: `com.example.fixtures.NestedClass` (class)
 ///
 /// - Android API: 1+
 /// - Superclass: `java.lang.Object`
-extension type NestedClass._(jni$.JObject _$this) implements jni$.JObject {
+extension type NestedClass._(jni$.JObject _$NestedClass) implements jni$.JObject {
   static final _$class = jni$.JClass.forName(r'com/example/fixtures/NestedClass');
 
   /// `package:jni` type descriptor for `com.example.fixtures.NestedClass`.
@@ -645,7 +856,7 @@ final class _$NestedClass$Type extends jni$.JType<NestedClass> {
 ///
 /// - Android API: 1+
 /// - Superclass: `java.lang.Object`
-extension type NestedClass_Builder._(jni$.JObject _$this) implements jni$.JObject {
+extension type NestedClass_Builder._(jni$.JObject _$NestedClass_Builder) implements jni$.JObject {
   static final _$class = jni$.JClass.forName(r'com/example/fixtures/NestedClass$Builder');
 
   /// `package:jni` type descriptor for `com.example.fixtures.NestedClass$Builder`.
@@ -690,7 +901,7 @@ final class _$NestedClass_Builder$Type extends jni$.JType<NestedClass_Builder> {
 ///
 /// - Android API: 1+
 /// - Superclass: `java.lang.Object`
-extension type NestedClass_Inner._(jni$.JObject _$this) implements jni$.JObject {
+extension type NestedClass_Inner._(jni$.JObject _$NestedClass_Inner) implements jni$.JObject {
   static final _$class = jni$.JClass.forName(r'com/example/fixtures/NestedClass$Inner');
 
   /// `package:jni` type descriptor for `com.example.fixtures.NestedClass$Inner`.
@@ -726,7 +937,7 @@ final class _$NestedClass_Inner$Type extends jni$.JType<NestedClass_Inner> {
 /// - Android API: 1+
 ///
 /// Implement in Dart with [NestedClass_Listener.implement].
-extension type NestedClass_Listener._(jni$.JObject _$this) implements jni$.JObject {
+extension type NestedClass_Listener._(jni$.JObject _$NestedClass_Listener) implements jni$.JObject {
   static final _$class = jni$.JClass.forName(r'com/example/fixtures/NestedClass$Listener');
 
   /// `package:jni` type descriptor for `com.example.fixtures.NestedClass$Listener`.
@@ -837,7 +1048,7 @@ final class _$NestedClass_Listener with $NestedClass_Listener {
 ///
 /// - Android API: 1+
 /// - Superclass: `java.lang.Object`
-extension type NullableClass._(jni$.JObject _$this) implements jni$.JObject {
+extension type NullableClass._(jni$.JObject _$NullableClass) implements jni$.JObject {
   static final _$class = jni$.JClass.forName(r'com/example/fixtures/NullableClass');
 
   /// `package:jni` type descriptor for `com.example.fixtures.NullableClass`.
@@ -907,7 +1118,7 @@ final class _$NullableClass$Type extends jni$.JType<NullableClass> {
 ///
 /// - Android API: 1+
 /// - Superclass: `java.lang.Object`
-extension type OverloadedClass._(jni$.JObject _$this) implements jni$.JObject {
+extension type OverloadedClass._(jni$.JObject _$OverloadedClass) implements jni$.JObject {
   static final _$class = jni$.JClass.forName(r'com/example/fixtures/OverloadedClass');
 
   /// `package:jni` type descriptor for `com.example.fixtures.OverloadedClass`.
@@ -1092,7 +1303,7 @@ final class _$OverloadedClass$Type extends jni$.JType<OverloadedClass> {
 ///
 /// - Android API: 1+
 /// - Superclass: `java.lang.Object`
-extension type ReservedWords._(jni$.JObject _$this) implements jni$.JObject {
+extension type ReservedWords._(jni$.JObject _$ReservedWords) implements jni$.JObject {
   static final _$class = jni$.JClass.forName(r'com/example/fixtures/ReservedWords');
 
   /// `package:jni` type descriptor for `com.example.fixtures.ReservedWords`.
@@ -1191,11 +1402,113 @@ final class _$ReservedWords$Type extends jni$.JType<ReservedWords> {
   String get signature => r'Lcom/example/fixtures/ReservedWords;';
 }
 
+/// Native API: `com.example.fixtures.Sizable` (interface)
+///
+/// - Android API: 1+
+///
+/// Implement in Dart with [Sizable.implement].
+extension type Sizable._(jni$.JObject _$Sizable) implements jni$.JObject {
+  static final _$class = jni$.JClass.forName(r'com/example/fixtures/Sizable');
+
+  /// `package:jni` type descriptor for `com.example.fixtures.Sizable`.
+  static const jni$.JType<Sizable> type = _$Sizable$Type();
+
+  static final _$m$size = _$class.instanceMethodId(r'size', r'()I');
+  /// Native API: `com.example.fixtures.Sizable#size()`
+  ///
+  /// - Android API: 1+
+  int size() {
+    return rt$.guardJni(() => _$m$size.call(this, jni$.jint.type, []));
+  }
+
+  static final Map<int, $Sizable> _$impls = {};
+
+  static jnii$.JObjectPtr _$invoke(int port, jnii$.JObjectPtr descriptor, jnii$.JObjectPtr args) =>
+      _$invokeMethod(port, jnii$.MethodInvocation.fromAddresses(0, descriptor.address, args.address));
+
+  static final jnii$.Pointer<jnii$.NativeFunction<jnii$.JObjectPtr Function(jnii$.Int64, jnii$.JObjectPtr, jnii$.JObjectPtr)>> _$invokePointer =
+      jnii$.Pointer.fromFunction(_$invoke);
+
+  static jnii$.Pointer<jnii$.Void> _$invokeMethod(int $p, jnii$.MethodInvocation $i) {
+    final $d = $i.methodDescriptor.toDartString(releaseOriginal: true);
+    if ($d == r'size()I') {
+      try {
+        final $r = _$impls[$p]!.size();
+        return $r.toJInteger().reference.toPointer();
+      } catch (e, st) {
+        rt$.NativeCallbacks.reportPropagated(e, st, r'com.example.fixtures.Sizable#size()');
+        return jnii$.ProtectedJniExtensions.newDartException(e);
+      }
+    }
+    return jnii$.nullptr;
+  }
+
+  /// Adds a Dart implementation of `com.example.fixtures.Sizable` to [implementer], for
+  /// objects implementing several interfaces.
+  static void implementIn(jni$.JImplementer implementer, $Sizable $impl) {
+    late final jnii$.RawReceivePort $p;
+    $p = jnii$.RawReceivePort(($m) {
+      if ($m == null) {
+        _$impls.remove($p.sendPort.nativePort);
+        $p.close();
+        return;
+      }
+      final $i = jnii$.MethodInvocation.fromMessage($m as List<dynamic>);
+      final $r = _$invokeMethod($p.sendPort.nativePort, $i);
+      $i.args?.release();
+      jnii$.ProtectedJniExtensions.returnResult($i.result, $r);
+    });
+    implementer.add(r'com.example.fixtures.Sizable', $p, _$invokePointer, [
+    ]);
+    _$impls[$p.sendPort.nativePort] = $impl;
+  }
+
+  /// Creates a Java object implementing `com.example.fixtures.Sizable` backed by [$impl].
+  ///
+  /// The Dart implementation is retained until the Java proxy is
+  /// garbage-collected. A `void` callback that throws is reported through
+  /// `NativeCallbacks` instead of crashing the calling Java thread.
+  factory Sizable.implement($Sizable $impl) {
+    final $i = jni$.JImplementer();
+    implementIn($i, $impl);
+    return $i.implement<Sizable>();
+  }
+}
+
+final class _$Sizable$Type extends jni$.JType<Sizable> {
+  const _$Sizable$Type();
+
+  @override
+  String get signature => r'Lcom/example/fixtures/Sizable;';
+}
+
+/// Dart implementation of `com.example.fixtures.Sizable`; see [Sizable.implement].
+abstract base mixin class $Sizable {
+  factory $Sizable({
+    required int Function() size,
+  }) = _$Sizable;
+
+  /// Implements `com.example.fixtures.Sizable#size()`.
+  int size();
+
+}
+
+final class _$Sizable with $Sizable {
+  _$Sizable({
+    required int Function() size,
+  }) : _size = size;
+
+  final int Function() _size;
+  @override
+  int size() => _size();
+
+}
+
 /// Native API: `com.example.fixtures.ThrowsClass` (class)
 ///
 /// - Android API: 1+
 /// - Superclass: `java.lang.Object`
-extension type ThrowsClass._(jni$.JObject _$this) implements jni$.JObject {
+extension type ThrowsClass._(jni$.JObject _$ThrowsClass) implements jni$.JObject {
   static final _$class = jni$.JClass.forName(r'com/example/fixtures/ThrowsClass');
 
   /// `package:jni` type descriptor for `com.example.fixtures.ThrowsClass`.

@@ -74,6 +74,17 @@ void main() {
       expect(g.get()!.toString(), 'bye');
     });
 
+    test('multiple supertypes: inherited and redeclared members work', () {
+      final d = DualImpl.create(3)!;
+      expect(d.size(), 3, reason: 'size() is inherited from two interfaces and redeclared');
+      final Sizable asSizable = d;
+      expect(asSizable.size(), 3);
+      final m = MultiParent();
+      expect(m.name()!.toDartString(), '', reason: 'inherited from NestedClass');
+      expect(m.shouldContinue(), isTrue);
+      expect(m.compareTo(m), 0);
+    });
+
     test('nested types', () {
       final built = NestedClass_Builder().name(js('n'))!.build()!;
       expect(built.name()!.toDartString(), 'n');

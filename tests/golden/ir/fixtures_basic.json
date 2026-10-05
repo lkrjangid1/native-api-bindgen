@@ -823,6 +823,48 @@
       "visibility": "public"
     },
     {
+      "availability": {
+        "introduced": "1"
+      },
+      "id": "com.example.fixtures.Countable",
+      "kind": "interfaceType",
+      "methods": [
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.Countable#size()",
+          "kind": "method",
+          "modifiers": [
+            "abstract",
+            "public"
+          ],
+          "name": "size",
+          "nativeDescriptor": "()I",
+          "returnType": {
+            "kind": "primitive",
+            "name": "int"
+          },
+          "support": "supported",
+          "visibility": "public"
+        }
+      ],
+      "modifiers": [
+        "public"
+      ],
+      "name": "Countable",
+      "namespace": "com.example.fixtures",
+      "provenance": {
+        "artifactEntry": "com/example/fixtures/Countable.class",
+        "localArtifact": "fixtures",
+        "platform": "android",
+        "sdkVersion": "fixture",
+        "sourceKind": "fixture"
+      },
+      "support": "supported",
+      "visibility": "public"
+    },
+    {
       "annotations": [
         {
           "classification": "semantic",
@@ -880,6 +922,100 @@
       "namespace": "com.example.fixtures",
       "provenance": {
         "artifactEntry": "com/example/fixtures/DeprecatedClass.class",
+        "localArtifact": "fixtures",
+        "platform": "android",
+        "sdkVersion": "fixture",
+        "sourceKind": "fixture"
+      },
+      "superClass": {
+        "kind": "declared",
+        "name": "java.lang.Object",
+        "nullability": "unknown"
+      },
+      "support": "supported",
+      "visibility": "public"
+    },
+    {
+      "availability": {
+        "introduced": "1"
+      },
+      "id": "com.example.fixtures.DualImpl",
+      "interfaces": [
+        {
+          "kind": "declared",
+          "name": "com.example.fixtures.Sizable",
+          "nullability": "unknown"
+        },
+        {
+          "kind": "declared",
+          "name": "com.example.fixtures.Countable",
+          "nullability": "unknown"
+        },
+        {
+          "kind": "declared",
+          "name": "com.example.fixtures.Marker",
+          "nullability": "unknown"
+        }
+      ],
+      "kind": "classType",
+      "methods": [
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.DualImpl#<init>()",
+          "kind": "constructor",
+          "modifiers": [
+            "public"
+          ],
+          "name": "<init>",
+          "nativeDescriptor": "()V",
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.DualImpl#create(int)",
+          "kind": "method",
+          "modifiers": [
+            "public",
+            "static"
+          ],
+          "name": "create",
+          "nativeDescriptor": "(I)Lcom/example/fixtures/DualImpl;",
+          "parameters": [
+            {
+              "name": "n",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "primitive",
+                "name": "int"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "declared",
+            "name": "com.example.fixtures.DualImpl",
+            "nullability": "unknown"
+          },
+          "support": "supported",
+          "visibility": "public"
+        }
+      ],
+      "modifiers": [
+        "abstract",
+        "public"
+      ],
+      "name": "DualImpl",
+      "namespace": "com.example.fixtures",
+      "provenance": {
+        "artifactEntry": "com/example/fixtures/DualImpl.class",
         "localArtifact": "fixtures",
         "platform": "android",
         "sdkVersion": "fixture",
@@ -1393,6 +1529,181 @@
       },
       "support": "unsupported",
       "visibility": "hiddenOrNonSdk"
+    },
+    {
+      "availability": {
+        "introduced": "1"
+      },
+      "id": "com.example.fixtures.Marker",
+      "kind": "interfaceType",
+      "modifiers": [
+        "public"
+      ],
+      "name": "Marker",
+      "namespace": "com.example.fixtures",
+      "provenance": {
+        "artifactEntry": "com/example/fixtures/Marker.class",
+        "localArtifact": "fixtures",
+        "platform": "android",
+        "sdkVersion": "fixture",
+        "sourceKind": "fixture"
+      },
+      "support": "supported",
+      "visibility": "public"
+    },
+    {
+      "availability": {
+        "introduced": "1"
+      },
+      "id": "com.example.fixtures.MultiParent",
+      "interfaces": [
+        {
+          "kind": "declared",
+          "name": "java.lang.Comparable",
+          "nullability": "unknown",
+          "typeArguments": [
+            {
+              "kind": "declared",
+              "name": "com.example.fixtures.MultiParent",
+              "nullability": "unknown"
+            }
+          ]
+        },
+        {
+          "kind": "declared",
+          "name": "com.example.fixtures.CallbackInterface",
+          "nullability": "unknown"
+        },
+        {
+          "kind": "declared",
+          "name": "java.lang.Cloneable",
+          "nullability": "unknown"
+        }
+      ],
+      "kind": "classType",
+      "methods": [
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.MultiParent#<init>()",
+          "kind": "constructor",
+          "modifiers": [
+            "public"
+          ],
+          "name": "<init>",
+          "nativeDescriptor": "()V",
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.MultiParent#compareTo(com.example.fixtures.MultiParent)",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "compareTo",
+          "nativeDescriptor": "(Lcom/example/fixtures/MultiParent;)I",
+          "parameters": [
+            {
+              "name": "other",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "declared",
+                "name": "com.example.fixtures.MultiParent",
+                "nullability": "unknown"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "int"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.MultiParent#onEvent(java.lang.String,int)",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "onEvent",
+          "nativeDescriptor": "(Ljava/lang/String;I)V",
+          "parameters": [
+            {
+              "name": "name",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "declared",
+                "name": "java.lang.String",
+                "nullability": "unknown"
+              }
+            },
+            {
+              "name": "code",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "primitive",
+                "name": "int"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.MultiParent#shouldContinue()",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "shouldContinue",
+          "nativeDescriptor": "()Z",
+          "returnType": {
+            "kind": "primitive",
+            "name": "boolean"
+          },
+          "support": "supported",
+          "visibility": "public"
+        }
+      ],
+      "modifiers": [
+        "public"
+      ],
+      "name": "MultiParent",
+      "namespace": "com.example.fixtures",
+      "provenance": {
+        "artifactEntry": "com/example/fixtures/MultiParent.class",
+        "localArtifact": "fixtures",
+        "platform": "android",
+        "sdkVersion": "fixture",
+        "sourceKind": "fixture"
+      },
+      "superClass": {
+        "kind": "declared",
+        "name": "com.example.fixtures.NestedClass",
+        "nullability": "unknown"
+      },
+      "support": "supported",
+      "visibility": "public"
     },
     {
       "availability": {
@@ -2825,6 +3136,48 @@
         "kind": "declared",
         "name": "java.lang.Object",
         "nullability": "unknown"
+      },
+      "support": "supported",
+      "visibility": "public"
+    },
+    {
+      "availability": {
+        "introduced": "1"
+      },
+      "id": "com.example.fixtures.Sizable",
+      "kind": "interfaceType",
+      "methods": [
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.Sizable#size()",
+          "kind": "method",
+          "modifiers": [
+            "abstract",
+            "public"
+          ],
+          "name": "size",
+          "nativeDescriptor": "()I",
+          "returnType": {
+            "kind": "primitive",
+            "name": "int"
+          },
+          "support": "supported",
+          "visibility": "public"
+        }
+      ],
+      "modifiers": [
+        "public"
+      ],
+      "name": "Sizable",
+      "namespace": "com.example.fixtures",
+      "provenance": {
+        "artifactEntry": "com/example/fixtures/Sizable.class",
+        "localArtifact": "fixtures",
+        "platform": "android",
+        "sdkVersion": "fixture",
+        "sourceKind": "fixture"
       },
       "support": "supported",
       "visibility": "public"

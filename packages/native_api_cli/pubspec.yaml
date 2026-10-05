@@ -17,6 +17,7 @@ dependencies:
   native_api_generator: ^0.1.0-dev.1
   native_api_ir: ^0.1.0-dev.1
   path: ^1.9.0
+  yaml: ^3.1.3
 
 dev_dependencies:
   test: ^1.29.0

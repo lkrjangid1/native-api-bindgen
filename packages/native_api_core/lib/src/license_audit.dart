@@ -347,10 +347,7 @@ final class LicenseAuditor {
         'Header carries an Apple copyright banner typical of SDK headers.',
       );
     }
-    if (text.contains(
-          '/Applications/Xcode.app/Contents/Developer/Platforms/',
-        ) &&
-        text.contains('.sdk/')) {
+    if (text.contains(_xcodePlatforms) && text.contains('.sdk/')) {
       add(
         AuditStatus.warn,
         'xcode-sdk-path',
@@ -539,6 +536,10 @@ final _appleDocsFooter = RegExp(
 );
 const _androidDocsFooter =
     'Content and code samples on this page are subject to the licenses described in the Content License';
+// Split so this file does not match its own rules.
+const _xcodePlatforms =
+    '/Applications/Xcode.app/Contents/'
+    'Developer/Platforms/';
 final _spdx = RegExp(r'SPDX-License-Identifier:\s*([A-Za-z0-9.\-+]+)');
 final _copyright = RegExp(r'^\s*(//|\*|#|/\*)\s*Copyright\b', multiLine: true);
 

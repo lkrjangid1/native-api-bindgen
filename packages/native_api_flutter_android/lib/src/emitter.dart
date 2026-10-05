@@ -112,7 +112,10 @@ final class DartJniEmitter {
       for (final t in e.value) {
         for (final n in [
           dartName(t),
-          if (options.callbacks && t.isInterface) '\$${dartName(t)}',
+          if (options.callbacks &&
+              t.isInterface &&
+              _callbackMethods(t).isNotEmpty)
+            '\$${dartName(t)}',
         ]) {
           if (!exported.add(n)) hidden.add(n);
         }
@@ -295,8 +298,11 @@ final class DartJniEmitter {
     if (t.isDeprecated) {
       b.writeln("@Deprecated('${_deprecationText(t.availability)}')");
     }
+    // The representation name is unique per type: extension types that
+    // implement several generated supertypes must not inherit two distinct
+    // members with the same name.
     b.writeln(
-      'extension type $name._(jni\$.JObject _\$this) implements ${supers.join(', ')} {',
+      'extension type $name._(jni\$.JObject _\$$name) implements ${supers.join(', ')} {',
     );
     b.writeln("  static final _\$class = jni\$.JClass.forName(r'$internal');");
     b.writeln();
@@ -336,7 +342,9 @@ final class DartJniEmitter {
         _emitField(b, ctx, node, e.key, redeclared: true);
       }
     }
-    final implementable = options.callbacks && t.isInterface;
+    // Marker interfaces (no instance methods) have nothing to implement.
+    final implementable =
+        options.callbacks && t.isInterface && _callbackMethods(t).isNotEmpty;
     if (implementable) _emitImplementation(b, ctx);
     b.writeln('}');
     b.writeln();
@@ -771,7 +779,9 @@ final class DartJniEmitter {
     b.writeln(
       '    final \$d = \$i.methodDescriptor.toDartString(releaseOriginal: true);',
     );
-    b.writeln('    final \$a = \$i.args;');
+    if (methods.any((e) => e.$1.parameters.isNotEmpty)) {
+      b.writeln('    final \$a = \$i.args;');
+    }
     for (final (m, dart) in methods) {
       final tv = _typeVars(t, m);
       final args = <String>[];
