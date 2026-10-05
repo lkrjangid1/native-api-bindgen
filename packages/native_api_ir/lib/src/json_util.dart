@@ -8,6 +8,36 @@ const int maxJsonDepth = 64;
 String canonicalJson(Object? value) =>
     '${const JsonEncoder.withIndent('  ').convert(_canonicalize(value, 0))}\n';
 
+/// Writes `canonicalJson({...head, listKey: items})` to [out] without
+/// building the whole document: each element of [items] is encoded on its
+/// own. [listKey] must sort after every key of [head]. Output is identical
+/// to [canonicalJson].
+void writeCanonicalJsonWithList(
+  StringSink out,
+  Map<String, Object?> head,
+  String listKey,
+  Iterable<Object?> items,
+) {
+  assert(head.keys.every((k) => k.compareTo(listKey) < 0));
+  const placeholder = '\u0000items\u0000';
+  final text = canonicalJson({...head, listKey: placeholder});
+  final marker = '${jsonEncode(listKey)}: ${jsonEncode(placeholder)}';
+  final at = text.indexOf(marker);
+  out.write(text.substring(0, at));
+  out.write('${jsonEncode(listKey)}: [');
+  var first = true;
+  for (final item in items) {
+    out.write(first ? '\n' : ',\n');
+    first = false;
+    final enc = const JsonEncoder.withIndent(
+      '  ',
+    ).convert(_canonicalize(item, 2));
+    out.write('    ${enc.replaceAll('\n', '\n    ')}');
+  }
+  out.write(first ? ']' : '\n  ]');
+  out.write(text.substring(at + marker.length));
+}
+
 Object? _canonicalize(Object? value, int depth) {
   if (depth > maxJsonDepth) {
     throw const FormatException('JSON nesting too deep');

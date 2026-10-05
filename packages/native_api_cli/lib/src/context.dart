@@ -459,12 +459,15 @@ final class CliContext {
     final guard = OutputGuard(
       subdir == null ? stateDir : p.join(stateDir, subdir),
     );
-    guard.writeString('ir.json', planned.toCanonicalJson());
-    guard.writeString(
+    guard.writeStreaming('ir.json', planned.writeCanonicalJson);
+    guard.writeStreaming(
       'binding_map.json',
-      canonicalJson({
-        'bindings': [for (final b in bindings) b.toJson()],
-      }),
+      (out) => writeCanonicalJsonWithList(
+        out,
+        const {},
+        'bindings',
+        bindings.map((b) => b.toJson()),
+      ),
     );
     guard.writeString(
       'coverage.json',

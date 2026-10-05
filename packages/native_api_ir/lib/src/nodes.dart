@@ -756,12 +756,16 @@ final class ApiModule {
 
   /// JSON form.
   Map<String, Object?> toJson() => {
+    ..._headJson(),
+    'types': [for (final t in types) t.toJson()],
+  };
+
+  Map<String, Object?> _headJson() => {
     'schemaVersion': irSchemaVersion,
     'platform': platform.name,
     'sdkVersion': sdkVersion,
     if (sourceRevision != null) 'sourceRevision': sourceRevision,
     'generatorVersion': generatorVersion,
-    'types': [for (final t in types) t.toJson()],
     if (diagnostics.isNotEmpty)
       'diagnostics': [
         for (final d in (diagnostics.toList()..sort())) d.toJson(),
@@ -770,4 +774,13 @@ final class ApiModule {
 
   /// Canonical, byte-stable JSON text.
   String toCanonicalJson() => canonicalJson(toJson());
+
+  /// Writes [toCanonicalJson] to [out] one type at a time (bounded memory
+  /// for whole-SDK modules).
+  void writeCanonicalJson(StringSink out) => writeCanonicalJsonWithList(
+    out,
+    _headJson(),
+    'types',
+    types.map((t) => t.toJson()),
+  );
 }

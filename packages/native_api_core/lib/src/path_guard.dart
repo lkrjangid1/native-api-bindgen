@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
@@ -79,5 +80,64 @@ final class OutputGuard {
     Directory(p.dirname(full)).createSync(recursive: true);
     File(full).writeAsStringSync(contents);
     return full;
+  }
+
+  /// Writes the text produced by [write] to [relative] in chunks (UTF-8),
+  /// so large documents are never held in memory whole. Returns the
+  /// absolute path.
+  String writeStreaming(String relative, void Function(StringSink out) write) {
+    final full = resolve(relative);
+    Directory(p.dirname(full)).createSync(recursive: true);
+    final file = File(full).openSync(mode: FileMode.write);
+    try {
+      final sink = _ChunkedSink(file);
+      write(sink);
+      sink.flush();
+    } finally {
+      file.closeSync();
+    }
+    return full;
+  }
+}
+
+/// StringSink that flushes UTF-8 to [file] every ~1 MB.
+final class _ChunkedSink implements StringSink {
+  _ChunkedSink(this._file);
+
+  final RandomAccessFile _file;
+  final _buffer = StringBuffer();
+
+  void _maybeFlush() {
+    if (_buffer.length >= 1 << 20) flush();
+  }
+
+  void flush() {
+    if (_buffer.isEmpty) return;
+    _file.writeFromSync(utf8.encode(_buffer.toString()));
+    _buffer.clear();
+  }
+
+  @override
+  void write(Object? object) {
+    _buffer.write(object);
+    _maybeFlush();
+  }
+
+  @override
+  void writeAll(Iterable<Object?> objects, [String separator = '']) {
+    _buffer.writeAll(objects, separator);
+    _maybeFlush();
+  }
+
+  @override
+  void writeCharCode(int charCode) {
+    _buffer.writeCharCode(charCode);
+    _maybeFlush();
+  }
+
+  @override
+  void writeln([Object? object = '']) {
+    _buffer.writeln(object);
+    _maybeFlush();
   }
 }

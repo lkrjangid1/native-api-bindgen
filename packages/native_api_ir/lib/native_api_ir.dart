@@ -5,7 +5,8 @@
 library;
 
 export 'src/diagnostics.dart';
-export 'src/json_util.dart' show canonicalJson, maxJsonDepth;
+export 'src/json_util.dart'
+    show canonicalJson, maxJsonDepth, writeCanonicalJsonWithList;
 export 'src/metadata.dart';
 export 'src/nodes.dart';
 export 'src/symbol_id.dart';

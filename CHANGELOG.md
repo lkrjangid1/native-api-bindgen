@@ -25,6 +25,7 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 - IR schema 2: Apple module-qualified IDs, per-platform availability, unsigned primitives, pointer and block type references (schema 1 still reads).
 
 ### Changed
+- State files (`ir.json`, `binding_map.json`) are written as streams: whole-SDK generation peak memory 1.08 GB → 416 MB (same bytes).
 - `generate react-native` generates every configured platform; configured iOS generation is skipped with a warning off macOS.
 - Objective-C member naming is shared by the Dart and TypeScript targets (`ObjCMemberResolver`).
 - `writeGeneration` takes a per-target manifest name; Android and iOS output can share a directory.

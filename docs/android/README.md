@@ -40,3 +40,4 @@
 
 - Parse entire android.jar: 6,222 types in ~0.6 s
 - Generate Flutter bindings for every package: 6,196 types, 95,888 members, 1,135,260 lines; `dart analyze` reports no issues
+- Whole-SDK generation (compiled CLI, `/usr/bin/time -l`, 2026-10-05): 6,197 types, 95,922 members bound in 3.4 s wall time; peak resident memory 415,694,848 bytes (was 1,079,951,360 before the IR and binding map were written as streams; output byte-identical)
