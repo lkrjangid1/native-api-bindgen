@@ -1,0 +1,27 @@
+name: android_slice
+description: "Flutter example using native-api-bindgen generated Android bindings (Intent, Uri, Bundle, Context, Activity, Handler, Looper)."
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.9.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  jni: ^1.0.3
+  # Provides the application Context / current Activity to Dart. Only used to
+  # obtain those two objects; all API calls go through generated bindings.
+  jni_flutter: ^1.0.3
+  native_api_runtime:
+    path: ../../../runtimes/dart/native_api_runtime
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  integration_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true

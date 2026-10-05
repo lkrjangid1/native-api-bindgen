@@ -1,0 +1,38 @@
+name: android
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  real-sdk:
+    name: Real Android SDK parsing and generation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+      - name: Install Android platform 36 with the official sdkmanager
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36"
+      - run: dart pub get
+      - run: dart test packages/native_api_android/test/real_sdk_test.dart packages/native_api_cli
+      - name: Reproducibility
+        run: dart run native_api_bindgen verify-reproducible --platform 36 --entry android.content.Intent --depth 1
+      - name: Generate every android.jar package and analyze the output
+        run: |
+          mkdir -p /tmp/fullsdk/lib
+          cp examples/flutter/android_slice/native_api_bindgen.yaml /tmp/fullsdk/ 2>/dev/null || true
+          ARGS=$(python3 -c "import zipfile,os;z=zipfile.ZipFile(os.environ['ANDROID_HOME']+'/platforms/android-36/android.jar');print(' '.join('--package '+p for p in sorted({n.rsplit('/',1)[0].replace('/','.') for n in z.namelist() if n.endswith('.class') and '/' in n and not n.startswith('META-INF')})))")
+          dart run native_api_bindgen --project /tmp/fullsdk generate flutter --platform 36 --depth 0 $ARGS
+          printf 'name: fullsdk\npublish_to: none\nenvironment:\n  sdk: ^3.9.0\ndependencies:\n  jni: ^1.0.3\n  native_api_runtime:\n    path: %s/runtimes/dart/native_api_runtime\n' "$PWD" > /tmp/fullsdk/pubspec.yaml
+          cd /tmp/fullsdk && dart pub get && dart analyze --fatal-warnings lib

@@ -1,0 +1,34 @@
+# native-api-bindgen configuration for the Android vertical slice.
+platform:
+  android:
+    sdk: auto
+    platform: "36"      # pinned so the example is reproducible
+    minApi: 24          # newer APIs get runtime guards
+    entries:
+      - android.content.Intent
+      - android.net.Uri
+      - android.os.Bundle
+      - android.content.Context
+      - android.app.Activity
+      - android.os.Handler
+      - android.os.Looper
+      - java.lang.Runnable
+      - android.os.Handler.Callback
+      - android.os.Message
+    depth: 0
+
+targets:
+  flutter: true
+  reactNative: false
+
+generation:
+  mode: strict-native
+  annotations: preserve
+  callbacks: true
+
+output:
+  dir: lib/src/generated
+
+distribution:
+  generatedArtifacts: local-only
+  documentationMode: links-only

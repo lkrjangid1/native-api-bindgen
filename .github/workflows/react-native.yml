@@ -1,0 +1,25 @@
+name: react-native
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  limitation:
+    name: Documented React Native limitation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+      - run: dart pub get
+      - name: React Native generation must report E015 (not implemented) with exit code 2
+        run: |
+          set +e
+          dart run native_api_bindgen generate react-native
+          test $? -eq 2

@@ -309,8 +309,11 @@ extension type CallbackInterface._(jni$.JObject _$CallbackInterface) implements 
 
   static final Map<int, $CallbackInterface> _$impls = {};
 
-  static jnii$.JObjectPtr _$invoke(int port, jnii$.JObjectPtr descriptor, jnii$.JObjectPtr args) =>
-      _$invokeMethod(port, jnii$.MethodInvocation.fromAddresses(0, descriptor.address, args.address));
+  static jnii$.JObjectPtr _$invoke(int port, jnii$.JObjectPtr descriptor, jnii$.JObjectPtr args) {
+    final $r = _$invokeMethod(port, jnii$.MethodInvocation.fromAddresses(0, descriptor.address, args.address));
+    rt$.NativeCallbacks.wakeEventLoop();
+    return $r;
+  }
 
   static final jnii$.Pointer<jnii$.NativeFunction<jnii$.JObjectPtr Function(jnii$.Int64, jnii$.JObjectPtr, jnii$.JObjectPtr)>> _$invokePointer =
       jnii$.Pointer.fromFunction(_$invoke);
@@ -456,8 +459,11 @@ extension type Countable._(jni$.JObject _$Countable) implements jni$.JObject {
 
   static final Map<int, $Countable> _$impls = {};
 
-  static jnii$.JObjectPtr _$invoke(int port, jnii$.JObjectPtr descriptor, jnii$.JObjectPtr args) =>
-      _$invokeMethod(port, jnii$.MethodInvocation.fromAddresses(0, descriptor.address, args.address));
+  static jnii$.JObjectPtr _$invoke(int port, jnii$.JObjectPtr descriptor, jnii$.JObjectPtr args) {
+    final $r = _$invokeMethod(port, jnii$.MethodInvocation.fromAddresses(0, descriptor.address, args.address));
+    rt$.NativeCallbacks.wakeEventLoop();
+    return $r;
+  }
 
   static final jnii$.Pointer<jnii$.NativeFunction<jnii$.JObjectPtr Function(jnii$.Int64, jnii$.JObjectPtr, jnii$.JObjectPtr)>> _$invokePointer =
       jnii$.Pointer.fromFunction(_$invoke);
@@ -954,8 +960,11 @@ extension type NestedClass_Listener._(jni$.JObject _$NestedClass_Listener) imple
 
   static final Map<int, $NestedClass_Listener> _$impls = {};
 
-  static jnii$.JObjectPtr _$invoke(int port, jnii$.JObjectPtr descriptor, jnii$.JObjectPtr args) =>
-      _$invokeMethod(port, jnii$.MethodInvocation.fromAddresses(0, descriptor.address, args.address));
+  static jnii$.JObjectPtr _$invoke(int port, jnii$.JObjectPtr descriptor, jnii$.JObjectPtr args) {
+    final $r = _$invokeMethod(port, jnii$.MethodInvocation.fromAddresses(0, descriptor.address, args.address));
+    rt$.NativeCallbacks.wakeEventLoop();
+    return $r;
+  }
 
   static final jnii$.Pointer<jnii$.NativeFunction<jnii$.JObjectPtr Function(jnii$.Int64, jnii$.JObjectPtr, jnii$.JObjectPtr)>> _$invokePointer =
       jnii$.Pointer.fromFunction(_$invoke);
@@ -1423,8 +1432,11 @@ extension type Sizable._(jni$.JObject _$Sizable) implements jni$.JObject {
 
   static final Map<int, $Sizable> _$impls = {};
 
-  static jnii$.JObjectPtr _$invoke(int port, jnii$.JObjectPtr descriptor, jnii$.JObjectPtr args) =>
-      _$invokeMethod(port, jnii$.MethodInvocation.fromAddresses(0, descriptor.address, args.address));
+  static jnii$.JObjectPtr _$invoke(int port, jnii$.JObjectPtr descriptor, jnii$.JObjectPtr args) {
+    final $r = _$invokeMethod(port, jnii$.MethodInvocation.fromAddresses(0, descriptor.address, args.address));
+    rt$.NativeCallbacks.wakeEventLoop();
+    return $r;
+  }
 
   static final jnii$.Pointer<jnii$.NativeFunction<jnii$.JObjectPtr Function(jnii$.Int64, jnii$.JObjectPtr, jnii$.JObjectPtr)>> _$invokePointer =
       jnii$.Pointer.fromFunction(_$invoke);

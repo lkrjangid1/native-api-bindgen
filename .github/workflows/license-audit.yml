@@ -1,0 +1,28 @@
+name: license-audit
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_call:
+  schedule:
+    - cron: "17 4 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+      - run: dart pub get
+      - run: dart run native_api_bindgen --json audit-license > audit.json; status=$?; cat audit.json; exit $status
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: license-audit
+          path: audit.json

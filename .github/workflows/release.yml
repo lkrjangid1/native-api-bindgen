@@ -1,0 +1,31 @@
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    uses: ./.github/workflows/release-check.yml
+  release:
+    needs: verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Release notes from CHANGELOG
+        run: |
+          python3 - <<'PY' > notes.md
+          import re, os
+          tag = os.environ["GITHUB_REF_NAME"].lstrip("v")
+          text = open("CHANGELOG.md").read()
+          m = re.search(r"## \[" + re.escape(tag) + r"\].*?(?=\n## \[|\Z)", text, re.S)
+          print(m.group(0) if m else "See CHANGELOG.md")
+          PY
+      - uses: softprops/action-gh-release@v2
+        with:
+          body_path: notes.md
+# Publishing to pub.dev is intentionally manual until LEGAL_RELEASE_REPORT.md
+# has no open LEGAL_REVIEW_REQUIRED items.

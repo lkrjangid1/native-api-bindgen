@@ -31,13 +31,20 @@ final class NativeApiUnavailableException implements Exception {
 /// managed by `package:jni`).
 final class NativeJavaException implements Exception {
   /// Creates the exception.
-  NativeJavaException(this.className, this.message, this.javaStackTrace, this.throwable);
+  NativeJavaException(
+    this.className,
+    this.message,
+    this.javaStackTrace,
+    this.throwable,
+  );
 
   /// Converts a `package:jni` [JThrowable].
   factory NativeJavaException.from(JThrowable t) {
     final first = t.javaStackTrace.split('\n').first.trim();
     final colon = first.indexOf(':');
-    final className = colon > 0 ? first.substring(0, colon) : (first.isEmpty ? 'java.lang.Throwable' : first);
+    final className = colon > 0
+        ? first.substring(0, colon)
+        : (first.isEmpty ? 'java.lang.Throwable' : first);
     return NativeJavaException(className, t.message, t.javaStackTrace, t);
   }
 

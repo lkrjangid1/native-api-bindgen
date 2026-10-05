@@ -44,8 +44,14 @@ abstract final class AndroidApi {
   static void require(int major, int minor, String symbol) {
     if (isAtLeast(major, minor)) return;
     final v = fullVersion!;
-    final actual = v % 100000 == 0 ? '${v ~/ 100000}' : '${v ~/ 100000}.${v % 100000}';
-    throw NativeApiUnavailableException(symbol, minor == 0 ? '$major' : '$major.$minor', actual);
+    final actual = v % 100000 == 0
+        ? '${v ~/ 100000}'
+        : '${v ~/ 100000}.${v % 100000}';
+    throw NativeApiUnavailableException(
+      symbol,
+      minor == 0 ? '$major' : '$major.$minor',
+      actual,
+    );
   }
 
   static int _readStaticInt(String field) {

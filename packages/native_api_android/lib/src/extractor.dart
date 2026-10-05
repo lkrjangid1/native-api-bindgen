@@ -824,7 +824,9 @@ final class AndroidApiExtractor {
     if (!linkOfficialDocs) return null;
     final path =
         '${ns.replaceAll('.', '/')}/${id.substring(ns.length + 1).replaceAll(r'$', '.')}';
-    return 'https://developer.android.com/reference/$path${member == null ? '' : '#$member'}';
+    // Spaces in anchors are percent-encoded so links stay valid autolinks.
+    final anchor = member == null ? '' : '#${member.replaceAll(' ', '%20')}';
+    return 'https://developer.android.com/reference/$path$anchor';
   }
 
   Documentation _docs(String? link) => link == null

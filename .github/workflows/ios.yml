@@ -1,0 +1,26 @@
+name: ios
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  toolchain:
+    name: Xcode detection and documented iOS limitation
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+      - run: dart pub get
+      - run: dart run native_api_bindgen detect
+      - name: iOS generation must report E015 (not implemented) with exit code 2
+        run: |
+          set +e
+          dart run native_api_bindgen generate ios
+          test $? -eq 2

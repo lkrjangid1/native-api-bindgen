@@ -761,12 +761,17 @@ final class DartJniEmitter {
     b.writeln();
     b.writeln('  static final Map<int, $mixin> _\$impls = {};');
     b.writeln();
+    // Direct (same-thread) entry point used by package:jni when Java calls
+    // on the isolate's thread; wakes the event loop for pending microtasks.
     b.writeln(
-      '  static jnii\$.JObjectPtr _\$invoke(int port, jnii\$.JObjectPtr descriptor, jnii\$.JObjectPtr args) =>',
+      '  static jnii\$.JObjectPtr _\$invoke(int port, jnii\$.JObjectPtr descriptor, jnii\$.JObjectPtr args) {',
     );
     b.writeln(
-      '      _\$invokeMethod(port, jnii\$.MethodInvocation.fromAddresses(0, descriptor.address, args.address));',
+      '    final \$r = _\$invokeMethod(port, jnii\$.MethodInvocation.fromAddresses(0, descriptor.address, args.address));',
     );
+    b.writeln('    rt\$.NativeCallbacks.wakeEventLoop();');
+    b.writeln('    return \$r;');
+    b.writeln('  }');
     b.writeln();
     b.writeln(
       '  static final jnii\$.Pointer<jnii\$.NativeFunction<jnii\$.JObjectPtr Function(jnii\$.Int64, jnii\$.JObjectPtr, jnii\$.JObjectPtr)>> _\$invokePointer =',
