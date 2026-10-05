@@ -1,0 +1,14 @@
+name: jvm_fixture_runtime_tests
+description: Runs bindings generated from the synthetic Java fixtures against a real host JVM through package:jni.
+publish_to: none
+
+environment:
+  sdk: ^3.9.0
+
+dependencies:
+  jni: ^1.0.3
+  native_api_runtime:
+    path: ../../../runtimes/dart/native_api_runtime
+
+dev_dependencies:
+  test: ^1.29.0
