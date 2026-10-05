@@ -1,6 +1,6 @@
 # Compatibility matrix
 
-Only versions **actually exercised** are listed. "Tested" means automated tests ran against that version on 2026-10-05 on the maintainer machine (macOS 27.2 arm64). CI workflows exist (`.github/workflows`) but have not run yet because the repository has no remote; this table will be generated from CI once they do.
+Only versions **actually exercised** are listed. "Tested" means automated tests ran against that version on 2026-10-05 on the maintainer machine (macOS 27.2 arm64). CI workflows exist (`.github/workflows`) but have not run yet because the repository has no remote (`tools/ci_local.sh` runs the platform-independent steps locally); this table will be generated from CI once they do.
 
 | Component | Tested | How |
 |---|---|---|

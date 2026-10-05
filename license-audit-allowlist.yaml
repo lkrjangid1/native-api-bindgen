@@ -10,3 +10,12 @@ entries:
       Standard Gradle wrapper created by the React Native CLI template. Checksum
       equals the official https://services.gradle.org/distributions/gradle-9.4.1-wrapper.jar.sha256
       (verified 2026-10-05).
+  - path: fixtures/kotlin/basic/gradle/wrapper/gradle-wrapper.jar
+    sha256: 497c8c2a7e5031f6aa847f88104aa80a93532ec32ee17bdb8d1d2f67a194a9c7
+    license: Apache-2.0
+    owner: Gradle Inc.
+    justification: >-
+      Standard Gradle wrapper generated with `gradle wrapper --gradle-version 9.6.0`
+      for the Kotlin fixture. Checksum equals the official
+      https://services.gradle.org/distributions/gradle-9.6.0-wrapper.jar.sha256
+      (verified 2026-10-05).

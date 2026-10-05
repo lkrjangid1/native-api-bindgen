@@ -47,7 +47,9 @@ dart run packages/native_api_flutter_android/tool/gen_fixtures.dart "$PKG/lib/sr
 # Kotlin fixtures (suspend functions): built with Gradle when available,
 # run against kotlin-stdlib + kotlinx-coroutines from the Gradle cache.
 KOTLIN_DIR="$ROOT/fixtures/kotlin/basic"
-GRADLE="${NAB_GRADLE:-$(command -v gradle || true)}"
+GRADLE="${NAB_GRADLE:-}"
+[ -n "$GRADLE" ] || { [ -x "$KOTLIN_DIR/gradlew" ] && GRADLE="$KOTLIN_DIR/gradlew"; }
+[ -n "$GRADLE" ] || GRADLE="$(command -v gradle || true)"
 if [ -z "$GRADLE" ]; then
   GRADLE="$(ls -d "$HOME"/.gradle/wrapper/dists/gradle-9.6.0-bin/*/gradle-9.6.0/bin/gradle 2>/dev/null | head -1 || true)"
 fi

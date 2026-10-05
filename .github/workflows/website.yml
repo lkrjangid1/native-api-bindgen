@@ -1,6 +1,7 @@
 name: website
 
 on:
+  workflow_call:
   push:
     branches: [main]
     paths:

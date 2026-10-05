@@ -152,14 +152,11 @@ void main() {
       ], workingDirectory: tmp.path);
       expect(t.exitCode, 0, reason: '${t.stdout}${t.stderr}');
 
-      final javaHome = Platform.environment['JAVA_HOME'];
-      final jdk =
-          javaHome != null &&
-              Directory(p.join(javaHome, 'include')).existsSync()
-          ? javaHome
-          : null;
+      final jdk = _findJdk();
       if (jdk == null) {
-        markTestSkipped('JAVA_HOME not set; skipping C++ syntax check');
+        markTestSkipped(
+          'No JDK with include/ found; skipping C++ syntax check',
+        );
         return;
       }
       final rc = p.join(rnApp, 'node_modules', 'react-native', 'ReactCommon');
@@ -185,4 +182,33 @@ void main() {
     },
     timeout: const Timeout(Duration(minutes: 3)),
   );
+}
+
+/// A JDK home with JNI headers: `JAVA_HOME`, then `/usr/libexec/java_home`
+/// (macOS), then the directory of the `javac` on PATH.
+String? _findJdk() {
+  bool ok(String? h) =>
+      h != null && Directory(p.join(h, 'include')).existsSync();
+  final env = Platform.environment['JAVA_HOME'];
+  if (ok(env)) return env;
+  String? run(String exe, List<String> args) {
+    try {
+      final r = Process.runSync(exe, args);
+      return r.exitCode == 0 ? '${r.stdout}'.trim() : null;
+    } on ProcessException {
+      return null;
+    }
+  }
+
+  if (Platform.isMacOS) {
+    final h = run('/usr/libexec/java_home', const []);
+    if (ok(h)) return h;
+  }
+  final javac = run(Platform.isWindows ? 'where' : 'which', const ['javac']);
+  if (javac != null && javac.isNotEmpty) {
+    final real = File(javac.split('\n').first).resolveSymbolicLinksSync();
+    final home = p.dirname(p.dirname(real));
+    if (ok(home)) return home;
+  }
+  return null;
 }
