@@ -2,7 +2,10 @@ import 'dart:isolate';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter/widgets.dart'
+    show Center, Directionality, SizedBox, TextDirection;
 import 'package:integration_test/integration_test.dart';
+import 'package:native_api_ui/native_api_ui.dart';
 import 'package:ios_slice/main.dart';
 import 'package:ios_slice/slice.dart';
 import 'package:ios_slice/src/generated/apple.dart' as ios;
@@ -43,6 +46,32 @@ void main() {
       expect(name, isNotEmpty);
     },
   );
+
+  testWidgets('native UI: a UILabel created through bindings is shown', (
+    tester,
+  ) async {
+    final label = ios.UILabel.new$()..text = 'Hello native'.toNSString();
+    await tester.pumpWidget(
+      Directionality(
+        textDirection: TextDirection.ltr,
+        child: Center(
+          child: SizedBox(
+            width: 240,
+            height: 80,
+            child: NativeView.ios(view: label),
+          ),
+        ),
+      ),
+    );
+    for (var i = 0; i < 50 && label.window == null; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    expect(find.byType(NativeView), findsOneWidget);
+    expect(label.window, isNotNull);
+    expect(label.text!.toDartString(), 'Hello native');
+    expect(label.bounds.size.width, greaterThan(0));
+    await tester.pumpWidget(const SizedBox());
+  });
 
   test('NSData <-> Uint8List', () {
     final bytes = Uint8List.fromList([1, 2, 255, 0]);

@@ -263,6 +263,11 @@ export function bytesResult(raw: unknown): Uint8Array | null {
   return new Uint8Array(raw as ArrayBuffer);
 }
 
+/** @internal A CharSequence argument: JS strings pass through as Java strings. */
+export function hs(o: string | JavaObject | null | undefined): string | Handle | null {
+  return typeof o === 'string' ? o : h(o);
+}
+
 /** @internal */
 export function h(o: JavaObject | null | undefined): Handle | null {
   return o === null || o === undefined ? null : o.$h;

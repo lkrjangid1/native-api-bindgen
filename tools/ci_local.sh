@@ -33,6 +33,10 @@ step jvm-runtime-tests bash tools/run_jvm_runtime_tests.sh
 step license-audit dart run native_api_bindgen audit-license
 step website dart run tools/build_website.dart
 step publish-dry-run bash tools/check_publish.sh
+ui_plugin() {
+  (cd runtimes/flutter/native_api_ui && flutter pub get >/dev/null && dart format --output=none --set-exit-if-changed lib && flutter analyze --fatal-infos)
+}
+step flutter-ui-plugin ui_plugin
 if [ "${NAB_CI_NETWORK:-0}" = "1" ]; then
   step links dart run tools/check_links.dart README.md docs website/build
 fi

@@ -22,12 +22,16 @@ import {
 } from 'react-native';
 
 import { selfTests, type TestResult } from './src/selfTests';
+import { registerTestHost } from './src/testHost';
 import { Intent, Uri, currentActivity } from './native-api-bindings';
 import { UIDevice } from './native-api-bindings/ios';
 
 function App(): React.JSX.Element {
   const [results, setResults] = useState<TestResult[]>([]);
   const [done, setDone] = useState(false);
+  const [hosted, setHosted] = useState<React.ReactElement | null>(null);
+
+  useEffect(() => registerTestHost(setHosted), []);
 
   useEffect(() => {
     selfTests(r => setResults(prev => [...prev, r])).then(() => setDone(true));
@@ -63,6 +67,7 @@ function App(): React.JSX.Element {
           />
         </View>
       )}
+      {hosted}
       <ScrollView>
         {results.map(r => (
           <Text key={r.name} style={r.ok ? styles.pass : styles.fail}>

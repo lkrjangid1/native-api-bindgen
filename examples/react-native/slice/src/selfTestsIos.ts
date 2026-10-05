@@ -3,6 +3,8 @@
  * Each result is logged as `NAB_TEST PASS <name>` / `NAB_TEST FAIL <name>: <error>`,
  * followed by `NAB_TEST DONE pass=<n> fail=<n>` (read by tools/run_rn_ios_tests.sh).
  */
+import React from 'react';
+
 import {
   IosApi,
   NSArray,
@@ -16,8 +18,10 @@ import {
   NSOperationQueue,
   NSProcessInfo,
   NativeApiUnavailableError,
+  NativeView,
   UIColor,
   UIDevice,
+  UILabel,
   UIUserInterfaceIdiom,
   UIView,
   UIViewAutoresizing,
@@ -28,6 +32,7 @@ import {
   type CGRect,
 } from '../native-api-bindings/ios';
 import { benchmarks } from './bench';
+import { showInTestHost } from './testHost';
 import type { TestResult } from './testResult';
 
 function expectEqual<T>(actual: T, expected: T, what = 'value'): void {
@@ -246,6 +251,29 @@ const tests: Array<[string, () => void | Promise<void>]> = [
       const items = nsArrayItems(parent.subviews);
       expectEqual(items.length, 2, 'items');
       expectEqual(UIView.isA(items[0]), true, 'item class');
+    },
+  ],
+
+  [
+    'native UI: a UILabel created through bindings is shown',
+    async () => {
+      const label = UILabel.new$();
+      label.text = 'Hello native';
+      showInTestHost(
+        React.createElement(NativeView, {
+          view: label,
+          style: { width: 200, height: 48 },
+        }),
+      );
+      for (let i = 0; i < 100 && label.window === null; i++) {
+        await new Promise<void>(r => setTimeout(() => r(), 20));
+      }
+      const shown = label.window !== null;
+      const width = label.bounds.size.width;
+      showInTestHost(null);
+      expectEqual(shown, true, 'in a window');
+      expectEqual(label.text, 'Hello native', 'text');
+      if (!(width > 0)) throw new Error(`width ${width}`);
     },
   ],
 

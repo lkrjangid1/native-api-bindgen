@@ -12,6 +12,8 @@ import 'package:native_api_react_native_ios/src/runtime_sources.g.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 
+import '../tool/embed_runtime.dart' as embed;
+
 /// Golden tests for the React Native iOS target over the synthetic
 /// Objective-C fixtures (`tests/golden/react-native-ios/<mode>`; runtime
 /// files are checked separately against `runtimes/`). Regenerate
@@ -75,21 +77,8 @@ void main() {
   );
 
   test('embedded runtime matches runtimes/', () {
-    const sources = {
-      'cpp/runtime/NativeApiBindgen.h': 'runtimes/jsi/cpp/NativeApiBindgen.h',
-      'cpp/runtime/NativeApiBindgen.cpp':
-          'runtimes/jsi/cpp/NativeApiBindgen.cpp',
-      'cpp/runtime-objc/NabObjCRuntime.h': 'runtimes/jsi/objc/NabObjCRuntime.h',
-      'cpp/runtime-objc/NabObjCRuntime.mm':
-          'runtimes/jsi/objc/NabObjCRuntime.mm',
-      'cpp/runtime-objc/NabObjCBlocks.h': 'runtimes/jsi/objc/NabObjCBlocks.h',
-      'cpp/runtime-objc/NabModuleProvider.h':
-          'runtimes/jsi/objc/NabModuleProvider.h',
-      'cpp/runtime-objc/NabModuleProvider.mm':
-          'runtimes/jsi/objc/NabModuleProvider.mm',
-      'src/runtime-objc.ts': 'runtimes/jsi/ts/runtime-objc.ts',
-      'specs/NativeApiBindgen.ts': 'runtimes/jsi/ts/specs/NativeApiBindgen.ts',
-    };
+    // The embed tool's list is the source of truth.
+    const sources = embed.files;
     expect(runtimeSources.keys.toSet(), sources.keys.toSet());
     sources.forEach((out, src) {
       expect(

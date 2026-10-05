@@ -372,8 +372,13 @@ final class RnJsiEmitter {
       base = _likeOf(m);
     }
     if (m.isPrimitive) return base;
+    // Java strings are CharSequences: accept JS strings too.
+    if (_isCharSequence(t)) base = 'string | $base';
     return t.nullability == Nullability.nonnull ? base : '$base | null';
   }
+
+  static bool _isCharSequence(TypeRef t) =>
+      t is DeclaredTypeRef && t.name == 'java.lang.CharSequence';
 
   String _likeOf(TsJsiType m) =>
       m.isOpaque ? 'JavaObject' : '${m.wrapClass}\$Like';
@@ -387,6 +392,7 @@ final class RnJsiEmitter {
 
   String _argExpr(String name, TypeRef t, TsJsiType m) {
     if (m.isBytes) return '\$rt.bytesArg($name)';
+    if (_isCharSequence(t)) return '\$rt.hs($name)';
     if (m.isPrimitive || m.wrapClass == null) return name;
     if (m.arrayDepth > 0) return '\$rt.hArray($name)';
     return '\$rt.h($name)';
@@ -1614,6 +1620,7 @@ final class RnJsiEmitter {
   String _index() =>
       '${generatedHeader(module)}\n'
       "export * from './src/runtime';\n"
+      "export * from './src/native-view';\n"
       "export * from './src/generated';\n";
 
   String _cmake() =>

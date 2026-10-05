@@ -6,4 +6,5 @@
 
 // iOS entry point: import from '<library>/ios'.
 export * from './src/runtime-objc';
+export * from './src/native-view';
 export * from './src/generated/apple';

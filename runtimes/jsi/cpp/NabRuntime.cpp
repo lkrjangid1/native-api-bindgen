@@ -28,6 +28,9 @@ jmethodID gHandlerCreate = nullptr; // static Object create(long, Class)
 jclass gContextClass = nullptr;     // dev.nativeapibindgen.runtime.NabContext
 jmethodID gAppContext = nullptr;
 jmethodID gCurrentActivity = nullptr;
+jclass gViewsClass = nullptr;          // dev.nativeapibindgen.runtime.NabViews
+jmethodID gViewsRegister = nullptr;     // static long register(Object)
+jmethodID gViewsUnregister = nullptr;   // static void unregister(long)
 jclass gContinuationClass = nullptr;    // dev.nativeapibindgen.runtime.NabContinuation
 jmethodID gContinuationCreate = nullptr; // static Object create(long)
 jmethodID gContinuationIsSuspended = nullptr; // static boolean isSuspended(Object)
@@ -1158,6 +1161,27 @@ class Root : public jsi::HostObject {
         return V(static_cast<double>(e->GetStaticIntField(v, f)));
       });
     }
+    if (n == "registerView" || n == "unregisterView") {
+      const bool reg = n == "registerView";
+      return fn(rt, n.c_str(), [reg](jsi::Runtime& rt, const V&, const V* a, std::size_t c) -> V {
+        if (gViewsClass == nullptr) {
+          throw jsi::JSError(rt, "E010 RUNTIME_BINDING_FAILURE: NabViews not found");
+        }
+        JNIEnv* e = env();
+        LocalFrame frame(e);
+        if (reg) {
+          auto h = c > 0 ? handleOf(rt, a[0]) : nullptr;
+          if (!h) typeError(rt, "registerView(handle)");
+          const jlong id = e->CallStaticLongMethod(gViewsClass, gViewsRegister, h->ref(rt));
+          check(rt, e);
+          return V(static_cast<double>(id));
+        }
+        if (c == 0 || !a[0].isNumber()) typeError(rt, "unregisterView(id)");
+        e->CallStaticVoidMethod(gViewsClass, gViewsUnregister, static_cast<jlong>(a[0].getNumber()));
+        check(rt, e);
+        return V::undefined();
+      });
+    }
     if (n == "implement") {
       return fn(rt, "implement", [](jsi::Runtime& rt, const V&, const V* a, std::size_t c) -> V {
         return implement(rt, a, c);
@@ -1209,6 +1233,11 @@ void initialize(JavaVM* vm) {
         {const_cast<char*>("fail0"), const_cast<char*>("(JLjava/lang/Throwable;)V"), reinterpret_cast<void*>(&fail0)},
     };
     e->RegisterNatives(gContinuationClass, suspendNatives, 2);
+  }
+  gViewsClass = globalClass(e, "dev/nativeapibindgen/runtime/NabViews");
+  if (gViewsClass != nullptr) {
+    gViewsRegister = e->GetStaticMethodID(gViewsClass, "register", "(Ljava/lang/Object;)J");
+    gViewsUnregister = e->GetStaticMethodID(gViewsClass, "unregister", "(J)V");
   }
   gContextClass = globalClass(e, "dev/nativeapibindgen/runtime/NabContext");
   if (gContextClass != nullptr) {

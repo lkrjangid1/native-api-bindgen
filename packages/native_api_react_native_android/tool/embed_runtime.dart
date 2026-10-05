@@ -21,6 +21,13 @@ const files = {
       'runtimes/jni/java/dev/nativeapibindgen/runtime/NabContext.java',
   'android/java/dev/nativeapibindgen/runtime/NabContinuation.java':
       'runtimes/jni/java/dev/nativeapibindgen/runtime/NabContinuation.java',
+  'android/java/dev/nativeapibindgen/runtime/NabViews.java':
+      'runtimes/jni/java/dev/nativeapibindgen/runtime/NabViews.java',
+  'android/java/dev/nativeapibindgen/runtime/NabNativeViewManager.java':
+      'runtimes/jni/java/dev/nativeapibindgen/runtime/NabNativeViewManager.java',
+  'android/java/dev/nativeapibindgen/runtime/NabUiPackage.java':
+      'runtimes/jni/java/dev/nativeapibindgen/runtime/NabUiPackage.java',
+  'src/native-view.ts': 'runtimes/jsi/ts/native-view.ts',
 };
 
 String render(String root) {

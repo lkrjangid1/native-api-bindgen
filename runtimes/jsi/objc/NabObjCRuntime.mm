@@ -5,6 +5,7 @@
 #import "NabObjCBlocks.h"
 
 #import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 #import <objc/runtime.h>
 
 #include <cstring>
@@ -500,6 +501,27 @@ id callBlock(const std::shared_ptr<BlockTarget>& target, std::vector<id> args) {
     }
   });
   return nil;
+}
+
+// ------------------------------------------------------------------ views
+
+/// Views registered from JavaScript for `<NativeView>` (NabNativeViewManager).
+NSMutableDictionary<NSNumber*, UIView*>* gViews;
+NSInteger gNextView = 1;
+
+NSInteger registerView(UIView* view) {
+  @synchronized([NSNull null]) {
+    if (gViews == nil) gViews = [NSMutableDictionary new];
+    const NSInteger viewId = gNextView++;
+    gViews[@(viewId)] = view;
+    return viewId;
+  }
+}
+
+void unregisterView(NSInteger viewId) {
+  @synchronized([NSNull null]) {
+    [gViews removeObjectForKey:@(viewId)];
+  }
 }
 
 /// Owns the bytes of an ArrayBuffer copied from an NSData.
@@ -1022,6 +1044,20 @@ class Root : public jsi::HostObject {
         return V::undefined();
       });
     }
+    if (n == "registerView") {
+      return fn(rt, "registerView", [](jsi::Runtime& rt, const V&, const V* a, std::size_t c) -> V {
+        id o = arg(rt, a, c, 0);
+        if (![o isKindOfClass:[UIView class]]) typeError(rt, "registerView: not a UIView");
+        return V(static_cast<double>(registerView((UIView*)o)));
+      });
+    }
+    if (n == "unregisterView") {
+      return fn(rt, "unregisterView", [](jsi::Runtime& rt, const V&, const V* a, std::size_t c) -> V {
+        if (c == 0 || !a[0].isNumber()) typeError(rt, "unregisterView(id)");
+        unregisterView(static_cast<NSInteger>(a[0].getNumber()));
+        return V::undefined();
+      });
+    }
     if (n == "dataFromBytes") {
       // dataFromBytes(ArrayBuffer) -> NSData handle (one copy).
       return fn(rt, "dataFromBytes", [](jsi::Runtime& rt, const V&, const V* a, std::size_t c) -> V {
@@ -1086,3 +1122,9 @@ void install(jsi::Runtime& rt, std::shared_ptr<CallInvoker> invoker, const Table
 }
 
 } // namespace nab::objc
+
+extern "C" UIView* NabViewForId(NSInteger viewId) {
+  @synchronized([NSNull null]) {
+    return nab::objc::gViews[@(viewId)];
+  }
+}

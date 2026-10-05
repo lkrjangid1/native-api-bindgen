@@ -7,6 +7,7 @@ import com.facebook.react.ReactHost
 import com.facebook.react.ReactNativeApplicationEntryPoint.loadReactNative
 import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
 import dev.nativeapibindgen.runtime.NabContext
+import dev.nativeapibindgen.runtime.NabUiPackage
 
 class MainApplication : Application(), ReactApplication {
 
@@ -17,6 +18,8 @@ class MainApplication : Application(), ReactApplication {
         PackageList(this).packages.apply {
           // Packages that cannot be autolinked yet can be added manually here, for example:
           // add(MyReactNativePackage())
+          // native-api-bindgen: <NativeView> (views created through bindings).
+          add(NabUiPackage())
         },
     )
   }

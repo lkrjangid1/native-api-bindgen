@@ -5,7 +5,10 @@ import 'package:android_slice/src/slice.dart';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter/widgets.dart'
+    show Center, Directionality, SizedBox, TextDirection;
 import 'package:integration_test/integration_test.dart';
+import 'package:native_api_ui/native_api_ui.dart';
 import 'package:native_api_runtime/native_api_runtime.dart' as rt;
 import 'package:jni/jni.dart';
 import 'package:native_api_runtime/native_api_runtime.dart';
@@ -60,6 +63,33 @@ void main() {
     final buffer = rt.directBufferOf(data);
     expect(buffer.isDirect, isTrue);
     expect(buffer.asUint8List(), data);
+  });
+
+  testWidgets('native UI: a TextView created through bindings is shown', (
+    tester,
+  ) async {
+    final label = TextView(Slice.appContext)
+      ..setText$CharSequence('Hello native'.toJString());
+    await tester.pumpWidget(
+      Directionality(
+        textDirection: TextDirection.ltr,
+        child: Center(
+          child: SizedBox(
+            width: 240,
+            height: 80,
+            child: NativeView.android(view: label),
+          ),
+        ),
+      ),
+    );
+    for (var i = 0; i < 50 && !label.isAttachedToWindow(); i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    expect(find.byType(NativeView), findsOneWidget);
+    expect(label.isAttachedToWindow(), isTrue);
+    expect(label.getText().toString(), 'Hello native');
+    expect(label.getWidth(), greaterThan(0));
+    await tester.pumpWidget(const SizedBox());
   });
 
   test('Bean properties delegate to the native getters', () {

@@ -14,6 +14,9 @@ const files = {
   'cpp/runtime-objc/NabObjCRuntime.h': 'runtimes/jsi/objc/NabObjCRuntime.h',
   'cpp/runtime-objc/NabObjCRuntime.mm': 'runtimes/jsi/objc/NabObjCRuntime.mm',
   'cpp/runtime-objc/NabObjCBlocks.h': 'runtimes/jsi/objc/NabObjCBlocks.h',
+  'cpp/runtime-objc/NabNativeViewManager.mm':
+      'runtimes/jsi/objc/NabNativeViewManager.mm',
+  'src/native-view.ts': 'runtimes/jsi/ts/native-view.ts',
   'cpp/runtime-objc/NabModuleProvider.h':
       'runtimes/jsi/objc/NabModuleProvider.h',
   'cpp/runtime-objc/NabModuleProvider.mm':

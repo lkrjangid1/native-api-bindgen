@@ -1,0 +1,28 @@
+name: native_api_ui
+description: Hosts native views created through native-api-bindgen bindings (an Android View or an iOS UIView) in the Flutter widget tree.
+version: 0.1.0-dev.1
+publish_to: none
+
+environment:
+  sdk: ^3.9.0
+  flutter: '>=3.32.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  jni: ^1.0.3
+  objective_c: 9.5.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  plugin:
+    platforms:
+      android:
+        package: dev.nativeapibindgen.native_api_ui
+        pluginClass: NativeApiUiPlugin
+      ios:
+        pluginClass: NativeApiUiPlugin

@@ -3,6 +3,8 @@
  * Each result is logged as `NAB_TEST PASS <name>` / `NAB_TEST FAIL <name>: <error>`,
  * followed by `NAB_TEST DONE pass=<n> fail=<n>`.
  */
+import React from 'react';
+
 import {
   AndroidApi,
   Arrays,
@@ -15,7 +17,9 @@ import {
   Looper,
   NativeApiUnavailableError,
   NativeCallbacks,
+  NativeView,
   Runnable,
+  TextView,
   Uri,
   applicationContext,
   currentActivity,
@@ -23,6 +27,7 @@ import {
 } from '../native-api-bindings';
 
 import { benchmarks } from './bench';
+import { showInTestHost } from './testHost';
 import type { TestResult } from './testResult';
 
 function expectEqual<T>(actual: T, expected: T, what = 'value'): void {
@@ -117,6 +122,28 @@ const tests: Array<[string, () => void | Promise<void>]> = [
       const view = new Uint8Array([9, 8, 7, 6]).subarray(1, 3);
       expectEqual(Array.from(Arrays.copyOf(view, 2)).join(), '8,7', 'subarray');
       expectEqual(Array.from(Arrays.copyOf([5, 6], 2)).join(), '5,6', 'number[]');
+    },
+  ],
+
+  [
+    'native UI: a TextView created through bindings is shown',
+    async () => {
+      const tv = TextView.new(applicationContext());
+      tv.setText$CharSequence('Hello native');
+      showInTestHost(
+        React.createElement(NativeView, {
+          view: tv,
+          style: { width: 200, height: 48 },
+        }),
+      );
+      for (let i = 0; i < 100 && !tv.isAttachedToWindow(); i++) {
+        await new Promise<void>(r => setTimeout(() => r(), 20));
+      }
+      const attached = tv.isAttachedToWindow();
+      const text = tv.getText()?.toString();
+      showInTestHost(null);
+      expectEqual(attached, true, 'attached to window');
+      expectEqual(text, 'Hello native', 'text');
     },
   ],
 

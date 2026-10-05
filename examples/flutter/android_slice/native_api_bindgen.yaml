@@ -16,6 +16,8 @@ platform:
       - android.os.Handler.Callback
       - android.os.Message
       - java.util.Arrays
+      - android.view.View
+      - android.widget.TextView
       - com.example.kfixtures.Greeter   # Kotlin library class (suspend functions)
     depth: 0
     libraries:

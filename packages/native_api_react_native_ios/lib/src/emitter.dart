@@ -135,6 +135,7 @@ final class RnObjCEmitter {
           '$header\n'
               '// iOS entry point: import from \'<library>/ios\'.\n'
               "export * from './src/runtime-objc';\n"
+              "export * from './src/native-view';\n"
               "export * from './src/generated/apple';\n",
         ),
       )

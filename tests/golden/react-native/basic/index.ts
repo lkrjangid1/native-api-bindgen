@@ -5,4 +5,5 @@
 // docs/legal/source-provenance.md before redistributing.
 
 export * from './src/runtime';
+export * from './src/native-view';
 export * from './src/generated';
