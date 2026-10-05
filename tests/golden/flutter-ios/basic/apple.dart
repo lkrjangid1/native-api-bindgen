@@ -9,4 +9,4 @@
 library;
 
 export 'apple/nabfixtures.dart';
-export 'apple/_runtime.dart' show NativeObjCError;
+export 'apple/_runtime.dart' show NativeObjCError, NativeThreadingError, isMainThread;

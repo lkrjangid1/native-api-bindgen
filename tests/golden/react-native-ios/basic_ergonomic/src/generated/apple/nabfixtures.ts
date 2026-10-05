@@ -53,6 +53,57 @@ export class NABListener extends ObjCObject {
   }
 }
 
+/** Any object that is a `NABMainActorView`. */
+export type NABMainActorView$Like = ObjCObject & {readonly __brand_NABFixtures_NABMainActorView: true};
+
+/**
+ * Objective-C: `@interface NABMainActorView`
+ * - Note E013 THREADING_CONSTRAINT: Main actor (NS_SWIFT_UI_ACTOR): members must be called on the main thread unless marked nonisolated
+ */
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
+export interface NABMainActorView {
+  readonly __brand_NABFixtures_NABMainActorView: true;
+}
+export class NABMainActorView extends ObjCObject {
+  static readonly objcName: string = 'NABMainActorView';
+  /** @internal */ static readonly $t = $rt.classTable('NABFixtures.NABMainActorView');
+  /** `+alloc` (call an `init…` method next). */
+  static alloc(): NABMainActorView {
+    return $rt.wrapNonNull(NABMainActorView, NABMainActorView.$t()['+alloc'](false), 'NABFixtures.NABMainActorView#+alloc');
+  }
+  /** `+new` (`[[NABMainActorView alloc] init]`). */
+  static new$(): NABMainActorView {
+    return $rt.wrapNonNull(NABMainActorView, NABMainActorView.$t()['+new'](false), 'NABFixtures.NABMainActorView#+new');
+  }
+  /** Whether [o] is an instance of `NABMainActorView` (or a subclass). */
+  static isA(o: ObjCObject | null | undefined): o is NABMainActorView {
+    return o !== null && o !== undefined && $rt.objc().isKindOfClass(o.$h, 'NABMainActorView');
+  }
+  /** Objective-C: `@property alpha (readwrite)` */
+  get alpha(): number {
+    return NABMainActorView.$t()['P-alpha'](false, this.$h) as number;
+  }
+  set alpha(value: number) {
+    NABMainActorView.$t()['P-alpha='](false, this.$h, value);
+  }
+  /** Objective-C: `-[NABMainActorView identifier]` */
+  identifier(): string {
+    return $rt.nonNullString(NABMainActorView.$t()['-identifier'](false, this.$h), 'NABFixtures.NABMainActorView#-identifier');
+  }
+  /** Promise variant of `identifier`: runs on a background queue. */
+  identifierAsync(): Promise<string> {
+    return (NABMainActorView.$t()['-identifier'](true, this.$h) as Promise<unknown>).then(r => $rt.nonNullString(r, 'NABFixtures.NABMainActorView#-identifier'));
+  }
+  /** Objective-C: `-[NABMainActorView redraw]` */
+  redraw(): void {
+    NABMainActorView.$t()['-redraw'](false, this.$h);
+  }
+  /** Promise variant of `redraw`: runs on the main queue. */
+  redrawAsync(): Promise<void> {
+    return (NABMainActorView.$t()['-redraw'](true, this.$h) as Promise<unknown>).then(() => undefined);
+  }
+}
+
 /** Native API: `NABFixtures.NABMode` */
 export const NABMode = {
   NABModeOff: 0,
@@ -250,6 +301,18 @@ export class NABThing extends ObjCObject {
   /** Promise variant of `objectForKeyedSubscript:`: runs on a background queue. */
   objectForKeyedSubscriptAsync(key: string): Promise<ObjCObject | null> {
     return (NABThing.$t()['-objectForKeyedSubscript:'](true, this.$h, key) as Promise<unknown>).then(r => $rt.wrap(ObjCObject, r));
+  }
+  /**
+   * Objective-C: `-[NABThing refreshUI]`
+   * - iOS 13+
+   * - Note E013 THREADING_CONSTRAINT: Main actor (NS_SWIFT_UI_ACTOR): call on the main thread
+   */
+  refreshUI(): void {
+    NABThing.$t()['-refreshUI'](false, this.$h);
+  }
+  /** Promise variant of `refreshUI`: runs on the main queue. */
+  refreshUIAsync(): Promise<void> {
+    return (NABThing.$t()['-refreshUI'](true, this.$h) as Promise<unknown>).then(() => undefined);
   }
   /**
    * Objective-C: `-[NABThing saveToPath:error:]`

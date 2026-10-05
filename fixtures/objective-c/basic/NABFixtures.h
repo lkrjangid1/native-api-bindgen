@@ -64,6 +64,18 @@ API_AVAILABLE(ios(13.0))
 - (NSString *)describe;
 @end
 
+/// Main-actor isolated class (as UIKit declares its UI classes).
+NS_SWIFT_UI_ACTOR
+@interface NABMainActorView : NSObject
+@property (nonatomic) double alpha;
+- (void)redraw;
+- (NSString *)identifier NS_SWIFT_NONISOLATED;
+@end
+
+@interface NABThing (NABMainActor)
+- (void)refreshUI NS_SWIFT_UI_ACTOR;
+@end
+
 API_UNAVAILABLE(ios)
 @interface NABMacOnly : NSObject
 @end

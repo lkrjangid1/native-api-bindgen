@@ -549,6 +549,22 @@ final class LibClang {
     return out;
   }
 
+  /// File path and byte offset of a cursor's location (its macro expansion
+  /// site when inside a macro), or null for builtins.
+  ({String file, int offset})? fileOffsetOf(CXCursor c) {
+    final loc = getCursorLocation(c);
+    final file = calloc<Pointer<Void>>();
+    final offset = calloc<UnsignedInt>();
+    try {
+      getFileLocation(loc, file, nullptr, nullptr, offset);
+      if (file.value == nullptr) return null;
+      return (file: str(getFileName(file.value)), offset: offset.value);
+    } finally {
+      calloc.free(file);
+      calloc.free(offset);
+    }
+  }
+
   /// File path of a cursor's location ('' for builtins).
   String fileOf(CXCursor c) {
     final loc = getCursorLocation(c);

@@ -58,6 +58,14 @@ The app needs `objective_c` (^9.5) and `ffi` (^2.1) as dependencies. Android and
 | API newer than `minVersion` | runtime guard: throws `objc.OsVersionError` on older iOS |
 | deprecated API | `@Deprecated` with the iOS version |
 
+## Threading (main actor)
+
+The extractor reads Swift concurrency annotations from the headers, the way Swift's importer does (`-D__SWIFT_ATTR_SUPPORTS_SENDABLE_DECLS`): `NS_SWIFT_UI_ACTOR` / `NS_SWIFT_MAIN_ACTOR` on a class, protocol, category or member marks it `mainThread`; `NS_SWIFT_NONISOLATED` opts a member out (`anyThread`). libclang does not expose `swift_attr`, so the attribute's expansion site in the header is read.
+
+- Flutter: main-actor members document it and check it with `assert(rt.checkMainThread(...))`, which throws `NativeThreadingError` (E013) off the main thread in debug builds and costs nothing in release. On iOS the root isolate runs on the main thread; background isolates may call nonisolated APIs (e.g. Foundation).
+- React Native: main-actor members (and `+alloc`/`+new` of main-actor classes) are invoked on the main thread; everything else runs on the calling JS thread. This replaces the earlier rule "all of UIKit on the main thread" (`RnObjCOptions.mainThreadModules` remains as an override).
+- Measured (iOS 27.0 SDK, Foundation + UIKit): 559 of 1,527 types and 6,708 of 12,886 methods are main-actor isolated, 39 methods are nonisolated; React Native dispatches 6,789 of 12,706 member rows to the main thread.
+
 ## Swift-only APIs (Layer 2: generated `@objc` adapters)
 
 Swift APIs that are not visible to Objective-C are discovered with the official toolchain and wrapped:

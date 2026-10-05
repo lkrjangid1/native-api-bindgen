@@ -1,6 +1,7 @@
 import 'dart:collection';
 import 'dart:ffi';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:ffi/ffi.dart';
 import 'package:native_api_core/native_api_core.dart';
@@ -131,6 +132,9 @@ final class ObjCExtractor {
       target,
       '-fobjc-arc',
       '-Wno-everything',
+      // As Swift's importer does: enables NS_SWIFT_NONISOLATED and the other
+      // concurrency annotations (attributes only, no API changes).
+      '-D__SWIFT_ATTR_SUPPORTS_SENDABLE_DECLS=1',
     ];
     final cargs = calloc<Pointer<Char>>(argv.length);
     final idx = _clang.createIndex(0, 0);
@@ -523,9 +527,47 @@ final class ObjCExtractor {
       ),
   ];
 
+  final _sources = <String, Uint8List>{};
+
+  /// Swift concurrency isolation declared by a cursor's attributes:
+  /// `NS_SWIFT_UI_ACTOR` / `swift_attr("@UIActor"|"@MainActor")` -> main
+  /// thread, `NS_SWIFT_NONISOLATED` / `swift_attr("nonisolated")` -> any
+  /// thread, otherwise null (inherit). libclang does not expose `swift_attr`,
+  /// so the attribute's expansion site in the header is read.
+  Threading? _isolation(CXCursor c) {
+    // Implicit attributes inherited from the container may precede the
+    // member's own; an explicit `nonisolated` wins.
+    Threading? found;
+    for (final a in _clang.children(c)) {
+      final k = _clang.getCursorKind(a);
+      if (k < 400 || k > 499) continue; // attributes only
+      final loc = _clang.fileOffsetOf(a);
+      if (loc == null) continue;
+      final bytes = _sources[loc.file] ??= File(loc.file).readAsBytesSync();
+      if (loc.offset >= bytes.length) continue;
+      final end = (loc.offset + 48).clamp(0, bytes.length);
+      final text = String.fromCharCodes(bytes, loc.offset, end);
+      if (text.startsWith('NS_SWIFT_NONISOLATED') ||
+          text.startsWith('swift_attr("nonisolated")') ||
+          text.startsWith('__attribute__((swift_attr("nonisolated")))')) {
+        return Threading.anyThread;
+      }
+      if (text.startsWith('NS_SWIFT_UI_ACTOR') ||
+          text.startsWith('NS_SWIFT_MAIN_ACTOR') ||
+          text.startsWith('swift_attr("@UIActor")') ||
+          text.startsWith('swift_attr("@MainActor")') ||
+          text.startsWith('__attribute__((swift_attr("@UIActor")))') ||
+          text.startsWith('__attribute__((swift_attr("@MainActor")))')) {
+        found = Threading.mainThread;
+      }
+    }
+    return found;
+  }
+
   ApiType _buildClass(String id, _Decl d) {
     final isProtocol = d.kind == CursorKind.objcProtocolDecl;
     final availability = _availability(d.cursor);
+    final classThreading = _isolation(d.cursor) ?? Threading.unspecified;
     TypeRef? superClass;
     final interfaces = <TypeRef>[];
     final methods = <ApiMethod>[];
@@ -538,6 +580,9 @@ final class ObjCExtractor {
       // Categories from other frameworks are merged into the class.
     }
     for (final container in [d.cursor, ...d.categories]) {
+      final containerThreading = identical(container, d.cursor)
+          ? classThreading
+          : _isolation(container) ?? classThreading;
       for (final c in _clang.children(container)) {
         final kind = _clang.getCursorKind(c);
         switch (kind) {
@@ -559,6 +604,7 @@ final class ObjCExtractor {
               kind == CursorKind.objcClassMethodDecl,
               availability,
               isProtocol,
+              containerThreading,
             );
             if (seen.add(m.id)) methods.add(m);
           case CursorKind.objcPropertyDecl:
@@ -578,6 +624,7 @@ final class ObjCExtractor {
       interfaces: interfaces,
       methods: methods,
       properties: properties,
+      threading: classThreading,
       modifiers: mods,
       availability: availability,
       visibility: d.isPrivate ? ApiVisibility.private : ApiVisibility.public,
@@ -587,7 +634,16 @@ final class ObjCExtractor {
       documentation: _docLink(d) == null
           ? const Documentation()
           : Documentation(sourceType: 'link', reference: _docLink(d)),
-      diagnostics: diags,
+      diagnostics: [
+        ...diags,
+        if (classThreading == Threading.mainThread)
+          Diagnostic(
+            DiagnosticCode.threadingConstraint,
+            'Main actor (NS_SWIFT_UI_ACTOR): members must be called on the main thread unless marked nonisolated',
+            severity: Severity.info,
+            symbolId: id,
+          ),
+      ],
     );
   }
 
@@ -604,8 +660,11 @@ final class ObjCExtractor {
     bool isClass,
     Availability ownerAvailability,
     bool inProtocol,
+    Threading ownerThreading,
   ) {
     final selector = _clang.str(_clang.getCursorSpelling(c));
+    final own = _isolation(c);
+    final threading = own ?? ownerThreading;
     final id = '$owner#${isClass ? '+' : '-'}$selector';
     final ret = _type(_clang.getCursorResultType(c));
     final params = <ApiParameter>[];
@@ -633,6 +692,16 @@ final class ObjCExtractor {
         ),
       );
     }
+    if (own == Threading.mainThread && ownerThreading != Threading.mainThread) {
+      diags.add(
+        Diagnostic(
+          DiagnosticCode.threadingConstraint,
+          'Main actor (NS_SWIFT_UI_ACTOR): call on the main thread',
+          severity: Severity.info,
+          symbolId: id,
+        ),
+      );
+    }
     final private = selector.startsWith('_');
     final unsupported = diags.any(
       (d) =>
@@ -646,6 +715,7 @@ final class ObjCExtractor {
       kind: isInit ? MethodKind.constructor : MethodKind.method,
       returnType: ret,
       parameters: params,
+      threading: threading,
       nativeDescriptor: selector,
       modifiers: {
         Modifier.public,

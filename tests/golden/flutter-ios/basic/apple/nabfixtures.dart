@@ -16,16 +16,19 @@ import 'package:objective_c/objective_c.dart' as objc;
 import '_msgsend.dart' as ms;
 import '_runtime.dart' as rt;
 
+final _class_NABMainActorView = objc.getClass('NABMainActorView');
 final _class_NABThing = objc.getClass('NABThing');
 final _sel_addItem_ = objc.registerName('addItem:');
 final _sel_addItem_atIndex_ = objc.registerName('addItem:atIndex:');
 final _sel_alloc = objc.registerName('alloc');
+final _sel_alpha = objc.registerName('alpha');
 final _sel_centerOf_ = objc.registerName('centerOf:');
 final _sel_conformsToProtocol_ = objc.registerName('conformsToProtocol:');
 final _sel_count = objc.registerName('count');
 final _sel_counts = objc.registerName('counts');
 final _sel_describe = objc.registerName('describe');
 final _sel_frame = objc.registerName('frame');
+final _sel_identifier = objc.registerName('identifier');
 final _sel_init = objc.registerName('init');
 final _sel_initWithName_ = objc.registerName('initWithName:');
 final _sel_instances = objc.registerName('instances');
@@ -37,7 +40,10 @@ final _sel_mode = objc.registerName('mode');
 final _sel_name = objc.registerName('name');
 final _sel_new = objc.registerName('new');
 final _sel_objectForKeyedSubscript_ = objc.registerName('objectForKeyedSubscript:');
+final _sel_redraw = objc.registerName('redraw');
+final _sel_refreshUI = objc.registerName('refreshUI');
 final _sel_saveToPath_error_ = objc.registerName('saveToPath:error:');
+final _sel_setAlpha_ = objc.registerName('setAlpha:');
 final _sel_setFrame_ = objc.registerName('setFrame:');
 final _sel_setListener_ = objc.registerName('setListener:');
 final _sel_setMode_ = objc.registerName('setMode:');
@@ -80,6 +86,54 @@ extension type NABListener._(objc.ObjCObject object$) implements objc.ObjCObject
   /// Objective-C: `-[NABListener thing:didChangeValue:]`
   void thing(objc.ObjCObject thing, {required int didChangeValue}) {
     ms.msgSend_xvosjbsp7ajc(object$.ref.pointer, _sel_thing_didChangeValue_, thing.ref.pointer, didChangeValue);
+  }
+}
+
+/// Objective-C: `@interface NABMainActorView`
+/// - Threading: main actor (`NS_SWIFT_UI_ACTOR`): call on the main thread (the root isolate on iOS); checked in debug builds
+/// - Note E013 THREADING_CONSTRAINT: Main actor (NS_SWIFT_UI_ACTOR): members must be called on the main thread unless marked nonisolated
+extension type NABMainActorView._(objc.ObjCObject object$) implements objc.ObjCObject {
+  /// Views [other] as `NABMainActorView` (unchecked; see [isA]).
+  NABMainActorView.as(objc.ObjCObject other) : object$ = other;
+
+  /// Wraps a raw object pointer.
+  NABMainActorView.fromPointer(ffi.Pointer<objc.ObjCObjectImpl> other, {bool retain = false, bool release = false})
+    : object$ = objc.ObjCObject(other, retain: retain, release: release);
+
+  /// Whether [obj] is an instance of `NABMainActorView` (or a subclass).
+  static bool isA(objc.ObjCObject? obj) =>
+      obj == null ? false : ms.msgSend_xn3eu2m4e7c4(obj.ref.pointer, _sel_isKindOfClass_, _class_NABMainActorView);
+
+  /// `+alloc` (owned).
+  static NABMainActorView alloc() => NABMainActorView.fromPointer(ms.msgSend_nwlodbzk5001(_class_NABMainActorView, _sel_alloc), retain: false, release: true);
+
+  /// `+new` (owned).
+  static NABMainActorView new$() => NABMainActorView.fromPointer(ms.msgSend_nwlodbzk5001(_class_NABMainActorView, _sel_new), retain: false, release: true);
+
+  /// Objective-C: `@property alpha (readwrite)`
+  /// - Threading: main actor (`NS_SWIFT_UI_ACTOR`): call on the main thread (the root isolate on iOS); checked in debug builds
+  double get alpha {
+    assert(rt.checkMainThread("-[NABMainActorView alpha]"));
+    return objc.useMsgSendVariants ? ms.msgSend_my4pkiy7h65sV(object$.ref.pointer, _sel_alpha) : ms.msgSend_my4pkiy7h65s(object$.ref.pointer, _sel_alpha);
+  }
+
+  set alpha(double value) {
+    assert(rt.checkMainThread("-[NABMainActorView setAlpha:]"));
+    ms.msgSend_7f9p6nk7ezol(object$.ref.pointer, _sel_setAlpha_, value);
+  }
+
+  /// Objective-C: `-[NABMainActorView identifier]`
+  /// - Threading: nonisolated (callable from any thread)
+  objc.NSString identifier() {
+    final $ret = ms.msgSend_nwlodbzk5001(object$.ref.pointer, _sel_identifier);
+    return objc.NSString.fromPointer($ret, retain: true, release: true);
+  }
+
+  /// Objective-C: `-[NABMainActorView redraw]`
+  /// - Threading: main actor (`NS_SWIFT_UI_ACTOR`): call on the main thread (the root isolate on iOS); checked in debug builds
+  void redraw() {
+    assert(rt.checkMainThread("-[NABMainActorView redraw]"));
+    ms.msgSend_1ivg14d6tnza3(object$.ref.pointer, _sel_redraw);
   }
 }
 
@@ -247,6 +301,15 @@ extension type NABThing._(objc.ObjCObject object$) implements objc.ObjCObject {
   objc.ObjCObject? objectForKeyedSubscript(objc.NSString key) {
     final $ret = ms.msgSend_z20u32u3cw8g(object$.ref.pointer, _sel_objectForKeyedSubscript_, key.ref.pointer);
     return $ret.address == 0 ? null : objc.ObjCObject($ret, retain: true, release: true);
+  }
+
+  /// Objective-C: `-[NABThing refreshUI]`
+  /// - iOS 13+
+  /// - Threading: main actor (`NS_SWIFT_UI_ACTOR`): call on the main thread (the root isolate on iOS); checked in debug builds
+  /// - Note E013 THREADING_CONSTRAINT: Main actor (NS_SWIFT_UI_ACTOR): call on the main thread
+  void refreshUI() {
+    assert(rt.checkMainThread("-[NABThing refreshUI]"));
+    ms.msgSend_1ivg14d6tnza3(object$.ref.pointer, _sel_refreshUI);
   }
 
   /// Objective-C: `-[NABThing saveToPath:error:]`

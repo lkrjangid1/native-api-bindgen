@@ -37,6 +37,33 @@ final class NativeObjCError implements Exception {
   String toString() => 'NativeObjCError($domain, $code): $description';
 }
 
+final _pthreadMainNp = ffi.DynamicLibrary.process()
+    .lookupFunction<ffi.Int Function(), int Function()>('pthread_main_np');
+
+/// Whether the caller runs on the process's main thread.
+bool isMainThread() => _pthreadMainNp() != 0;
+
+/// A main-actor API (`NS_SWIFT_UI_ACTOR`) was called off the main thread
+/// (E013 THREADING_CONSTRAINT). Raised by debug-build checks only.
+final class NativeThreadingError extends Error {
+  /// Creates the error.
+  NativeThreadingError(this.symbol);
+
+  /// The Objective-C member, e.g. `-[UIView setAlpha:]`.
+  final String symbol;
+
+  @override
+  String toString() =>
+      'E013 THREADING_CONSTRAINT: $symbol is main-actor isolated and must be '
+      'called on the main thread (the root isolate on iOS)';
+}
+
+/// Used as `assert(checkMainThread(...))` before main-actor calls.
+bool checkMainThread(String symbol) {
+  if (isMainThread()) return true;
+  throw NativeThreadingError(symbol);
+}
+
 /// Allocates a zeroed `NSError *` slot for an out-parameter.
 ffi.Pointer<ffi.Pointer<objc.ObjCObjectImpl>> errorSlot() =>
     pffi.calloc<ffi.Pointer<objc.ObjCObjectImpl>>();

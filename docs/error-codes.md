@@ -16,7 +16,7 @@ Codes are stable; never renumber. Each diagnostic carries `code`, `severity` (`i
 | E010 | RUNTIME_BINDING_FAILURE | Runtime could not bind (class/method not found on device) | Thrown by runtime |
 | E011 | ABI_MISMATCH | Native ABI/type width mismatch | Symbol skipped |
 | E012 | AVAILABILITY_MISMATCH | API newer than the device / `minApi` | Guard throws `NativeApiUnavailableException` |
-| E013 | THREADING_CONSTRAINT | API annotated with a thread requirement (`@MainThread`, `@UiThread`, `@WorkerThread`) | Documented on the generated member |
+| E013 | THREADING_CONSTRAINT | API annotated with a thread requirement (Android `@MainThread`, `@UiThread`, `@WorkerThread`; Apple `NS_SWIFT_UI_ACTOR` main actor) | Documented on the generated member; Flutter iOS checks main-actor calls in debug builds (`NativeThreadingError`); React Native iOS dispatches them to the main thread |
 | E014 | DOCUMENTATION_UNAVAILABLE | No documentation reference could be derived | Informational |
 | E015 | NOT_IMPLEMENTED | Requested target/platform is not implemented in this version (no current command returns it; kept stable for future targets) | Tracked limitation (see roadmap) |
 | E016 | OUTSIDE_CLOSURE | Referenced type not in the generation closure; mapped to opaque `JObject` | Add it via `--entry`/`include` |

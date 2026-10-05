@@ -110,7 +110,9 @@ final class DartObjCEmitter {
     for (final ns in byNs.keys) {
       umbrella.writeln("export '${libraryPath(ns)}';");
     }
-    umbrella.writeln("export 'apple/_runtime.dart' show NativeObjCError;");
+    umbrella.writeln(
+      "export 'apple/_runtime.dart' show NativeObjCError, NativeThreadingError, isMainThread;",
+    );
     files.add(GeneratedFile('apple.dart', umbrella.toString()));
     return GenerationOutput(
       files: files,
@@ -229,6 +231,17 @@ final class DartObjCEmitter {
             ? '- macOS: unavailable'
             : '- macOS ${mac.introduced ?? '?'}+',
       );
+    }
+    final threading = switch (n) {
+      ApiMethod(:final threading) || ApiType(:final threading) => threading,
+      _ => Threading.unspecified,
+    };
+    if (threading == Threading.mainThread) {
+      lines.add(
+        '- Threading: main actor (`NS_SWIFT_UI_ACTOR`): call on the main thread (the root isolate on iOS); checked in debug builds',
+      );
+    } else if (threading == Threading.anyThread) {
+      lines.add('- Threading: nonisolated (callable from any thread)');
     }
     for (final d in n.diagnostics) {
       lines.add('- Note ${d.code.code} ${d.code.label}: ${d.message}');
@@ -647,6 +660,13 @@ final class DartObjCEmitter {
     return '    objc.checkOsVersionInternal(${jsonEncode(label)}, iOS: (false, (${intro.major}, ${intro.minor}, ${intro.patch})));\n';
   }
 
+  /// Debug-only check (inside `assert`, so release builds skip it) for
+  /// main-actor members (E013).
+  String _mainThreadCheck(ApiMethod m, String label) =>
+      m.threading == Threading.mainThread
+      ? '    assert(rt.checkMainThread(${jsonEncode(label)}));\n'
+      : '';
+
   /// FFI type spelled for the shared trampoline library (structs prefixed).
   String _trampFfi(TypeRef t) {
     final n = _native(t, tramp: true);
@@ -744,6 +764,7 @@ final class DartObjCEmitter {
     );
     b.writeln('  ${m.isStatic ? 'static ' : ''}$ret $name($sigParams) {');
     b.write(_guard(m, '${t.name}.${m.name}'));
+    b.write(_mainThreadCheck(m, objcSig));
     final call = _call(m.returnType, target, m.name, args);
     if (errorOut) {
       final failed = isVoid
@@ -814,6 +835,12 @@ final class DartObjCEmitter {
     );
     b.writeln('  ${isStatic ? 'static ' : ''}${_apiType(type)} get $name {');
     b.write(_guard(getter, '${t.name}.${p.name}'));
+    b.write(
+      _mainThreadCheck(
+        getter,
+        '${isStatic ? '+' : '-'}[${owner.name} ${getter.name}]',
+      ),
+    );
     final call = _call(type, target, getter.name, const []);
     if (_isObject(type)) {
       b.writeln('    final \$ret = $call;');
@@ -829,6 +856,12 @@ final class DartObjCEmitter {
         '  ${isStatic ? 'static ' : ''}set $name(${_apiType(st)} value) {',
       );
       b.write(_guard(setter, '${t.name}.${setter.name}'));
+      b.write(
+        _mainThreadCheck(
+          setter,
+          '${isStatic ? '+' : '-'}[${owner.name} ${setter.name}]',
+        ),
+      );
       b.writeln(
         '    ${_call(const PrimitiveTypeRef(PrimitiveKind.void_), target, setter.name, [('value', st)])};',
       );
@@ -884,6 +917,33 @@ final class NativeObjCError implements Exception {
 
   @override
   String toString() => 'NativeObjCError(\$domain, \$code): \$description';
+}
+
+final _pthreadMainNp = ffi.DynamicLibrary.process()
+    .lookupFunction<ffi.Int Function(), int Function()>('pthread_main_np');
+
+/// Whether the caller runs on the process's main thread.
+bool isMainThread() => _pthreadMainNp() != 0;
+
+/// A main-actor API (`NS_SWIFT_UI_ACTOR`) was called off the main thread
+/// (E013 THREADING_CONSTRAINT). Raised by debug-build checks only.
+final class NativeThreadingError extends Error {
+  /// Creates the error.
+  NativeThreadingError(this.symbol);
+
+  /// The Objective-C member, e.g. `-[UIView setAlpha:]`.
+  final String symbol;
+
+  @override
+  String toString() =>
+      'E013 THREADING_CONSTRAINT: \$symbol is main-actor isolated and must be '
+      'called on the main thread (the root isolate on iOS)';
+}
+
+/// Used as `assert(checkMainThread(...))` before main-actor calls.
+bool checkMainThread(String symbol) {
+  if (isMainThread()) return true;
+  throw NativeThreadingError(symbol);
 }
 
 /// Allocates a zeroed `NSError *` slot for an out-parameter.

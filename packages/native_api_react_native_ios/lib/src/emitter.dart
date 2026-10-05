@@ -24,7 +24,7 @@ final class RnObjCOptions {
   const RnObjCOptions({
     this.minIos = const ApiVersion(15),
     this.mode = TypescriptMode.strict,
-    this.mainThreadModules = const {'UIKit'},
+    this.mainThreadModules = const {},
     this.linkFrameworks = const [],
   });
 
@@ -35,7 +35,10 @@ final class RnObjCOptions {
   /// `number` (ergonomic, lossy beyond ±2^53).
   final TypescriptMode mode;
 
-  /// Members declared in these modules are invoked on the main thread.
+  /// Additional modules whose members are always invoked on the main
+  /// thread. By default the IR decides: main-actor declarations
+  /// (`NS_SWIFT_UI_ACTOR`) run on the main thread, everything else on the
+  /// calling (JS) thread.
   final Set<String> mainThreadModules;
 
   /// Frameworks the podspec links so their classes are loaded at runtime
@@ -440,7 +443,9 @@ final class RnObjCEmitter {
         )
         ..writeln('  }');
     } else {
-      final main = options.mainThreadModules.contains(t.namespace)
+      final main =
+          t.threading == Threading.mainThread ||
+              options.mainThreadModules.contains(t.namespace)
           ? _Flags.mainThread
           : 0;
       rows
@@ -502,7 +507,8 @@ final class RnObjCEmitter {
         inFamily('mutableCopy')) {
       f |= _Flags.owned;
     }
-    if (options.mainThreadModules.contains(owner.namespace)) {
+    if (m.threading == Threading.mainThread ||
+        options.mainThreadModules.contains(owner.namespace)) {
       f |= _Flags.mainThread;
     }
     if (m.parameters.isNotEmpty && isErrorOut(m.parameters.last.type)) {
@@ -619,7 +625,7 @@ final class RnObjCEmitter {
     b.writeln('  }');
     if (!_isInitOrAlloc(m)) {
       b.writeln(
-        '  /** Promise variant of `${m.name}`: runs on ${options.mainThreadModules.contains(t.namespace) ? 'the main queue' : 'a background queue'}. */',
+        '  /** Promise variant of `${m.name}`: runs on ${m.threading == Threading.mainThread || options.mainThreadModules.contains(t.namespace) ? 'the main queue' : 'a background queue'}. */',
       );
       b.writeln('  $stat${name}Async(${sig.decl}): Promise<$ret> {');
       b.write(_guard(m, '    '));

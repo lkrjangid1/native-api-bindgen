@@ -29,6 +29,15 @@ const MemberSpec k_NABFixtures_NABListener[] = {
     {"-thing:didChangeValue:", "thing:didChangeValue:", "voj", MemberKind::InstanceMethod, 0},
 };
 
+const MemberSpec k_NABFixtures_NABMainActorView[] = {
+    {"+alloc", "alloc", "o", MemberKind::ClassMethod, 5},
+    {"+new", "new", "o", MemberKind::ClassMethod, 5},
+    {"-identifier", "identifier", "s", MemberKind::InstanceMethod, 0},
+    {"-redraw", "redraw", "v", MemberKind::InstanceMethod, 4},
+    {"P-alpha", "alpha", "n", MemberKind::InstanceGetter, 4},
+    {"P-alpha=", "setAlpha:", "vn", MemberKind::InstanceSetter, 4},
+};
+
 const MemberSpec k_NABFixtures_NABThing[] = {
     {"+alloc", "alloc", "o", MemberKind::ClassMethod, 1},
     {"+new", "new", "o", MemberKind::ClassMethod, 1},
@@ -43,6 +52,7 @@ const MemberSpec k_NABFixtures_NABThing[] = {
     {"-items", "items", "o", MemberKind::InstanceMethod, 0},
     {"-legacy", "legacy", "v", MemberKind::InstanceMethod, 0},
     {"-objectForKeyedSubscript:", "objectForKeyedSubscript:", "os", MemberKind::InstanceMethod, 0},
+    {"-refreshUI", "refreshUI", "v", MemberKind::InstanceMethod, 4},
     {"-saveToPath:error:", "saveToPath:error:", "zs", MemberKind::InstanceMethod, 8},
     {"P+instances", "instances", "j", MemberKind::ClassGetter, 0},
     {"P-count", "count", "j", MemberKind::InstanceGetter, 0},
@@ -58,6 +68,7 @@ const MemberSpec k_NABFixtures_NABThing[] = {
 
 const ClassSpec kClasses[] = {
     {"NABFixtures.NABListener", "NABListener", true, k_NABFixtures_NABListener, std::size(k_NABFixtures_NABListener)},
+    {"NABFixtures.NABMainActorView", "NABMainActorView", false, k_NABFixtures_NABMainActorView, std::size(k_NABFixtures_NABMainActorView)},
     {"NABFixtures.NABThing", "NABThing", false, k_NABFixtures_NABThing, std::size(k_NABFixtures_NABThing)},
 };
 

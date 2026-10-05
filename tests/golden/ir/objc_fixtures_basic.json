@@ -224,6 +224,128 @@
       "visibility": "public"
     },
     {
+      "diagnostics": [
+        {
+          "code": "E013",
+          "label": "THREADING_CONSTRAINT",
+          "message": "Main actor (NS_SWIFT_UI_ACTOR): members must be called on the main thread unless marked nonisolated",
+          "severity": "info",
+          "symbolId": "NABFixtures.NABMainActorView"
+        }
+      ],
+      "id": "NABFixtures.NABMainActorView",
+      "kind": "classType",
+      "methods": [
+        {
+          "id": "NABFixtures.NABMainActorView#-alpha",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "alpha",
+          "nativeDescriptor": "alpha",
+          "returnType": {
+            "kind": "primitive",
+            "name": "double"
+          },
+          "support": "supported",
+          "threading": "mainThread",
+          "visibility": "public"
+        },
+        {
+          "id": "NABFixtures.NABMainActorView#-identifier",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "identifier",
+          "nativeDescriptor": "identifier",
+          "returnType": {
+            "kind": "declared",
+            "name": "Foundation.NSString",
+            "nullability": "nonnull"
+          },
+          "support": "supported",
+          "threading": "anyThread",
+          "visibility": "public"
+        },
+        {
+          "id": "NABFixtures.NABMainActorView#-redraw",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "redraw",
+          "nativeDescriptor": "redraw",
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "threading": "mainThread",
+          "visibility": "public"
+        },
+        {
+          "id": "NABFixtures.NABMainActorView#-setAlpha:",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "setAlpha:",
+          "nativeDescriptor": "setAlpha:",
+          "parameters": [
+            {
+              "name": "alpha",
+              "nameSource": "header",
+              "type": {
+                "kind": "primitive",
+                "name": "double"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "threading": "mainThread",
+          "visibility": "public"
+        }
+      ],
+      "modifiers": [
+        "public"
+      ],
+      "name": "NABMainActorView",
+      "namespace": "NABFixtures",
+      "properties": [
+        {
+          "backing": "accessor",
+          "getterId": "NABFixtures.NABMainActorView#-alpha",
+          "name": "alpha",
+          "setterId": "NABFixtures.NABMainActorView#-setAlpha:",
+          "type": {
+            "kind": "primitive",
+            "name": "double"
+          }
+        }
+      ],
+      "provenance": {
+        "artifactEntry": "NABFixtures.h",
+        "localArtifact": "fixture headers",
+        "platform": "apple",
+        "sdkVersion": "fixture",
+        "sourceKind": "fixture"
+      },
+      "superClass": {
+        "kind": "declared",
+        "name": "ObjectiveC.NSObject",
+        "nullability": "unknown"
+      },
+      "support": "supported",
+      "threading": "mainThread",
+      "visibility": "public"
+    },
+    {
       "fields": [
         {
           "availability": {
@@ -993,6 +1115,39 @@
             "nullability": "nullable"
           },
           "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "13",
+            "platforms": {
+              "ios": {
+                "introduced": "13"
+              }
+            }
+          },
+          "diagnostics": [
+            {
+              "code": "E013",
+              "label": "THREADING_CONSTRAINT",
+              "message": "Main actor (NS_SWIFT_UI_ACTOR): call on the main thread",
+              "severity": "info",
+              "symbolId": "NABFixtures.NABThing#-refreshUI"
+            }
+          ],
+          "id": "NABFixtures.NABThing#-refreshUI",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "refreshUI",
+          "nativeDescriptor": "refreshUI",
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "threading": "mainThread",
           "visibility": "public"
         },
         {

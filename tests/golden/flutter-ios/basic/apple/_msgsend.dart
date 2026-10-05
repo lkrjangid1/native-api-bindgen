@@ -96,6 +96,15 @@ final msgSend_2te94355k75kV = (objc.msgSendStretPointer)
     .cast<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<objc.ObjCObjectImpl>, ffi.Pointer<objc.ObjCSelector>, apple_nabfixtures.NABRect)>>()
     .asFunction<void Function(ffi.Pointer<objc.ObjCObjectImpl>, ffi.Pointer<objc.ObjCSelector>, apple_nabfixtures.NABRect)>();
 
+final msgSend_7f9p6nk7ezol = objc.msgSendPointer
+    .cast<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<objc.ObjCObjectImpl>, ffi.Pointer<objc.ObjCSelector>, ffi.Double)>>()
+    .asFunction<void Function(ffi.Pointer<objc.ObjCObjectImpl>, ffi.Pointer<objc.ObjCSelector>, double)>();
+
+/// x86_64 variant (struct return via stret / floating point via fpret).
+final msgSend_7f9p6nk7ezolV = (objc.msgSendStretPointer)
+    .cast<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<objc.ObjCObjectImpl>, ffi.Pointer<objc.ObjCSelector>, ffi.Double)>>()
+    .asFunction<void Function(ffi.Pointer<objc.ObjCObjectImpl>, ffi.Pointer<objc.ObjCSelector>, double)>();
+
 final msgSend_gbtzsfs4mobu = objc.msgSendPointer
     .cast<ffi.NativeFunction<ffi.Int64 Function(ffi.Pointer<objc.ObjCObjectImpl>, ffi.Pointer<objc.ObjCSelector>)>>()
     .asFunction<int Function(ffi.Pointer<objc.ObjCObjectImpl>, ffi.Pointer<objc.ObjCSelector>)>();
@@ -104,6 +113,15 @@ final msgSend_gbtzsfs4mobu = objc.msgSendPointer
 final msgSend_gbtzsfs4mobuV = (objc.msgSendStretPointer)
     .cast<ffi.NativeFunction<ffi.Int64 Function(ffi.Pointer<objc.ObjCObjectImpl>, ffi.Pointer<objc.ObjCSelector>)>>()
     .asFunction<int Function(ffi.Pointer<objc.ObjCObjectImpl>, ffi.Pointer<objc.ObjCSelector>)>();
+
+final msgSend_my4pkiy7h65s = objc.msgSendPointer
+    .cast<ffi.NativeFunction<ffi.Double Function(ffi.Pointer<objc.ObjCObjectImpl>, ffi.Pointer<objc.ObjCSelector>)>>()
+    .asFunction<double Function(ffi.Pointer<objc.ObjCObjectImpl>, ffi.Pointer<objc.ObjCSelector>)>();
+
+/// x86_64 variant (struct return via stret / floating point via fpret).
+final msgSend_my4pkiy7h65sV = (objc.msgSendFpretPointer)
+    .cast<ffi.NativeFunction<ffi.Double Function(ffi.Pointer<objc.ObjCObjectImpl>, ffi.Pointer<objc.ObjCSelector>)>>()
+    .asFunction<double Function(ffi.Pointer<objc.ObjCObjectImpl>, ffi.Pointer<objc.ObjCSelector>)>();
 
 final msgSend_nwlodbzk5001 = objc.msgSendPointer
     .cast<ffi.NativeFunction<ffi.Pointer<objc.ObjCObjectImpl> Function(ffi.Pointer<objc.ObjCObjectImpl>, ffi.Pointer<objc.ObjCSelector>)>>()

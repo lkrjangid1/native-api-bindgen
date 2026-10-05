@@ -37,7 +37,10 @@ void main() {
   test('benchmarks', () async {
     final results = <String, num>{};
     final view = ios.UIView.new$();
-    results['msgsend_instance_getter_int_ns'] = nsPerCall(200000, () => view.tag);
+    results['msgsend_instance_getter_int_ns'] = nsPerCall(
+      200000,
+      () => view.tag,
+    );
     results['msgsend_class_getter_object_ns'] = nsPerCall(
       50000,
       () => ios.NSProcessInfo.processInfo,
@@ -52,8 +55,14 @@ void main() {
     });
 
     const channel = MethodChannel('nab/bench');
-    results['methodchannel_noop_us'] = await usPerAsyncCall(5000, () => channel.invokeMethod<void>('noop'));
-    results['methodchannel_view_tag_us'] = await usPerAsyncCall(5000, () => channel.invokeMethod<int>('viewTag'));
+    results['methodchannel_noop_us'] = await usPerAsyncCall(
+      5000,
+      () => channel.invokeMethod<void>('noop'),
+    );
+    results['methodchannel_view_tag_us'] = await usPerAsyncCall(
+      5000,
+      () => channel.invokeMethod<int>('viewTag'),
+    );
     results['methodchannel_string_roundtrip_us'] = await usPerAsyncCall(
       5000,
       () => channel.invokeMethod<String>('echoString', 'Slice'),

@@ -1,3 +1,5 @@
+import 'dart:isolate';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:ios_slice/main.dart';
@@ -19,6 +21,28 @@ void main() {
     expect(s['systemVersion'], isNotEmpty);
   });
 
+  test(
+    'main-actor members are checked off the main thread (debug, E013)',
+    () async {
+      expect(ios.isMainThread(), isTrue, reason: 'root isolate runs on main');
+      ios.UIView.new$().tag = 1;
+      final symbol = await Isolate.run(() {
+        try {
+          ios.UIView.new$().tag = 2;
+          return 'no error';
+        } on ios.NativeThreadingError catch (e) {
+          return e.symbol;
+        }
+      });
+      expect(symbol, contains('UIView'));
+      // Foundation (not main-actor isolated) works from a background isolate.
+      final name = await Isolate.run(
+        () => ios.NSProcessInfo.processInfo.processName.toDartString(),
+      );
+      expect(name, isNotEmpty);
+    },
+  );
+
   test('NSProcessInfo: struct returned and passed by value', () {
     final info = ios.NSProcessInfo.processInfo;
     final v = info.operatingSystemVersion;
@@ -34,12 +58,10 @@ void main() {
   test('UIView: CGRect by value through init and property', () {
     final view = ios.UIView.alloc().initWithFrame(rect(1, 2, 30, 40));
     final f = view.frame;
-    expect([f.origin.x, f.origin.y, f.size.width, f.size.height], [
-      1.0,
-      2.0,
-      30.0,
-      40.0,
-    ]);
+    expect(
+      [f.origin.x, f.origin.y, f.size.width, f.size.height],
+      [1.0, 2.0, 30.0, 40.0],
+    );
     view.frame = rect(5, 6, 7, 8);
     expect(view.frame.size.height, 8.0);
   });
@@ -164,8 +186,14 @@ void main() {
         label: 'c'.toNSString(),
       );
       expect(c.temperature().celsius, 30);
-      expect(c.isAbove(ios.NABSwiftFixtures_Temperature.alloc().initWithCelsius(20)), isTrue);
-      expect(c.isAbove(ios.NABSwiftFixtures_Temperature.alloc().initWithCelsius(40)), isFalse);
+      expect(
+        c.isAbove(ios.NABSwiftFixtures_Temperature.alloc().initWithCelsius(20)),
+        isTrue,
+      );
+      expect(
+        c.isAbove(ios.NABSwiftFixtures_Temperature.alloc().initWithCelsius(40)),
+        isFalse,
+      );
     });
   });
 
