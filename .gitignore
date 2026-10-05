@@ -1,0 +1,30 @@
+# Dart / Flutter
+.dart_tool/
+.packages
+build/
+pubspec_overrides.yaml
+*.iml
+.idea/
+.vscode/
+coverage/
+
+# Generated local output (default distribution policy: local-only)
+.native_api_bindgen/
+**/lib/src/generated/
+
+# Platform build outputs
+**/android/.gradle/
+**/android/local.properties
+**/ios/Pods/
+**/ios/.symlinks/
+*.apk
+*.aab
+*.ipa
+
+# Never commit SDK inputs (see docs/legal)
+*.framework/
+*.xcframework/
+android.jar
+
+# OS
+.DS_Store

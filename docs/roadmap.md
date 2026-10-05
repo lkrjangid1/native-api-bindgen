@@ -1,0 +1,14 @@
+# Roadmap
+
+Items below are **plans**, not features. Completed items are marked with the release that shipped them.
+
+- **Phase 1 — Android Java API generation (Flutter).** In progress: vertical slice (Intent, Uri, Bundle, Context, Activity, Handler, Looper; Runnable/Handler.Callback callbacks).
+- **Phase 2 — Android callbacks/generics/annotations at scale.** Partial: annotations and erasure-based generics in the slice. Planned: generic type parameters on generated types, IntDef enums, Kotlin metadata (suspend → Future, Flow).
+- **Phase 3 — Objective-C / iOS.** Planned: Xcode SDK discovery, Clang AST extraction, `package:objective_c` output.
+- **Phase 4 — Flutter production runtime.** Planned: callback threading policy, size/perf benchmarks, sharded packages.
+- **Phase 5 — React Native New Architecture.** Planned: TypeScript + Codegen specs + C++ JSI HostObjects + JNI/ObjC++.
+- **Phase 6 — Swift-only API adapters.** Planned, conservative.
+- **Phase 7 — Native UI integration layer.** Planned.
+- **Website (GitHub Pages).** Planned after the first vertical slices.
+
+Tracked limitations of the current version are listed in `docs/compatibility/matrix.md`.

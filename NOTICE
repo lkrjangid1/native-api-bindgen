@@ -1,0 +1,16 @@
+native-api-bindgen
+Copyright 2026 The native-api-bindgen authors
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+The Apache-2.0 license applies only to the original source code of this
+project. It does NOT apply to:
+  * Android SDK files (android.jar, api-versions.xml, annotations.zip, ...)
+  * Apple SDKs, headers, frameworks or toolchains
+  * Platform documentation published by Google, Apple, Meta or others
+  * Bindings generated on a user's machine from such SDKs
+  * Third-party dependencies (see THIRD_PARTY_NOTICES.md)
+
+native-api-bindgen is an independent open-source project and is not
+affiliated with or endorsed by Google, Apple, Meta, or the Dart/Flutter
+teams. Android is a trademark of Google LLC.
