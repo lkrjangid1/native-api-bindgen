@@ -1,0 +1,37 @@
+{
+  "baseline": {
+    "apk_bytes": 14426402,
+    "dex_bytes": 526004,
+    "libapp_so_bytes": 2687920,
+    "libdartjni_so_bytes": 0,
+    "libflutter_so_bytes": 11317744
+  },
+  "imported-unused": {
+    "apk_bytes": 14776680,
+    "dex_bytes": 533700,
+    "libapp_so_bytes": 2687920,
+    "libdartjni_so_bytes": 329884,
+    "libflutter_so_bytes": 11317744
+  },
+  "one-api-fullsdk": {
+    "apk_bytes": 14842216,
+    "dex_bytes": 533700,
+    "libapp_so_bytes": 2753456,
+    "libdartjni_so_bytes": 329884,
+    "libflutter_so_bytes": 11317744
+  },
+  "one-api-slice": {
+    "apk_bytes": 14842216,
+    "dex_bytes": 533700,
+    "libapp_so_bytes": 2753456,
+    "libdartjni_so_bytes": 329884,
+    "libflutter_so_bytes": 11317744
+  },
+  "slice-example": {
+    "apk_bytes": 15759688,
+    "dex_bytes": 533724,
+    "libapp_so_bytes": 3670960,
+    "libdartjni_so_bytes": 329884,
+    "libflutter_so_bytes": 11317744
+  }
+}
