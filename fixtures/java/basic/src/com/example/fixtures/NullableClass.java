@@ -13,9 +13,11 @@ public class NullableClass {
 
   @NonNull
   public String describe(@Nullable String prefix, @NonNull Object value, String unannotated) {
-    return "";
+    return (prefix == null ? "<null>" : prefix) + ":" + value + ":" + unannotated;
   }
 
   @Nullable
-  public static NullableClass find(@NonNull String key) { return null; }
+  public static NullableClass find(@NonNull String key) {
+    return "missing".equals(key) ? null : new NullableClass();
+  }
 }

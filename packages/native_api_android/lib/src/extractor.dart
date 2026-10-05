@@ -396,11 +396,11 @@ final class AndroidApiExtractor {
       if (cf.superName != null) binaryName(cf.superName!),
       ...cf.interfaces.map(binaryName),
     ];
-    final fields = <ApiField>[
+    var fields = <ApiField>[
       for (final f in cf.fields)
         if (_isApiMember(f)) _buildField(id, namespace, f, versions, supers),
     ];
-    final methods = <ApiMethod>[
+    var methods = <ApiMethod>[
       for (final m in cf.methods)
         if (_isApiMember(m) &&
             m.name != '<clinit>' &&
@@ -415,6 +415,54 @@ final class AndroidApiExtractor {
             classThreading,
           ),
     ];
+
+    if (hidden) {
+      // Members of a non-SDK type are non-SDK as well.
+      Diagnostic why(String mid) => Diagnostic(
+        DiagnosticCode.nonSdkApi,
+        'Declared in non-SDK type $id',
+        symbolId: mid,
+      );
+      fields = [
+        for (final f in fields)
+          ApiField(
+            id: f.id,
+            name: f.name,
+            type: f.type,
+            constantValue: f.constantValue,
+            nativeDescriptor: f.nativeDescriptor,
+            modifiers: f.modifiers,
+            annotations: f.annotations,
+            availability: f.availability,
+            visibility: ApiVisibility.hiddenOrNonSdk,
+            support: SupportStatus.unsupported,
+            documentation: f.documentation,
+            diagnostics: [why(f.id)],
+          ),
+      ];
+      methods = [
+        for (final m in methods)
+          ApiMethod(
+            id: m.id,
+            name: m.name,
+            kind: m.kind,
+            returnType: m.returnType,
+            parameters: m.parameters,
+            typeParameters: m.typeParameters,
+            throws: m.throws,
+            threading: m.threading,
+            permissions: m.permissions,
+            nativeDescriptor: m.nativeDescriptor,
+            modifiers: m.modifiers,
+            annotations: m.annotations,
+            availability: m.availability,
+            visibility: ApiVisibility.hiddenOrNonSdk,
+            support: SupportStatus.unsupported,
+            documentation: m.documentation,
+            diagnostics: [why(m.id)],
+          ),
+      ];
+    }
 
     final mods = _modifiers(flags, isMethod: false);
     if (kind == TypeKind.interfaceType) mods.remove(Modifier.abstract_);

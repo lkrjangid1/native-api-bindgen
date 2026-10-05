@@ -536,6 +536,65 @@
           "availability": {
             "introduced": "1"
           },
+          "id": "com.example.fixtures.AsyncClass#ask(com.example.fixtures.CallbackInterface)",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "ask",
+          "nativeDescriptor": "(Lcom/example/fixtures/CallbackInterface;)Z",
+          "parameters": [
+            {
+              "name": "callback",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "declared",
+                "name": "com.example.fixtures.CallbackInterface",
+                "nullability": "unknown"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "boolean"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.AsyncClass#labelOf(com.example.fixtures.CallbackInterface)",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "labelOf",
+          "nativeDescriptor": "(Lcom/example/fixtures/CallbackInterface;)Ljava/lang/String;",
+          "parameters": [
+            {
+              "name": "callback",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "declared",
+                "name": "com.example.fixtures.CallbackInterface",
+                "nullability": "unknown"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "declared",
+            "name": "java.lang.String",
+            "nullability": "unknown"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
           "id": "com.example.fixtures.AsyncClass#load(java.lang.String,com.example.fixtures.CallbackInterface)",
           "kind": "method",
           "modifiers": [
@@ -568,6 +627,51 @@
             "name": "void"
           },
           "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.AsyncClass#loadOnThread(java.lang.String,com.example.fixtures.CallbackInterface)",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "loadOnThread",
+          "nativeDescriptor": "(Ljava/lang/String;Lcom/example/fixtures/CallbackInterface;)V",
+          "parameters": [
+            {
+              "name": "key",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "declared",
+                "name": "java.lang.String",
+                "nullability": "unknown"
+              }
+            },
+            {
+              "name": "callback",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "declared",
+                "name": "com.example.fixtures.CallbackInterface",
+                "nullability": "unknown"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "throws": [
+            {
+              "kind": "declared",
+              "name": "java.lang.InterruptedException",
+              "nullability": "unknown"
+            }
+          ],
           "visibility": "public"
         }
       ],
@@ -1222,6 +1326,15 @@
       "kind": "classType",
       "methods": [
         {
+          "diagnostics": [
+            {
+              "code": "E006",
+              "label": "NON_SDK_API",
+              "message": "Declared in non-SDK type com.example.fixtures.HiddenClass",
+              "severity": "warning",
+              "symbolId": "com.example.fixtures.HiddenClass#<init>()"
+            }
+          ],
           "id": "com.example.fixtures.HiddenClass#<init>()",
           "kind": "constructor",
           "modifiers": [
@@ -1233,10 +1346,19 @@
             "kind": "primitive",
             "name": "void"
           },
-          "support": "supported",
-          "visibility": "public"
+          "support": "unsupported",
+          "visibility": "hiddenOrNonSdk"
         },
         {
+          "diagnostics": [
+            {
+              "code": "E006",
+              "label": "NON_SDK_API",
+              "message": "Declared in non-SDK type com.example.fixtures.HiddenClass",
+              "severity": "warning",
+              "symbolId": "com.example.fixtures.HiddenClass#secret()"
+            }
+          ],
           "id": "com.example.fixtures.HiddenClass#secret()",
           "kind": "method",
           "modifiers": [
@@ -1248,8 +1370,8 @@
             "kind": "primitive",
             "name": "void"
           },
-          "support": "supported",
-          "visibility": "public"
+          "support": "unsupported",
+          "visibility": "hiddenOrNonSdk"
         }
       ],
       "modifiers": [
@@ -1293,6 +1415,25 @@
           "returnType": {
             "kind": "primitive",
             "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.NestedClass#name()",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "name",
+          "nativeDescriptor": "()Ljava/lang/String;",
+          "returnType": {
+            "kind": "declared",
+            "name": "java.lang.String",
+            "nullability": "unknown"
           },
           "support": "supported",
           "visibility": "public"
@@ -2047,6 +2188,25 @@
               }
             }
           ],
+          "returnType": {
+            "kind": "declared",
+            "name": "java.lang.String",
+            "nullability": "unknown"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.OverloadedClass#last()",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "last",
+          "nativeDescriptor": "()Ljava/lang/String;",
           "returnType": {
             "kind": "declared",
             "name": "java.lang.String",
