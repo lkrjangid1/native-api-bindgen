@@ -107,12 +107,18 @@ void main() {
       m.typeById('com.example.fixtures.HiddenClass')!.isGeneratable,
       isFalse,
     );
+    // Dart type parameters: no erasure diagnostics for in-scope variables.
     final g = m.nodeById('com.example.fixtures.GenericClass#get()')!;
-    expect(g.support, SupportStatus.partial);
+    expect(g.support, SupportStatus.supported);
     expect(
       g.diagnostics.map((d) => d.code),
-      contains(DiagnosticCode.unsupportedGeneric),
+      isNot(contains(DiagnosticCode.unsupportedGeneric)),
     );
+    // java.util collections map to package:jni wrappers (not E016).
+    final names = m.nodeById(
+      'com.example.fixtures.GenericClass#names(java.lang.String,java.lang.String)',
+    )!;
+    expect(names.support, SupportStatus.supported);
     expect(
       m.typeById('androidx.annotation.NonNull'),
       isNull,

@@ -26,6 +26,9 @@ class _Resolver implements DartTypeResolver {
   @override
   String? qualifiedName(String typeId) =>
       typeId == 'android.net.Uri' ? 'android_net.Uri' : null;
+
+  @override
+  int typeParameterCount(String typeId) => 0;
 }
 
 void main() {

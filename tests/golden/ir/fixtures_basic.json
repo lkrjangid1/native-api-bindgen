@@ -1390,6 +1390,141 @@
           "availability": {
             "introduced": "1"
           },
+          "id": "com.example.fixtures.GenericClass#lengths(java.util.List)",
+          "kind": "method",
+          "modifiers": [
+            "public",
+            "static"
+          ],
+          "name": "lengths",
+          "nativeDescriptor": "(Ljava/util/List;)Ljava/util/Map;",
+          "parameters": [
+            {
+              "name": "items",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "declared",
+                "name": "java.util.List",
+                "nullability": "unknown",
+                "typeArguments": [
+                  {
+                    "kind": "declared",
+                    "name": "java.lang.String",
+                    "nullability": "unknown"
+                  }
+                ]
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "declared",
+            "name": "java.util.Map",
+            "nullability": "unknown",
+            "typeArguments": [
+              {
+                "kind": "declared",
+                "name": "java.lang.String",
+                "nullability": "unknown"
+              },
+              {
+                "kind": "declared",
+                "name": "java.lang.Integer",
+                "nullability": "unknown"
+              }
+            ]
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.GenericClass#names(java.lang.String,java.lang.String)",
+          "kind": "method",
+          "modifiers": [
+            "public",
+            "static"
+          ],
+          "name": "names",
+          "nativeDescriptor": "(Ljava/lang/String;Ljava/lang/String;)Ljava/util/List;",
+          "parameters": [
+            {
+              "name": "a",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "declared",
+                "name": "java.lang.String",
+                "nullability": "unknown"
+              }
+            },
+            {
+              "name": "b",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "declared",
+                "name": "java.lang.String",
+                "nullability": "unknown"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "declared",
+            "name": "java.util.List",
+            "nullability": "unknown",
+            "typeArguments": [
+              {
+                "kind": "declared",
+                "name": "java.lang.String",
+                "nullability": "unknown"
+              }
+            ]
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.GenericClass#of(java.lang.String)",
+          "kind": "method",
+          "modifiers": [
+            "public",
+            "static"
+          ],
+          "name": "of",
+          "nativeDescriptor": "(Ljava/lang/String;)Lcom/example/fixtures/GenericClass;",
+          "parameters": [
+            {
+              "name": "value",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "declared",
+                "name": "java.lang.String",
+                "nullability": "unknown"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "declared",
+            "name": "com.example.fixtures.GenericClass",
+            "nullability": "unknown",
+            "typeArguments": [
+              {
+                "kind": "declared",
+                "name": "java.lang.String",
+                "nullability": "unknown"
+              }
+            ]
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
           "id": "com.example.fixtures.GenericClass#set(java.lang.CharSequence)",
           "kind": "method",
           "modifiers": [

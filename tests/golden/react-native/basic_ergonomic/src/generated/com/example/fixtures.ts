@@ -605,6 +605,41 @@ export class GenericClass extends JavaObject {
     return (GenericClass.$t()['index(java.util.List,java.util.List)Ljava/util/Map;'](true, $rt.h(keys), $rt.h(values)) as Promise<unknown>).then(r => $rt.wrap(JavaObject, r));
   }
   /**
+   * Native API: `com.example.fixtures.GenericClass#lengths(java.util.List)`
+   * - Android API: 1+
+   * - Note E016 OUTSIDE_CLOSURE: Outside the generation closure, exposed as JObject: java.lang.Integer, java.util.List, java.util.Map
+   */
+  static lengths(items: JavaObject | null): JavaObject | null {
+    return $rt.wrap(JavaObject, GenericClass.$t()['lengths(java.util.List)Ljava/util/Map;'](false, $rt.h(items)));
+  }
+  /** Promise variant of `com.example.fixtures.GenericClass#lengths(java.util.List)`: the JNI call runs on a background thread. */
+  static lengthsAsync(items: JavaObject | null): Promise<JavaObject | null> {
+    return (GenericClass.$t()['lengths(java.util.List)Ljava/util/Map;'](true, $rt.h(items)) as Promise<unknown>).then(r => $rt.wrap(JavaObject, r));
+  }
+  /**
+   * Native API: `com.example.fixtures.GenericClass#names(java.lang.String,java.lang.String)`
+   * - Android API: 1+
+   * - Note E016 OUTSIDE_CLOSURE: Outside the generation closure, exposed as JObject: java.util.List
+   */
+  static names(a: string | null, b: string | null): JavaObject | null {
+    return $rt.wrap(JavaObject, GenericClass.$t()['names(java.lang.String,java.lang.String)Ljava/util/List;'](false, a, b));
+  }
+  /** Promise variant of `com.example.fixtures.GenericClass#names(java.lang.String,java.lang.String)`: the JNI call runs on a background thread. */
+  static namesAsync(a: string | null, b: string | null): Promise<JavaObject | null> {
+    return (GenericClass.$t()['names(java.lang.String,java.lang.String)Ljava/util/List;'](true, a, b) as Promise<unknown>).then(r => $rt.wrap(JavaObject, r));
+  }
+  /**
+   * Native API: `com.example.fixtures.GenericClass#of(java.lang.String)`
+   * - Android API: 1+
+   */
+  static of(value: string | null): GenericClass | null {
+    return $rt.wrap(GenericClass, GenericClass.$t()['of(java.lang.String)Lcom/example/fixtures/GenericClass;'](false, value));
+  }
+  /** Promise variant of `com.example.fixtures.GenericClass#of(java.lang.String)`: the JNI call runs on a background thread. */
+  static ofAsync(value: string | null): Promise<GenericClass | null> {
+    return (GenericClass.$t()['of(java.lang.String)Lcom/example/fixtures/GenericClass;'](true, value) as Promise<unknown>).then(r => $rt.wrap(GenericClass, r));
+  }
+  /**
    * Native API: `com.example.fixtures.GenericClass#first(java.util.List)`
    * - Android API: 1+
    * - Note E003 UNSUPPORTED_GENERIC: Generic types are erased to their bounds in this version

@@ -4,6 +4,8 @@ import 'package:native_api_core/native_api_core.dart';
 import 'package:native_api_generator/native_api_generator.dart';
 import 'package:native_api_ir/native_api_ir.dart';
 
+import 'planner.dart';
+
 const _generatorId = 'flutter-android/dart-jni';
 
 /// Lints that generated code intentionally does not follow. Generated code
@@ -61,11 +63,7 @@ final class DartJniOptions {
 final class DartJniEmitter {
   /// Creates an emitter. [module] is planned internally.
   DartJniEmitter(ApiModule module, {this.options = const DartJniOptions()})
-    : module = planJvmTarget(
-        module,
-        callbacks: options.callbacks,
-        suspend: true,
-      ) {
+    : module = planDartJni(module, callbacks: options.callbacks) {
     for (final t in this.module.types) {
       if (t.isGeneratable) _types[t.id] = t;
     }
@@ -304,8 +302,12 @@ final class DartJniEmitter {
     // The representation name is unique per type: extension types that
     // implement several generated supertypes must not inherit two distinct
     // members with the same name.
+    // Type parameters are phantom (every wrapper is a JObject at run time);
+    // supertypes stay raw so a type never inherits one generic interface
+    // with two different type arguments.
+    final classTypeParams = _typeParameterDecl(t.typeParameters);
     b.writeln(
-      'extension type $name._(jni\$.JObject _\$$name) implements ${supers.join(', ')} {',
+      'extension type $name$classTypeParams._(jni\$.JObject _\$$name) implements ${supers.join(', ')} {',
     );
     b.writeln("  static final _\$class = jni\$.JClass.forName(r'$internal');");
     b.writeln();
@@ -361,6 +363,26 @@ final class DartJniEmitter {
     if (implementable) _emitInterfaceMixin(b, ctx);
   }
 
+  /// `<$T extends jni$.JObject?, ...>` for [params], or '' when empty.
+  ///
+  /// The Java bound is enforced by Java and documented, not repeated in
+  /// Dart: bounds would have to relate generated types and `package:jni`
+  /// wrappers (e.g. `JString` vs. a generated `CharSequence`), which Dart
+  /// cannot express. Type parameters are phantom at run time either way.
+  String _typeParameterDecl(List<TypeParameter> params) => params.isEmpty
+      ? ''
+      : '<${[for (final p in params) '${_dartTypeVar(p.name)} extends jni\$.JObject?'].join(', ')}>';
+
+  /// Type variables in scope for [m] declared in [owner] and emitted in
+  /// [c]: the generated type's own (instance members it declares) plus the
+  /// method's.
+  Map<String, String> _scope(_MemberContext c, ApiType owner, ApiMethod? m) => {
+    if (owner.id == c.type.id && !(m?.isStatic ?? false))
+      ...c.classTypeVariables,
+    if (m != null)
+      for (final p in m.typeParameters) p.name: _dartTypeVar(p.name),
+  };
+
   void _typeDoc(StringBuffer b, ApiType t) {
     b.writeln('/// Native API: `${t.id}` (${_kindName(t.kind)})');
     b.writeln('///');
@@ -370,7 +392,7 @@ final class DartJniEmitter {
     }
     if (t.typeParameters.isNotEmpty) {
       b.writeln(
-        '/// - Type parameters: `<${t.typeParameters.map((p) => p.bounds.isEmpty ? p.name : '${p.name} extends ${p.bounds.map((x) => x.display).join(' & ')}').join(', ')}>` (erased)',
+        '/// - Type parameters: `<${t.typeParameters.map((p) => p.bounds.isEmpty ? p.name : '${p.name} extends ${p.bounds.map((x) => x.display).join(' & ')}').join(', ')}>` (Dart type parameters; supertypes are raw)',
       );
     }
     if (t.superClass != null) {
@@ -503,7 +525,10 @@ final class DartJniEmitter {
     String dart, {
     bool redeclared = false,
   }) {
-    final m = c.mapper.map(f.type);
+    final m = c.mapper.map(
+      f.type,
+      typeVariables: f.isStatic ? const {} : c.classTypeVariables,
+    );
     b.writeln();
     final cv = f.constantValue;
     if (cv != null && f.isStatic && f.isFinal) {
@@ -525,6 +550,8 @@ final class DartJniEmitter {
       final raw = '$idName.$getter($target, $jType)';
       return m.ergonomicString
           ? '$raw${nullable ? '?' : ''}.toDartString(releaseOriginal: true)'
+          : m.needsCast
+          ? '($raw as $dartType)'
           : raw;
     }
 
@@ -610,8 +637,9 @@ final class DartJniEmitter {
   ({String params, String pre, String post, String args}) _params(
     ApiMethod m,
     DartJniTypeMapper mapper,
-    Map<String, TypeRef> tv,
-  ) {
+    Map<String, TypeRef> tv, [
+    Map<String, String> scope = const {},
+  ]) {
     final params = <String>[];
     final args = <String>[];
     final pre = StringBuffer();
@@ -622,7 +650,11 @@ final class DartJniEmitter {
       while (!used.add(n)) {
         n = '$n\$';
       }
-      final mt = mapper.map(p.type, typeVariableBounds: tv);
+      final mt = mapper.map(
+        p.type,
+        typeVariableBounds: tv,
+        typeVariables: scope,
+      );
       params.add('${_apiType(p.type, mt)} $n');
       if (mt.ergonomicString) {
         final nullable = p.type.nullability != Nullability.nonnull;
@@ -661,7 +693,7 @@ final class DartJniEmitter {
     String ctorName,
   ) {
     final tv = _typeVars(c.type, m);
-    final ps = _params(m, c.mapper, tv);
+    final ps = _params(m, c.mapper, tv, c.classTypeVariables);
     final idName = '_\$c\$$ctorName';
     final dartCtor = ctorName.isEmpty ? c.name : '${c.name}.$ctorName';
     b.writeln();
@@ -673,7 +705,7 @@ final class DartJniEmitter {
     b.write(_guard(m, '    '));
     b.write(ps.pre);
     final call =
-        'rt\$.guardJni(() => $idName.call<${c.name}>(_\$class, [${ps.args}]))';
+        'rt\$.guardJni(() => $idName.call<${c.selfType}>(_\$class, [${ps.args}]))';
     if (ps.post.isEmpty) {
       b.writeln('    return $call;');
     } else {
@@ -698,9 +730,16 @@ final class DartJniEmitter {
       _emitSuspend(b, c, m, dart, redeclared: redeclared);
       return;
     }
-    final tv = _typeVars(_types[SymbolIds.ownerOf(m.id)] ?? c.type, m);
-    final ps = _params(m, c.mapper, tv);
-    final ret = c.mapper.map(m.returnType, typeVariableBounds: tv);
+    final owner = _types[SymbolIds.ownerOf(m.id)] ?? c.type;
+    final tv = _typeVars(owner, m);
+    final scope = _scope(c, owner, m);
+    final ps = _params(m, c.mapper, tv, scope);
+    final ret = c.mapper.map(
+      m.returnType,
+      typeVariableBounds: tv,
+      typeVariables: scope,
+    );
+    final methodTypeParams = _typeParameterDecl(m.typeParameters);
     final isVoid =
         m.returnType is PrimitiveTypeRef &&
         (m.returnType as PrimitiveTypeRef).kind == PrimitiveKind.void_;
@@ -715,6 +754,8 @@ final class DartJniEmitter {
         '$idName.${nullable ? 'callNullable' : 'call'}($target, $jType, [${ps.args}])';
     if (ret.ergonomicString) {
       call = '$call${nullable ? '?' : ''}.toDartString(releaseOriginal: true)';
+    } else if (ret.needsCast && !isVoid) {
+      call = '($call as $dartRet)';
     }
     b.writeln();
     b.writeln(
@@ -725,7 +766,9 @@ final class DartJniEmitter {
     if (redeclared) {
       b.writeln('  // Redeclared: inherited from more than one supertype.');
     }
-    b.writeln('  ${m.isStatic ? 'static ' : ''}$dartRet $dart(${ps.params}) {');
+    b.writeln(
+      '  ${m.isStatic ? 'static ' : ''}$dartRet $dart$methodTypeParams(${ps.params}) {',
+    );
     b.write(_guard(m, '    '));
     b.write(ps.pre);
     final stmt = isVoid
@@ -780,12 +823,19 @@ final class DartJniEmitter {
     String dart, {
     bool redeclared = false,
   }) {
-    final tv = _typeVars(_types[SymbolIds.ownerOf(m.id)] ?? c.type, m);
-    final ps = _params(m, c.mapper, tv);
+    final owner = _types[SymbolIds.ownerOf(m.id)] ?? c.type;
+    final tv = _typeVars(owner, m);
+    final scope = _scope(c, owner, m);
+    final ps = _params(m, c.mapper, tv, scope);
     final result = suspendResult(m);
     final unit = isKotlinUnit(result);
     final boxed = result is DeclaredTypeRef ? _boxed[result.name] : null;
-    final ret = c.mapper.map(result, typeVariableBounds: tv);
+    final ret = c.mapper.map(
+      result,
+      typeVariableBounds: tv,
+      typeVariables: scope,
+    );
+    final methodTypeParams = _typeParameterDecl(m.typeParameters);
     final dartRet = unit
         ? 'void'
         : boxed != null
@@ -806,6 +856,8 @@ final class DartJniEmitter {
         ? '\$r?.as(jni\$.${boxed.jni}.type, releaseOriginal: true).${boxed.toDart}(releaseOriginal: true)'
         : ret.ergonomicString
         ? '\$r?.as($jType, releaseOriginal: true).toDartString(releaseOriginal: true)'
+        : ret.needsCast
+        ? '(\$r as $dartRet)'
         : '\$r?.as($jType, releaseOriginal: true)';
     b.writeln();
     b.writeln(
@@ -817,7 +869,7 @@ final class DartJniEmitter {
       b.writeln('  // Redeclared: inherited from more than one supertype.');
     }
     b.writeln(
-      '  ${m.isStatic ? 'static ' : ''}Future<$dartRet> $dart(${ps.params}) async {',
+      '  ${m.isStatic ? 'static ' : ''}Future<$dartRet> $dart$methodTypeParams(${ps.params}) async {',
     );
     b.write(_guard(m, '    '));
     b.write(ps.pre);
@@ -993,7 +1045,7 @@ final class DartJniEmitter {
     b.writeln('  factory ${c.name}.implement($mixin \$impl) {');
     b.writeln('    final \$i = jni\$.JImplementer();');
     b.writeln('    implementIn(\$i, \$impl);');
-    b.writeln('    return \$i.implement<${c.name}>();');
+    b.writeln('    return \$i.implement<${c.selfType}>();');
     b.writeln('  }');
     _binding(
       '${t.id}#<implement>',
@@ -1218,13 +1270,27 @@ final class _TypeNames {
 }
 
 final class _MemberContext {
-  _MemberContext(this.type, this.name, this.mapper, this.file);
+  _MemberContext(this.type, this.name, this.mapper, this.file)
+    : classTypeVariables = {
+        for (final p in type.typeParameters) p.name: _dartTypeVar(p.name),
+      };
 
   final ApiType type;
   final String name;
   final DartJniTypeMapper mapper;
   final String file;
+
+  /// Java type variable -> Dart type parameter of the generated type.
+  final Map<String, String> classTypeVariables;
+
+  /// `Name<$T, ...>` inside the type, `Name` when not generic.
+  String get selfType => classTypeVariables.isEmpty
+      ? name
+      : '$name<${classTypeVariables.values.join(', ')}>';
 }
+
+/// Dart name of a Java type variable (`T` -> `$T`), distinct from types.
+String _dartTypeVar(String name) => '\$$name';
 
 final class _Resolver implements DartTypeResolver {
   _Resolver(this.emitter, this.namespace);
@@ -1242,4 +1308,8 @@ final class _Resolver implements DartTypeResolver {
     usedNamespaces.add(t.namespace);
     return '${Identifiers.packagePrefix(t.namespace)}.$n';
   }
+
+  @override
+  int typeParameterCount(String typeId) =>
+      emitter._types[typeId]?.typeParameters.length ?? 0;
 }

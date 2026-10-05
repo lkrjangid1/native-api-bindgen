@@ -80,6 +80,9 @@ const MemberSpec k_com_example_fixtures_GenericClass[] = {
     {"first(java.util.List)Ljava/lang/Object;", "first", "(Ljava/util/List;)Ljava/lang/Object;", MemberKind::InstanceMethod},
     {"get()Ljava/lang/CharSequence;", "get", "()Ljava/lang/CharSequence;", MemberKind::InstanceMethod},
     {"index(java.util.List,java.util.List)Ljava/util/Map;", "index", "(Ljava/util/List;Ljava/util/List;)Ljava/util/Map;", MemberKind::StaticMethod},
+    {"lengths(java.util.List)Ljava/util/Map;", "lengths", "(Ljava/util/List;)Ljava/util/Map;", MemberKind::StaticMethod},
+    {"names(java.lang.String,java.lang.String)Ljava/util/List;", "names", "(Ljava/lang/String;Ljava/lang/String;)Ljava/util/List;", MemberKind::StaticMethod},
+    {"of(java.lang.String)Lcom/example/fixtures/GenericClass;", "of", "(Ljava/lang/String;)Lcom/example/fixtures/GenericClass;", MemberKind::StaticMethod},
     {"set(java.lang.CharSequence)V", "set", "(Ljava/lang/CharSequence;)V", MemberKind::InstanceMethod},
 };
 

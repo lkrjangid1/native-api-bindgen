@@ -681,10 +681,9 @@ final class _$EnumClass$Type extends jni$.JType<EnumClass> {
 /// Native API: `com.example.fixtures.GenericClass` (class)
 ///
 /// - Android API: 1+
-/// - Type parameters: `<T extends java.lang.CharSequence>` (erased)
+/// - Type parameters: `<T extends java.lang.CharSequence>` (Dart type parameters; supertypes are raw)
 /// - Superclass: `java.lang.Object`
-/// - Note E003 UNSUPPORTED_GENERIC: Type parameters T are erased to their bounds
-extension type GenericClass._(jni$.JObject _$GenericClass) implements jni$.JObject {
+extension type GenericClass<$T extends jni$.JObject?>._(jni$.JObject _$GenericClass) implements jni$.JObject {
   static final _$class = jni$.JClass.forName(r'com/example/fixtures/GenericClass');
 
   /// `package:jni` type descriptor for `com.example.fixtures.GenericClass`.
@@ -695,9 +694,8 @@ extension type GenericClass._(jni$.JObject _$GenericClass) implements jni$.JObje
   ///
   /// - Android API: 1+
   /// - `value`: `T`, nullability unknown (treated as nullable)
-  /// - Note E003 UNSUPPORTED_GENERIC: Generic types are erased to their bounds in this version
-  factory GenericClass(jni$.JObject? value) {
-    return rt$.guardJni(() => _$c$.call<GenericClass>(_$class, [value]));
+  factory GenericClass($T? value) {
+    return rt$.guardJni(() => _$c$.call<GenericClass<$T>>(_$class, [value]));
   }
 
   static final _$m$first = _$class.instanceMethodId(r'first', r'(Ljava/util/List;)Ljava/lang/Object;');
@@ -706,10 +704,8 @@ extension type GenericClass._(jni$.JObject _$GenericClass) implements jni$.JObje
   /// - Android API: 1+
   /// - `items`: `java.util.List<E>`, nullability unknown (treated as nullable)
   /// - Returns `E`, nullability unknown (treated as nullable)
-  /// - Note E003 UNSUPPORTED_GENERIC: Generic types are erased to their bounds in this version
-  /// - Note E016 OUTSIDE_CLOSURE: Outside the generation closure, exposed as JObject: java.util.List
-  jni$.JObject? first(jni$.JObject? items) {
-    return rt$.guardJni(() => _$m$first.callNullable(this, jni$.JObject.type, [items]));
+  $E? first<$E extends jni$.JObject?>(jni$.JList<$E?>? items) {
+    return rt$.guardJni(() => (_$m$first.callNullable(this, jni$.JObject.type, [items]) as $E?));
   }
 
   static final _$m$get = _$class.instanceMethodId(r'get', r'()Ljava/lang/CharSequence;');
@@ -717,9 +713,8 @@ extension type GenericClass._(jni$.JObject _$GenericClass) implements jni$.JObje
   ///
   /// - Android API: 1+
   /// - Returns `T`, nullability unknown (treated as nullable)
-  /// - Note E003 UNSUPPORTED_GENERIC: Generic types are erased to their bounds in this version
-  jni$.JObject? get() {
-    return rt$.guardJni(() => _$m$get.callNullable(this, jni$.JObject.type, []));
+  $T? get() {
+    return rt$.guardJni(() => (_$m$get.callNullable(this, jni$.JObject.type, []) as $T?));
   }
 
   static final _$m$index = _$class.staticMethodId(r'index', r'(Ljava/util/List;Ljava/util/List;)Ljava/util/Map;');
@@ -729,10 +724,39 @@ extension type GenericClass._(jni$.JObject _$GenericClass) implements jni$.JObje
   /// - `keys`: `java.util.List<? extends K>`, nullability unknown (treated as nullable)
   /// - `values`: `java.util.List<? super V>`, nullability unknown (treated as nullable)
   /// - Returns `java.util.Map<K, V>`, nullability unknown (treated as nullable)
-  /// - Note E003 UNSUPPORTED_GENERIC: Generic types are erased to their bounds in this version
-  /// - Note E016 OUTSIDE_CLOSURE: Outside the generation closure, exposed as JObject: java.util.List, java.util.Map
-  static jni$.JObject? index(jni$.JObject? keys, jni$.JObject? values) {
-    return rt$.guardJni(() => _$m$index.callNullable(_$class, jni$.JObject.type, [keys, values]));
+  static jni$.JMap<$K?, $V?>? index<$K extends jni$.JObject?, $V extends jni$.JObject?>(jni$.JList<$K?>? keys, jni$.JList<jni$.JObject?>? values) {
+    return rt$.guardJni(() => (_$m$index.callNullable(_$class, jni$.JMap.type, [keys, values]) as jni$.JMap<$K?, $V?>?));
+  }
+
+  static final _$m$lengths = _$class.staticMethodId(r'lengths', r'(Ljava/util/List;)Ljava/util/Map;');
+  /// Native API: `com.example.fixtures.GenericClass#lengths(java.util.List)`
+  ///
+  /// - Android API: 1+
+  /// - `items`: `java.util.List<java.lang.String>`, nullability unknown (treated as nullable)
+  /// - Returns `java.util.Map<java.lang.String, java.lang.Integer>`, nullability unknown (treated as nullable)
+  static jni$.JMap<jni$.JString?, jni$.JInteger?>? lengths(jni$.JList<jni$.JString?>? items) {
+    return rt$.guardJni(() => (_$m$lengths.callNullable(_$class, jni$.JMap.type, [items]) as jni$.JMap<jni$.JString?, jni$.JInteger?>?));
+  }
+
+  static final _$m$names = _$class.staticMethodId(r'names', r'(Ljava/lang/String;Ljava/lang/String;)Ljava/util/List;');
+  /// Native API: `com.example.fixtures.GenericClass#names(java.lang.String,java.lang.String)`
+  ///
+  /// - Android API: 1+
+  /// - `a`: `java.lang.String`, nullability unknown (treated as nullable)
+  /// - `b`: `java.lang.String`, nullability unknown (treated as nullable)
+  /// - Returns `java.util.List<java.lang.String>`, nullability unknown (treated as nullable)
+  static jni$.JList<jni$.JString?>? names(jni$.JString? a, jni$.JString? b) {
+    return rt$.guardJni(() => (_$m$names.callNullable(_$class, jni$.JList.type, [a, b]) as jni$.JList<jni$.JString?>?));
+  }
+
+  static final _$m$of = _$class.staticMethodId(r'of', r'(Ljava/lang/String;)Lcom/example/fixtures/GenericClass;');
+  /// Native API: `com.example.fixtures.GenericClass#of(java.lang.String)`
+  ///
+  /// - Android API: 1+
+  /// - `value`: `java.lang.String`, nullability unknown (treated as nullable)
+  /// - Returns `com.example.fixtures.GenericClass<java.lang.String>`, nullability unknown (treated as nullable)
+  static GenericClass<jni$.JString?>? of(jni$.JString? value) {
+    return rt$.guardJni(() => (_$m$of.callNullable(_$class, GenericClass.type, [value]) as GenericClass<jni$.JString?>?));
   }
 
   static final _$m$set = _$class.instanceMethodId(r'set', r'(Ljava/lang/CharSequence;)V');
@@ -740,8 +764,7 @@ extension type GenericClass._(jni$.JObject _$GenericClass) implements jni$.JObje
   ///
   /// - Android API: 1+
   /// - `value`: `T`, nullability unknown (treated as nullable)
-  /// - Note E003 UNSUPPORTED_GENERIC: Generic types are erased to their bounds in this version
-  void set(jni$.JObject? value) {
+  void set($T? value) {
     rt$.guardJni(() => _$m$set.call(this, jni$.jvoid.type, [value]));
   }
 }

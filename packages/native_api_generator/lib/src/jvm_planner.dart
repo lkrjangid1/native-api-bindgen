@@ -25,11 +25,16 @@ const _boxedPrimitives = {
 ///
 /// [suspend] says whether the target can call Kotlin `suspend` functions
 /// (Dart can, through `package:jni` continuations); otherwise they are
-/// unsupported (`E004`).
+/// unsupported (`E004`). With [generics] the target represents type
+/// parameters of generated types and methods (only type variables that are
+/// not in scope, e.g. an outer class's in an inner class, are erased with
+/// `E003`). [externalTypes] are provided by the target runtime (not `E016`).
 ApiModule planJvmTarget(
   ApiModule module, {
   bool callbacks = true,
   bool suspend = false,
+  bool generics = false,
+  Set<String> externalTypes = const {},
 }) {
   final generated = {
     for (final t in module.types)
@@ -48,6 +53,7 @@ ApiModule planJvmTarget(
       for (final r in refs)
         for (final n in r.referencedTypes)
           if (!generated.contains(n) &&
+              !externalTypes.contains(n) &&
               n != 'java.lang.String' &&
               n != 'kotlin.Unit' &&
               !(suspend && _boxedPrimitives.contains(n)))
@@ -63,9 +69,12 @@ ApiModule planJvmTarget(
     ];
   }
 
-  bool usesTypeVariables(Iterable<TypeRef> refs) {
+  bool usesTypeVariables(
+    Iterable<TypeRef> refs, [
+    Set<String> inScope = const {},
+  ]) {
     bool walk(TypeRef t) => switch (t) {
-      TypeVariableRef() => true,
+      TypeVariableRef(:final name) => !inScope.contains(name),
       DeclaredTypeRef(:final typeArguments) => typeArguments.any(walk),
       ArrayTypeRef(:final component) => walk(component),
       WildcardTypeRef(:final bound) => bound != null && walk(bound),
@@ -111,7 +120,7 @@ ApiModule planJvmTarget(
       continue;
     }
     final typeDiags = <Diagnostic>[];
-    if (t.typeParameters.isNotEmpty) {
+    if (t.typeParameters.isNotEmpty && !generics) {
       typeDiags.add(
         d(
           DiagnosticCode.unsupportedGeneric,
@@ -201,7 +210,14 @@ ApiModule planJvmTarget(
           ? [suspendResult(m), for (final p in suspendParameters(m)) p.type]
           : [m.returnType, for (final p in m.parameters) p.type];
       final extra = <Diagnostic>[
-        if (m.typeParameters.isNotEmpty || usesTypeVariables(refs))
+        if ((m.typeParameters.isNotEmpty && !generics) ||
+            usesTypeVariables(refs, {
+              if (generics) ...{
+                for (final p in m.typeParameters) p.name,
+                if (!m.isStatic)
+                  for (final p in t.typeParameters) p.name,
+              },
+            }))
           d(
             DiagnosticCode.unsupportedGeneric,
             m.id,

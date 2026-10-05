@@ -18,6 +18,7 @@
 - Threading and permission metadata in generated docs
 - Implementing Java interfaces in Dart (callbacks/listeners)
 - Java exceptions surfaced as `NativeJavaException`
+- Generics (Flutter): generated types and methods take Dart type parameters (`GenericClass<$T>`, `first<$E>(…)`), parameterized types keep their arguments (`JList<JString?>`), results are cast for free (every wrapper is a `JObject` at run time); supertypes stay raw. `java.util.List/Map/Set/Collection/Iterator` and boxed numbers map to `package:jni`'s wrappers when not generated. On android-36 this removed all 2,384 `E003` notes of the Flutter target.
 - Kotlin `suspend` functions (Flutter target): detected from the compiled JVM signature (trailing `kotlin.coroutines.Continuation<? super T>`), generated as `Future<T?>` over `package:jni`'s `PortContinuation`; boxed results are unboxed (`Int` → `int?`), `Unit` → `Future<void>`, Kotlin exceptions → `NativeJavaException`. The app needs `kotlinx-coroutines-android` at run time. React Native reports them as unsupported (`E004`).
 
 ## Not yet supported (reported with reason codes)
@@ -27,7 +28,7 @@
 | Protected members | E002 | require subclassing Java classes from Dart |
 | Constructors of abstract classes | E002 | |
 | Annotation interfaces | E002 | metadata, not callable |
-| Generic type parameters on generated types | E003 | erased to bounds; values still usable |
+| Generic type parameters (React Native only) | E003 | TypeScript erases them to bounds; the Flutter target generates Dart type parameters (Java bounds are documented, not repeated) |
 | Types outside the selected closure | E016 | exposed as `JObject`; add with `--entry` |
 | Kotlin `Flow`, properties, default arguments, nullability of suspend results | — | `kotlin.Metadata` is not parsed yet: suspend results are treated as nullable; `Flow` is an ordinary interface (`E016`/`JObject`) |
 | Native UI (embedding Android `View`s) | — | separate integration layer planned |

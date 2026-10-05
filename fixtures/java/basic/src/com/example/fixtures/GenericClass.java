@@ -18,4 +18,16 @@ public class GenericClass<T extends CharSequence> {
   }
 
   public <E> E first(List<E> items) { return items.isEmpty() ? null : items.get(0); }
+
+  /** A parameterized result: {@code GenericClass<String>}. */
+  public static GenericClass<String> of(String value) { return new GenericClass<>(value); }
+
+  /** java.util collections in signatures. */
+  public static List<String> names(String a, String b) { return new java.util.ArrayList<>(List.of(a, b)); }
+
+  public static Map<String, Integer> lengths(List<String> items) {
+    Map<String, Integer> out = new java.util.HashMap<>();
+    for (String s : items) out.put(s, s.length());
+    return out;
+  }
 }

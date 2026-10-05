@@ -17,6 +17,7 @@ final class DartJniType {
     this.isOpaque = false,
     this.isString = false,
     this.ergonomicString = false,
+    this.needsCast = false,
   });
 
   /// Dart type spelling without nullability, e.g. `int`,
@@ -45,13 +46,45 @@ final class DartJniType {
   /// Whether the Dart side uses `String` (ergonomic-dart mode) and the
   /// emitter must convert at the boundary.
   final bool ergonomicString;
+
+  /// Whether [dartType] is more specific than what a call with [jniType]
+  /// returns (a type variable or type arguments): results need `as`. Every
+  /// `package:jni` wrapper is an extension type over `JObject`, so the cast
+  /// is free at run time.
+  final bool needsCast;
 }
+
+/// Java types that `package:jni` already wraps (used when the type is not
+/// generated in the closure), with their number of type parameters.
+const jniBuiltinTypes = <String, (String, int)>{
+  'java.util.List': ('jni\$.JList', 1),
+  'java.util.Collection': ('jni\$.JCollection', 1),
+  'java.util.Iterator': ('jni\$.JIterator', 1),
+  'java.util.Set': ('jni\$.JSet', 1),
+  'java.util.Map': ('jni\$.JMap', 2),
+  'java.util.ArrayList': ('jni\$.JArrayList', 1),
+  'java.util.HashMap': ('jni\$.JHashMap', 2),
+  'java.util.HashSet': ('jni\$.JHashSet', 1),
+  'java.lang.Integer': ('jni\$.JInteger', 0),
+  'java.lang.Long': ('jni\$.JLong', 0),
+  'java.lang.Short': ('jni\$.JShort', 0),
+  'java.lang.Byte': ('jni\$.JByte', 0),
+  'java.lang.Character': ('jni\$.JCharacter', 0),
+  'java.lang.Boolean': ('jni\$.JBoolean', 0),
+  'java.lang.Double': ('jni\$.JDouble', 0),
+  'java.lang.Float': ('jni\$.JFloat', 0),
+  'java.lang.Number': ('jni\$.JNumber', 0),
+};
 
 /// Resolves the Dart representation of generated native types.
 abstract interface class DartTypeResolver {
   /// Qualified Dart name (`prefix.Name`) for a generated type, or null if the
   /// type is not generated.
   String? qualifiedName(String typeId);
+
+  /// Number of type parameters of a generated type (0 if not generic or not
+  /// generated).
+  int typeParameterCount(String typeId);
 }
 
 /// Maps IR [TypeRef]s to Dart/JNI representations.
@@ -88,11 +121,13 @@ final class DartJniTypeMapper {
     PrimitiveKind.double_: 'JDoubleArray',
   };
 
-  /// Maps [t]. [typeVariableBounds] gives the erasure of in-scope type
-  /// variables (generic type parameters are erased in this version, `E003`).
+  /// Maps [t]. [typeVariables] maps Java type variables that are Dart type
+  /// parameters in scope to their Dart names; other type variables are
+  /// erased to [typeVariableBounds] (or `Object`).
   DartJniType map(
     TypeRef t, {
     Map<String, TypeRef> typeVariableBounds = const {},
+    Map<String, String> typeVariables = const {},
   }) {
     switch (t) {
       case PrimitiveTypeRef(:final kind):
@@ -112,10 +147,23 @@ final class DartJniTypeMapper {
             isPrimitive: false,
           );
         }
-        final inner = map(component, typeVariableBounds: typeVariableBounds);
+        final inner = map(
+          component,
+          typeVariableBounds: typeVariableBounds,
+          typeVariables: typeVariables,
+        );
         final innerType = inner.ergonomicString
             ? 'jni\$.JString'
             : inner.dartType;
+        if (inner.needsCast) {
+          // The call uses an Object[] type object; the result is cast.
+          return DartJniType(
+            dartType: 'jni\$.JArray<$innerType?>',
+            jniType: 'jni\$.JArray.type<jni\$.JObject?>(jni\$.JObject.type)',
+            isPrimitive: false,
+            needsCast: true,
+          );
+        }
         final innerJni = inner.ergonomicString
             ? 'jni\$.JString.type'
             : inner.jniType;
@@ -125,8 +173,33 @@ final class DartJniTypeMapper {
           isPrimitive: false,
           isOpaque: inner.isOpaque,
         );
-      case DeclaredTypeRef(:final name):
-        return _declared(name);
+      case DeclaredTypeRef(:final name, :final typeArguments):
+        final base = _declared(name);
+        final arity =
+            jniBuiltinTypes[name]?.$2 ?? resolver.typeParameterCount(name);
+        if (arity == 0 ||
+            typeArguments.length != arity ||
+            base.isOpaque ||
+            base.isString) {
+          return base;
+        }
+        final args = [
+          for (final a in typeArguments)
+            _typeArgument(a, typeVariableBounds, typeVariables),
+        ];
+        return DartJniType(
+          dartType: '${base.dartType}<${args.join(', ')}>',
+          jniType: base.jniType,
+          isPrimitive: false,
+          needsCast: true,
+        );
+      case TypeVariableRef(:final name) when typeVariables.containsKey(name):
+        return DartJniType(
+          dartType: typeVariables[name]!,
+          jniType: 'jni\$.JObject.type',
+          isPrimitive: false,
+          needsCast: true,
+        );
       case TypeVariableRef(:final name):
         final bound = typeVariableBounds[name];
         if (bound == null || bound is TypeVariableRef) {
@@ -140,6 +213,22 @@ final class DartJniTypeMapper {
         // Not JVM types; never produced by the Android parser.
         return _declared('java.lang.Object');
     }
+  }
+
+  /// Spelling of a type argument (always a nullable reference type).
+  String _typeArgument(
+    TypeRef a,
+    Map<String, TypeRef> bounds,
+    Map<String, String> typeVariables,
+  ) {
+    if (a is WildcardTypeRef) {
+      if (a.bound == null || a.isSuper) return 'jni\$.JObject?';
+      return _typeArgument(a.bound!, bounds, typeVariables);
+    }
+    final m = map(a, typeVariableBounds: bounds, typeVariables: typeVariables);
+    if (m.isPrimitive) return 'jni\$.JObject?';
+    final t = m.ergonomicString ? 'jni\$.JString' : m.dartType;
+    return '$t?';
   }
 
   DartJniType _declared(String id) {
@@ -156,6 +245,14 @@ final class DartJniTypeMapper {
     final q = resolver.qualifiedName(id);
     if (q != null) {
       return DartJniType(dartType: q, jniType: '$q.type', isPrimitive: false);
+    }
+    final builtin = jniBuiltinTypes[id];
+    if (builtin != null) {
+      return DartJniType(
+        dartType: builtin.$1,
+        jniType: '${builtin.$1}.type',
+        isPrimitive: false,
+      );
     }
     return const DartJniType(
       dartType: 'jni\$.JObject',

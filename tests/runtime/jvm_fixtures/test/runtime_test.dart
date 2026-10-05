@@ -66,11 +66,23 @@ void main() {
       expect(n.maybe!.toDartString(), 'set');
     });
 
-    test('generics are erased to bounds', () {
-      final g = GenericClass(js('hello'));
-      expect(g.get()!.toString(), 'hello');
+    test('generics: Dart type parameters and java.util collections', () {
+      final g = GenericClass<JString>(js('hello'));
+      final JString? v = g.get();
+      expect(v!.toDartString(), 'hello');
       g.set(js('bye'));
-      expect(g.get()!.toString(), 'bye');
+      expect(g.get()!.toDartString(), 'bye');
+
+      final GenericClass<JString?> of = GenericClass.of(js('x'))!;
+      expect(of.get()!.toDartString(), 'x');
+
+      final JList<JString?> names = GenericClass.names(js('a'), js('bc'))!;
+      expect(names.size(), 2);
+      expect(names.get(1)!.toDartString(), 'bc');
+      final JMap<JString?, JInteger?> lengths = GenericClass.lengths(names)!;
+      expect(lengths.get(js('bc'))!.toDartInt(), 2);
+      final JString? first = g.first<JString>(names);
+      expect(first!.toDartString(), 'a');
     });
 
     test('multiple supertypes: inherited and redeclared members work', () {
