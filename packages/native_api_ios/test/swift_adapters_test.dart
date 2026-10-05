@@ -44,7 +44,13 @@ void main() {
       .firstWhere((m) => m.name == title);
 
   test('symbol graph: types, members, parameters', () {
-    expect(graph.types.map((t) => t.name), ['Counter', 'Mood', 'Temperature']);
+    expect(graph.types.map((t) => t.name), [
+      'Counter',
+      'CounterError',
+      'Level',
+      'Mood',
+      'Temperature',
+    ]);
     final inc = graph.types.first.members.firstWhere(
       (m) => m.title == 'increment(by:)',
     );
@@ -74,13 +80,55 @@ void main() {
   test('not adapted, with reasons', () {
     String? code(String m) => member('Counter', m).diagnostics.single.code.code;
     expect(code('transform(_:)'), 'E004'); // closure
-    expect(code('later()'), 'E004'); // async
     expect(code('identity(_:)'), 'E003'); // generic
     expect(code('pair()'), 'E002'); // tuple
-    expect(code('values()'), 'E002'); // collection
+    expect(code('count()'), 'E002'); // throws, returns Int
     expect(
-      out.module.typeById('NABSwiftFixtures.Mood')!.isGeneratable,
+      out.module.typeById('NABSwiftFixtures.CounterError')!.isGeneratable,
       isFalse,
+    ); // enum without raw value
+  });
+
+  test('collections, throws, async and raw-value enums', () {
+    for (final (m, sel) in [
+      ('values()', 'values'),
+      ('tags()', 'tags'),
+      ('neighbors()', 'neighbors'),
+      ('names(_:)', 'names:'),
+      ('check(limit:)', 'checkLimit:error:'),
+      ('duplicate(named:)', 'duplicateNamed:error:'),
+      ('init(validating:)', 'initWithValidating:error:'),
+      ('later()', 'laterWithCompletion:'),
+      ('wait()', 'waitWithCompletion:'),
+      ('fetch(id:)', 'fetchId:completion:'),
+      ('total(of:)', 'totalOf:completion:'),
+      ('level()', 'level'),
+      ('describe(level:)', 'describeLevel:'),
+    ]) {
+      final x = member('Counter', m);
+      expect(x.isGeneratable, isTrue, reason: m);
+      if (x.nativeDescriptor != null) {
+        expect(x.nativeDescriptor, sel, reason: m);
+      }
+    }
+    expect(out.module.typeById('NABSwiftFixtures.Mood')!.isGeneratable, isTrue);
+    expect(
+      out.header,
+      contains('@property (class, nonatomic, readonly) NSInteger high;'),
+    );
+    expect(
+      out.header,
+      contains('- (BOOL)checkLimit:(NSInteger)limit error:(NSError **)error;'),
+    );
+    expect(
+      out.header,
+      contains(
+        '- (void)fetchId:(NSInteger)id completion:(void (^)(NSString * _Nullable, NSError * _Nullable))completion;',
+      ),
+    );
+    expect(
+      out.header,
+      contains('- (NSDictionary<NSString *, NSNumber *> *)tags;'),
     );
   });
 

@@ -99,9 +99,18 @@ platform:
           types: [Weather]
 ```
 
-Selectors: the first argument label is appended to the base name (`increment(by:)` → `incrementBy:`, `init(start:label:)` → `initWithStart:label:`). APIs newer than `minVersion` carry `@available` / `API_AVAILABLE`. Not adapted (with reasons): closures and `async` (`E004`), generics (`E003`), tuples, collections, enums, protocols, `throws`, failable initializers, members colliding with `NSObject` (`E002`), iOS-unavailable APIs (`E012`). Adapters copy values, so object identity is not preserved across calls; `alloc()` must be followed by one of the adapter's `init…` methods.
+Selectors: the first argument label is appended to the base name (`increment(by:)` → `incrementBy:`, `init(start:label:)` → `initWithStart:label:`). APIs newer than `minVersion` carry `@available` / `API_AVAILABLE`.
 
-Measured with Xcode 27.0 (`packages/native_api_ios/tool/swift_sdk_report.dart`, deployment target 18.0): of the members of three Swift-only SDK modules, 8 of 111 (TipKit), 71 of 3,466 (Charts) and 89 of 446 (WeatherKit) are adaptable today; the generated adapters for all three type-check with zero errors. The synthetic fixture (`fixtures/swift/basic`) runs on the iPhone 17 / iOS 26.4 simulator (3 integration tests in `examples/flutter/ios_slice`).
+Bridged beyond plain values:
+
+- **Collections**: `[T]` and `[String: T]` of bridged or adapted non-optional types cross as `NSArray` / `NSDictionary` (adapted elements are wrapped/unwrapped element by element).
+- **Raw-value enums** (`Int` or `String`): values cross as the raw value; `<Module>_<Enum>` has one class property per case (`NABSwiftFixtures_Level.high`). An invalid raw value passed in traps with a clear message.
+- **`throws`**: methods returning `Void` or a non-optional object, and throwing initializers, bridge to `NSError **` (`checkLimit:error:` → `NativeObjCError` in Dart / `NativeObjCError` in JS). Throwing members returning scalars or optionals are not representable (`E002`).
+- **`async`**: `foo(...) async [throws] -> R` becomes `fooCompletion:` with a completion handler run from a `Task` (`(R) -> Void`, or `(R?, Error?) -> Void` when throwing). Flutter gets a `Future` form for primitive results (listener block); results with objects or errors are delivered on React Native.
+
+Not adapted (with reasons): closures (`E004`), generics (`E003`), tuples, nested or optional-element collections, enums without raw values, protocols, failable initializers, async initializers/properties, members colliding with `NSObject` (`E002`), iOS-unavailable APIs (`E012`). Adapters copy values, so object identity is not preserved across calls; `alloc()` must be followed by one of the adapter's `init…` methods.
+
+Measured with Xcode 27.0 (`packages/native_api_ios/tool/swift_sdk_report.dart`, deployment target 18.0): of the members of three Swift-only SDK modules (enum cases now counted as members), 8 of 111 (TipKit), 73 of 3,466 (Charts) and 183 of 615 (WeatherKit; before this change 89 of 446) are adaptable; the generated adapters for all three type-check with zero errors. The synthetic fixture (`fixtures/swift/basic`) runs on the iPhone 17 / iOS 26.4 simulator (4 integration tests in `examples/flutter/ios_slice`).
 
 ## Not supported yet (with codes)
 

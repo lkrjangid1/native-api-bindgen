@@ -223,6 +223,60 @@ void main() {
       expect(t.fahrenheit, closeTo(98.6, 1e-9));
     });
 
+    test('collections, raw-value enums, throws and async', () async {
+      final c = ios.NABSwiftFixtures_Counter.alloc().initWithStart(
+        12,
+        label: 'c'.toNSString(),
+      );
+      // Collections cross as NSArray / NSDictionary.
+      expect(c.values().count, 1);
+      expect(
+        (c.tags().objectForKey('c'.toNSString()) as objc.NSNumber).intValue,
+        12,
+      );
+      final neighbors = c.neighbors();
+      expect(neighbors.count, 2);
+      expect(
+        ios.NABSwiftFixtures_Counter.as(neighbors.objectAtIndex(1)).value,
+        13,
+      );
+      expect(
+        c
+            .names(objc.NSArray.of(['a'.toNSString(), 'b'.toNSString()]))
+            .toDartString(),
+        'a,b',
+      );
+      // Raw-value enums cross as their raw value.
+      expect(c.level(), ios.NABSwiftFixtures_Level.high);
+      expect(ios.NABSwiftFixtures_Level.low, 1);
+      expect(
+        c.describeLevel(ios.NABSwiftFixtures_Level.low).toDartString(),
+        'level 1',
+      );
+      expect(
+        c.mood.toDartString(),
+        ios.NABSwiftFixtures_Mood.happy.toDartString(),
+      );
+      c.mood = ios.NABSwiftFixtures_Mood.sad;
+      expect(c.mood.toDartString(), 'sad');
+      // throws -> NSError ** -> NativeObjCError.
+      expect(c.checkLimit(20), isTrue);
+      expect(() => c.checkLimit(5), throwsA(isA<ios.NativeObjCError>()));
+      expect(c.duplicateNamed('d'.toNSString())!.label.toDartString(), 'd');
+      expect(
+        () => c.duplicateNamed(''.toNSString()),
+        throwsA(isA<ios.NativeObjCError>()),
+      );
+      expect(
+        () => ios.NABSwiftFixtures_Counter.alloc().initWithValidating(-1),
+        throwsA(isA<ios.NativeObjCError>()),
+      );
+      // async -> completion handler -> Future (primitive results).
+      expect(await c.laterWithCompletionAsync(), 12);
+      await c.waitWithCompletionAsync();
+      expect(await ios.NABSwiftFixtures_Counter.totalOfAsync(neighbors), 24);
+    });
+
     test('adapted types as parameters and results', () {
       final c = ios.NABSwiftFixtures_Counter.alloc().initWithStart(
         30,

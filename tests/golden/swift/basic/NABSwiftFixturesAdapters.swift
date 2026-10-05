@@ -4,6 +4,14 @@
 import Foundation
 import NABSwiftFixtures
 
+/// Converts a raw value received from Objective-C to an enum value.
+fileprivate func _nabEnum<T: RawRepresentable>(_ type: T.Type, _ raw: T.RawValue) -> T {
+    guard let value = T(rawValue: raw) else {
+        preconditionFailure("native-api-bindgen: invalid raw value \(raw) for \(T.self)")
+    }
+    return value
+}
+
 /// Adapter for `NABSwiftFixtures.Counter`.
 @objc(NABSwiftFixtures_Counter)
 public final class NABSwiftFixtures_Counter: NSObject {
@@ -34,25 +42,25 @@ public final class NABSwiftFixtures_Counter: NSObject {
     /// `@discardableResult func increment(by step: Int) -> Int`
     @objc(incrementBy:)
     public func increment(by step: Int) -> Int {
-        return wrapped.increment(by: step)
+        return self.wrapped.increment(by: step)
     }
 
     /// `func describe(prefix: String?) -> String`
     @objc(describePrefix:)
     public func describe(prefix: String?) -> String {
-        return wrapped.describe(prefix: prefix)
+        return self.wrapped.describe(prefix: prefix)
     }
 
     /// `func temperature() -> Temperature`
     @objc(temperature)
     public func temperature() -> NABSwiftFixtures_Temperature {
-        return NABSwiftFixtures_Temperature(wrapped: wrapped.temperature())
+        return NABSwiftFixtures_Temperature(wrapped: self.wrapped.temperature())
     }
 
     /// `func isAbove(_ threshold: Temperature) -> Bool`
     @objc(isAbove:)
     public func isAbove(_ threshold: NABSwiftFixtures_Temperature) -> Bool {
-        return wrapped.isAbove(threshold.wrapped)
+        return self.wrapped.isAbove(threshold.wrapped)
     }
 
     /// `static func make() -> Counter`
@@ -65,6 +73,120 @@ public final class NABSwiftFixtures_Counter: NSObject {
     @objc public static var instances: Int {
         Counter.instances
     }
+
+    /// `func later() async -> Int`
+    @objc(laterWithCompletion:)
+    public func later(completion: @escaping (Int) -> Void) {
+        Task {
+            let value = await self.wrapped.later()
+            completion(value)
+        }
+    }
+
+    /// `func values() -> [Int]`
+    @objc(values)
+    public func values() -> [Int] {
+        return self.wrapped.values()
+    }
+
+    /// `func tags() -> [String : Int]`
+    @objc(tags)
+    public func tags() -> [String: Int] {
+        return self.wrapped.tags()
+    }
+
+    /// `func neighbors() -> [Counter]`
+    @objc(neighbors)
+    public func neighbors() -> [NABSwiftFixtures_Counter] {
+        return self.wrapped.neighbors().map { NABSwiftFixtures_Counter(wrapped: $0) }
+    }
+
+    /// `func names(_ list: [String]) -> String`
+    @objc(names:)
+    public func names(_ list: [String]) -> String {
+        return self.wrapped.names(list)
+    }
+
+    /// `func check(limit: Int) throws`
+    @objc(checkLimit:error:)
+    public func check(limit: Int) throws {
+        try self.wrapped.check(limit: limit)
+    }
+
+    /// `func duplicate(named name: String) throws -> Counter`
+    @objc(duplicateNamed:error:)
+    public func duplicate(named name: String) throws -> NABSwiftFixtures_Counter {
+        return try NABSwiftFixtures_Counter(wrapped: self.wrapped.duplicate(named: name))
+    }
+
+    /// `init(validating start: Int) throws`
+    @objc(initWithValidating:error:)
+    public init(validating start: Int) throws {
+        self.wrapped = try Counter(validating: start)
+    }
+
+    /// `func wait() async`
+    @objc(waitWithCompletion:)
+    public func wait(completion: @escaping () -> Void) {
+        Task {
+            await self.wrapped.wait()
+            completion()
+        }
+    }
+
+    /// `func fetch(id: Int) async throws -> String`
+    @objc(fetchId:completion:)
+    public func fetch(id: Int, completion: @escaping (String?, Error?) -> Void) {
+        Task {
+            do {
+                let value = try await self.wrapped.fetch(id: id)
+                completion(value, nil)
+            } catch {
+                completion(nil, error)
+            }
+        }
+    }
+
+    /// `static func total(of counters: [Counter]) async -> Int`
+    @objc(totalOf:completion:)
+    public static func total(of counters: [NABSwiftFixtures_Counter], completion: @escaping (Int) -> Void) {
+        Task {
+            let value = await Counter.total(of: counters.map { $0.wrapped })
+            completion(value)
+        }
+    }
+
+    /// `var mood: Mood`
+    @objc public var mood: String {
+        get { wrapped.mood.rawValue }
+        set { wrapped.mood = _nabEnum(Mood.self, newValue) }
+    }
+
+    /// `func level() -> Level`
+    @objc(level)
+    public func level() -> Int {
+        return self.wrapped.level().rawValue
+    }
+
+    /// `func describe(level: Level) -> String`
+    @objc(describeLevel:)
+    public func describe(level: Int) -> String {
+        return self.wrapped.describe(level: _nabEnum(Level.self, level))
+    }
+}
+
+/// Raw values of the cases of `NABSwiftFixtures.Level` (values cross as `Int`).
+@objc(NABSwiftFixtures_Level)
+public final class NABSwiftFixtures_Level: NSObject {
+    @objc public static var low: Int { Level.low.rawValue }
+    @objc public static var high: Int { Level.high.rawValue }
+}
+
+/// Raw values of the cases of `NABSwiftFixtures.Mood` (values cross as `String`).
+@objc(NABSwiftFixtures_Mood)
+public final class NABSwiftFixtures_Mood: NSObject {
+    @objc public static var happy: String { Mood.happy.rawValue }
+    @objc public static var sad: String { Mood.sad.rawValue }
 }
 
 /// Adapter for `NABSwiftFixtures.Temperature`.
@@ -97,12 +219,12 @@ public final class NABSwiftFixtures_Temperature: NSObject {
     /// `func adding(_ delta: Double) -> Temperature`
     @objc(adding:)
     public func adding(_ delta: Double) -> NABSwiftFixtures_Temperature {
-        return NABSwiftFixtures_Temperature(wrapped: wrapped.adding(delta))
+        return NABSwiftFixtures_Temperature(wrapped: self.wrapped.adding(delta))
     }
 
     /// `mutating func reset()`
     @objc(reset)
     public func reset() {
-        wrapped.reset()
+        self.wrapped.reset()
     }
 }

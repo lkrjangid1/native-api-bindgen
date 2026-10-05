@@ -33,7 +33,40 @@ final class SwiftNamed extends SwiftType {
   final bool optional;
 }
 
-/// Anything else (closure, tuple, collection, generic, existential, ...).
+/// `[Element]`, possibly optional.
+final class SwiftArray extends SwiftType {
+  /// Creates an array type.
+  const SwiftArray(super.display, this.element, {this.optional = false});
+
+  /// Element type (non-optional nominal).
+  final SwiftNamed element;
+
+  /// `[T]?`.
+  final bool optional;
+}
+
+/// `[Key: Value]`, possibly optional.
+final class SwiftDictionary extends SwiftType {
+  /// Creates a dictionary type.
+  const SwiftDictionary(
+    super.display,
+    this.key,
+    this.value, {
+    this.optional = false,
+  });
+
+  /// Key type.
+  final SwiftNamed key;
+
+  /// Value type.
+  final SwiftNamed value;
+
+  /// `[K: V]?`.
+  final bool optional;
+}
+
+/// Anything else (closure, tuple, nested collection, generic, existential,
+/// ...).
 final class SwiftOther extends SwiftType {
   /// Creates an unsupported type with the [code] and [reason] to report.
   const SwiftOther(super.display, this.code, this.reason);
@@ -76,6 +109,9 @@ enum SwiftMemberKind {
 
   /// `static`/`class` property.
   typeProperty,
+
+  /// `case` of an enum.
+  enumCase,
 
   /// Operator or other member (not adapted).
   other,
@@ -391,6 +427,7 @@ final class SwiftModuleGraph {
       'swift.property' => SwiftMemberKind.property,
       'swift.type.property' ||
       'swift.class.property' => SwiftMemberKind.typeProperty,
+      'swift.enum.case' => SwiftMemberKind.enumCase,
       _ => SwiftMemberKind.other,
     };
     SwiftType ret;
@@ -454,6 +491,41 @@ final class SwiftModuleGraph {
     );
   }
 
+  /// `[T]`, `[T]?`, `[K: V]`, `[K: V]?` with nominal, non-optional elements.
+  static SwiftType? _collection(List<Map<String, Object?>> frags, String text) {
+    final m = RegExp(r'^\[(.+)\]([?!]?)$').firstMatch(text);
+    if (m == null) return null;
+    final inner = m[1]!;
+    final optional = m[2]!.isNotEmpty;
+    final ids = [
+      for (final f in frags)
+        if (f['kind'] == 'typeIdentifier') f,
+    ];
+    SwiftNamed named(Map<String, Object?> f) => SwiftNamed(
+      f['spelling'] as String,
+      f['spelling'] as String,
+      f['preciseIdentifier'] as String?,
+    );
+    final word = RegExp(r'^[A-Za-z_][\w.]*$');
+    if (!inner.contains(':')) {
+      if (ids.length != 1 || !word.hasMatch(inner.trim())) return null;
+      return SwiftArray(text, named(ids.single), optional: optional);
+    }
+    final parts = inner.split(':');
+    if (parts.length != 2 ||
+        ids.length != 2 ||
+        !word.hasMatch(parts[0].trim()) ||
+        !word.hasMatch(parts[1].trim())) {
+      return null;
+    }
+    return SwiftDictionary(
+      text,
+      named(ids[0]),
+      named(ids[1]),
+      optional: optional,
+    );
+  }
+
   /// Classifies a type from declaration fragments.
   static SwiftType parseType(List<Map<String, Object?>> frags) {
     final text = frags.map((f) => f['spelling'] as String).join().trim();
@@ -488,10 +560,12 @@ final class SwiftModuleGraph {
       );
     }
     if (text.startsWith('[')) {
+      final c = _collection(frags, text);
+      if (c != null) return c;
       return SwiftOther(
         text,
         DiagnosticCode.unsupportedType,
-        'Swift collections are not bridged yet (planned)',
+        'Only arrays and String-keyed dictionaries of non-optional nominal types are bridged',
       );
     }
     if (text.startsWith('some ') ||

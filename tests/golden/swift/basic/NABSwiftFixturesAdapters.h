@@ -6,6 +6,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class NABSwiftFixtures_Counter;
 @class NABSwiftFixtures_Temperature;
+@class NABSwiftFixtures_Level;
+@class NABSwiftFixtures_Mood;
 
 /// Adapter for the Swift type `NABSwiftFixtures.Counter`.
 @interface NABSwiftFixtures_Counter : NSObject
@@ -18,6 +20,32 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)isAbove:(NABSwiftFixtures_Temperature *)threshold;
 + (NABSwiftFixtures_Counter *)make;
 @property (class, nonatomic, readonly) NSInteger instances;
+- (void)laterWithCompletion:(void (^)(NSInteger))completion;
+- (NSArray<NSNumber *> *)values;
+- (NSDictionary<NSString *, NSNumber *> *)tags;
+- (NSArray<NABSwiftFixtures_Counter *> *)neighbors;
+- (NSString *)names:(NSArray<NSString *> *)list;
+- (BOOL)checkLimit:(NSInteger)limit error:(NSError **)error;
+- (NABSwiftFixtures_Counter * _Nullable)duplicateNamed:(NSString *)name error:(NSError **)error;
+- (nullable instancetype)initWithValidating:(NSInteger)start error:(NSError **)error;
+- (void)waitWithCompletion:(void (^)(void))completion;
+- (void)fetchId:(NSInteger)id completion:(void (^)(NSString * _Nullable, NSError * _Nullable))completion;
++ (void)totalOf:(NSArray<NABSwiftFixtures_Counter *> *)counters completion:(void (^)(NSInteger))completion;
+@property (nonatomic, strong) NSString *mood;
+- (NSInteger)level;
+- (NSString *)describeLevel:(NSInteger)level;
+@end
+
+/// Raw values of the cases of the Swift enum `NABSwiftFixtures.Level`.
+@interface NABSwiftFixtures_Level : NSObject
+@property (class, nonatomic, readonly) NSInteger low;
+@property (class, nonatomic, readonly) NSInteger high;
+@end
+
+/// Raw values of the cases of the Swift enum `NABSwiftFixtures.Mood`.
+@interface NABSwiftFixtures_Mood : NSObject
+@property (class, nonatomic, readonly) NSString *happy;
+@property (class, nonatomic, readonly) NSString *sad;
 @end
 
 /// Adapter for the Swift type `NABSwiftFixtures.Temperature`.

@@ -37,6 +37,44 @@ public final class Counter {
     public func identity<T>(_ x: T) -> T { x }
     public func later() async -> Int { value }
     public func values() -> [Int] { [value] }
+    public func count() throws -> Int { value }
+
+    // Collections, errors, async and enums (bridged by the adapters):
+    public func tags() -> [String: Int] { [label: value] }
+    public func neighbors() -> [Counter] { [Counter(start: value - 1), Counter(start: value + 1)] }
+    public func names(_ list: [String]) -> String { list.joined(separator: ",") }
+    public func check(limit: Int) throws {
+        if value > limit { throw CounterError.tooLarge(value) }
+    }
+    public func duplicate(named name: String) throws -> Counter {
+        if name.isEmpty { throw CounterError.emptyName }
+        return Counter(start: value, label: name)
+    }
+    public init(validating start: Int) throws {
+        if start < 0 { throw CounterError.tooLarge(start) }
+        value = start
+        label = "validated"
+    }
+    public func wait() async { }
+    public func fetch(id: Int) async throws -> String {
+        if id < 0 { throw CounterError.emptyName }
+        return "\(label)#\(id)"
+    }
+    public static func total(of counters: [Counter]) async -> Int { counters.reduce(0) { $0 + $1.value } }
+    public var mood: Mood = .happy
+    public func level() -> Level { value > 10 ? .high : .low }
+    public func describe(level: Level) -> String { "level \(level.rawValue)" }
+}
+
+/// Errors thrown by `Counter`.
+public enum CounterError: Error {
+    case tooLarge(Int)
+    case emptyName
+}
+
+/// An integer-backed enum.
+public enum Level: Int {
+    case low = 1, high = 5
 }
 
 /// A string-backed enum.
