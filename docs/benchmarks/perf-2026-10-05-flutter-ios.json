@@ -1,0 +1,47 @@
+{
+  "date": "2026-10-05",
+  "target": "flutter-ios",
+  "mode": "debug (JIT): Flutter supports profile/release only on physical iOS devices",
+  "device": "iPhone 17 simulator, iOS 26.4, on an Apple-silicon Mac",
+  "flutter": "3.41.9",
+  "objective_c": "9.5.0",
+  "harness": "examples/flutter/ios_slice/integration_test/bench_test.dart",
+  "runs": [
+    {
+      "msgsend_instance_getter_int_ns": 34.075,
+      "msgsend_class_getter_object_ns": 179.28,
+      "nsstring_roundtrip_ns": 1072.45,
+      "struct_by_value_roundtrip_ns": 114.54,
+      "methodchannel_noop_us": 25.9758,
+      "methodchannel_view_tag_us": 20.4054,
+      "methodchannel_string_roundtrip_us": 19.63
+    },
+    {
+      "msgsend_instance_getter_int_ns": 42.34,
+      "msgsend_class_getter_object_ns": 197.1,
+      "nsstring_roundtrip_ns": 1259.55,
+      "struct_by_value_roundtrip_ns": 117.36,
+      "methodchannel_noop_us": 24.6268,
+      "methodchannel_view_tag_us": 19.2166,
+      "methodchannel_string_roundtrip_us": 19.397
+    },
+    {
+      "msgsend_instance_getter_int_ns": 34.445,
+      "msgsend_class_getter_object_ns": 201.8,
+      "nsstring_roundtrip_ns": 1077.6,
+      "struct_by_value_roundtrip_ns": 117.5,
+      "methodchannel_noop_us": 26.1476,
+      "methodchannel_view_tag_us": 20.8812,
+      "methodchannel_string_roundtrip_us": 19.7438
+    }
+  ],
+  "median_of_runs": {
+    "msgsend_instance_getter_int_ns": 34.4,
+    "msgsend_class_getter_object_ns": 197.1,
+    "nsstring_roundtrip_ns": 1077.6,
+    "struct_by_value_roundtrip_ns": 117.4,
+    "methodchannel_noop_us": 26.0,
+    "methodchannel_view_tag_us": 20.4,
+    "methodchannel_string_roundtrip_us": 19.6
+  }
+}

@@ -20,6 +20,7 @@ import {
   nativeLog,
   type CGRect,
 } from '../native-api-bindings/ios';
+import { benchmarks } from './bench';
 import type { TestResult } from './testResult';
 
 function expectEqual<T>(actual: T, expected: T, what = 'value'): void {
@@ -277,6 +278,11 @@ export async function selfTests(
       report(`NAB_TEST FAIL ${name}: ${msg}`);
       onResult({ name, ok: false, error: msg });
     }
+  }
+  try {
+    report(`NAB_TEST BENCH ${JSON.stringify(await benchmarks())}`);
+  } catch (e) {
+    report(`NAB_TEST BENCH failed: ${String(e)}`);
   }
   report(`NAB_TEST DONE pass=${pass} fail=${fail}`);
 }

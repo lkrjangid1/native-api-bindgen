@@ -1,0 +1,34 @@
+{
+  "date": "2026-10-05",
+  "target": "react-native-android",
+  "mode": "release (Hermes bytecode)",
+  "device": "Android emulator, API 37, arm64-v8a (Pixel_7 AVD) on an Apple-silicon Mac",
+  "react_native": "0.87.1",
+  "harness": "examples/react-native/slice/src/bench.ts (tools/run_rn_device_tests.sh)",
+  "runs": [
+    {
+      "jsi_jni_instance_call_int_ns": 671,
+      "jsi_jni_static_call_object_ns": 4525,
+      "jsi_jni_string_return_ns": 1581,
+      "promise_variant_us": 537
+    },
+    {
+      "jsi_jni_instance_call_int_ns": 1642,
+      "jsi_jni_static_call_object_ns": 7413,
+      "jsi_jni_string_return_ns": 2079,
+      "promise_variant_us": 424
+    },
+    {
+      "jsi_jni_instance_call_int_ns": 1499,
+      "jsi_jni_static_call_object_ns": 4035,
+      "jsi_jni_string_return_ns": 1882,
+      "promise_variant_us": 396
+    }
+  ],
+  "median_of_runs": {
+    "jsi_jni_instance_call_int_ns": 1499,
+    "jsi_jni_static_call_object_ns": 4525,
+    "jsi_jni_string_return_ns": 1882,
+    "promise_variant_us": 424
+  }
+}

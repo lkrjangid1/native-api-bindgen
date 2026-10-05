@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
+
 // Builds build/libs/kfixtures.jar. Run (offline when the plugin is cached):
 //   <gradle> -p fixtures/kotlin/basic jar --offline
 plugins {
@@ -6,6 +8,11 @@ plugins {
 
 kotlin {
     jvmToolchain(17)
+    compilerOptions {
+        // Readable by apps built with older Kotlin compilers (metadata 2.0).
+        languageVersion.set(KotlinVersion.KOTLIN_2_0)
+        apiVersion.set(KotlinVersion.KOTLIN_2_0)
+    }
 }
 
 dependencies {

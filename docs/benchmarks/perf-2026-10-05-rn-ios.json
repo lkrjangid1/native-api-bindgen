@@ -1,0 +1,42 @@
+{
+  "date": "2026-10-05",
+  "target": "react-native-ios",
+  "mode": "release (Hermes bytecode)",
+  "device": "iPhone 17 simulator, iOS 26.4, on an Apple-silicon Mac",
+  "react_native": "0.87.1",
+  "harness": "examples/react-native/slice/src/bench.ts (tools/run_rn_ios_tests.sh)",
+  "runs": [
+    {
+      "jsi_objc_getter_int_ns": 1139,
+      "jsi_objc_class_getter_object_ns": 2341,
+      "jsi_objc_string_return_ns": 904,
+      "jsi_objc_uikit_getter_main_thread_ns": 9977,
+      "jsi_objc_uikit_struct_roundtrip_ns": 21936,
+      "promise_variant_us": 14
+    },
+    {
+      "jsi_objc_getter_int_ns": 1197,
+      "jsi_objc_class_getter_object_ns": 2266,
+      "jsi_objc_string_return_ns": 903,
+      "jsi_objc_uikit_getter_main_thread_ns": 10047,
+      "jsi_objc_uikit_struct_roundtrip_ns": 20583,
+      "promise_variant_us": 10
+    },
+    {
+      "jsi_objc_getter_int_ns": 1138,
+      "jsi_objc_class_getter_object_ns": 2326,
+      "jsi_objc_string_return_ns": 918,
+      "jsi_objc_uikit_getter_main_thread_ns": 9732,
+      "jsi_objc_uikit_struct_roundtrip_ns": 20684,
+      "promise_variant_us": 11
+    }
+  ],
+  "median_of_runs": {
+    "jsi_objc_getter_int_ns": 1139,
+    "jsi_objc_class_getter_object_ns": 2326,
+    "jsi_objc_string_return_ns": 904,
+    "jsi_objc_uikit_getter_main_thread_ns": 9977,
+    "jsi_objc_uikit_struct_roundtrip_ns": 20684,
+    "promise_variant_us": 11
+  }
+}

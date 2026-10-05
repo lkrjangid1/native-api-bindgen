@@ -1,0 +1,55 @@
+{
+  "date": "2026-10-05",
+  "target": "flutter-android",
+  "mode": "profile (flutter drive --profile)",
+  "device": "Android emulator, API 37, arm64-v8a (Pixel_7 AVD) on an Apple-silicon Mac",
+  "flutter": "3.41.9",
+  "jni": "1.0.3",
+  "harness": "examples/flutter/android_slice/integration_test/bench_test.dart",
+  "runs": [
+    {
+      "jni_instance_call_int_ns": 1237.22,
+      "jni_static_call_object_ns": 4055.62,
+      "jni_string_roundtrip_ns": 12504.4,
+      "methodchannel_noop_us": 246.0618,
+      "methodchannel_bundle_size_us": 248.8162,
+      "methodchannel_string_roundtrip_us": 294.1998,
+      "callback_post_to_dart_async_median_us": 29160.0,
+      "callback_post_to_dart_sync_median_us": 24865.0,
+      "callback_sync_dispatch_ns": 129944.25
+    },
+    {
+      "jni_instance_call_int_ns": 998.76,
+      "jni_static_call_object_ns": 2820.24,
+      "jni_string_roundtrip_ns": 14016.9,
+      "methodchannel_noop_us": 274.0442,
+      "methodchannel_bundle_size_us": 278.1526,
+      "methodchannel_string_roundtrip_us": 273.4712,
+      "callback_post_to_dart_async_median_us": 31195.0,
+      "callback_post_to_dart_sync_median_us": 30948.0,
+      "callback_sync_dispatch_ns": 133715.45
+    },
+    {
+      "jni_instance_call_int_ns": 730.09,
+      "jni_static_call_object_ns": 4127.38,
+      "jni_string_roundtrip_ns": 9736.55,
+      "methodchannel_noop_us": 267.2424,
+      "methodchannel_bundle_size_us": 270.6546,
+      "methodchannel_string_roundtrip_us": 279.4698,
+      "callback_post_to_dart_async_median_us": 29074.0,
+      "callback_post_to_dart_sync_median_us": 27997.0,
+      "callback_sync_dispatch_ns": 130474.2
+    }
+  ],
+  "median_of_runs": {
+    "jni_instance_call_int_ns": 998.8,
+    "jni_static_call_object_ns": 4055.6,
+    "jni_string_roundtrip_ns": 12504.4,
+    "methodchannel_noop_us": 267.2,
+    "methodchannel_bundle_size_us": 270.7,
+    "methodchannel_string_roundtrip_us": 279.5,
+    "callback_post_to_dart_async_median_us": 29160.0,
+    "callback_post_to_dart_sync_median_us": 27997.0,
+    "callback_sync_dispatch_ns": 130474.2
+  }
+}

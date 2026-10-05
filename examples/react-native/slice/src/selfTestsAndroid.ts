@@ -19,6 +19,7 @@ import {
   isNativeJavaError,
 } from '../native-api-bindings';
 
+import { benchmarks } from './bench';
 import type { TestResult } from './testResult';
 
 function expectEqual<T>(actual: T, expected: T, what = 'value'): void {
@@ -298,6 +299,11 @@ export async function selfTests(
       console.log(`NAB_TEST FAIL ${name}: ${msg}`);
       onResult({ name, ok: false, error: msg });
     }
+  }
+  try {
+    console.log(`NAB_TEST BENCH ${JSON.stringify(await benchmarks())}`);
+  } catch (e) {
+    console.log(`NAB_TEST BENCH failed: ${String(e)}`);
   }
   console.log(`NAB_TEST DONE pass=${pass} fail=${fail}`);
 }
