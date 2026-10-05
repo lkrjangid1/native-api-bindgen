@@ -117,7 +117,10 @@ void main() {
         _type(
           'a.Intent',
           superClass: const DeclaredTypeRef('a.Object'),
-          av: const Availability(introduced: 1, deprecated: 2),
+          av: const Availability(
+            introduced: ApiVersion(1),
+            deprecated: ApiVersion(2),
+          ),
           methods: [
             _m('a.Intent', 'getData', const DeclaredTypeRef('a.Uri2')),
             _m(

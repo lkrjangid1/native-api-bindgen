@@ -30,7 +30,7 @@ ApiModule _sample() {
         ),
         modifiers: {Modifier.public},
         superClass: const DeclaredTypeRef('java.lang.Object'),
-        availability: const Availability(introduced: 1),
+        availability: const Availability(introduced: ApiVersion(1)),
         methods: [
           ApiMethod(
             id: SymbolIds.method(intent, 'setData', [_uri]),
@@ -45,7 +45,7 @@ ApiModule _sample() {
             ],
             modifiers: {Modifier.public},
             nativeDescriptor: '(Landroid/net/Uri;)Landroid/content/Intent;',
-            availability: const Availability(introduced: 1),
+            availability: const Availability(introduced: ApiVersion(1)),
           ),
           ApiMethod(
             id: SymbolIds.method(intent, SymbolIds.constructorName, const []),
@@ -200,6 +200,19 @@ void main() {
         messages.any((s) => s.startsWith('Member ID is not prefixed')),
         isTrue,
       );
+    });
+  });
+
+  group('versions', () {
+    test('parse, compare, print', () {
+      expect(ApiVersion.parse('36.1') > ApiVersion.parse('36'), isTrue);
+      expect(ApiVersion.parse('37.0'), const ApiVersion(37));
+      expect('${ApiVersion.parse('36.1')}', '36.1');
+      expect(() => ApiVersion.parse('x'), throwsFormatException);
+      const a = Availability(introduced: ApiVersion(36, 1));
+      expect(a.isAvailableAt(const ApiVersion(36)), isFalse);
+      expect(a.isAvailableAt(const ApiVersion(36, 1)), isTrue);
+      expect(Availability.fromJson(a.toJson()), a);
     });
   });
 

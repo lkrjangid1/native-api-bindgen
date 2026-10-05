@@ -96,46 +96,114 @@ enum AnnotationClassification {
   unsupported,
 }
 
+/// A platform version: Android API level (`36`, `36.1`) or OS version.
+final class ApiVersion implements Comparable<ApiVersion> {
+  /// Creates a version.
+  const ApiVersion(this.major, [this.minor = 0])
+    : assert(major >= 0 && minor >= 0);
+
+  /// Parses `36`, `36.1`, `37.0`. Throws [FormatException] otherwise.
+  factory ApiVersion.parse(String text) {
+    final m = RegExp(r'^(\d{1,6})(?:\.(\d{1,6}))?$').firstMatch(text.trim());
+    if (m == null) throw FormatException('Invalid version "$text"');
+    return ApiVersion(int.parse(m[1]!), m[2] == null ? 0 : int.parse(m[2]!));
+  }
+
+  /// Parses or returns null.
+  static ApiVersion? tryParse(String? text) {
+    if (text == null) return null;
+    try {
+      return ApiVersion.parse(text);
+    } on FormatException {
+      return null;
+    }
+  }
+
+  /// Major version (Android `SDK_INT`).
+  final int major;
+
+  /// Minor version (Android minor SDK release), 0 if none.
+  final int minor;
+
+  @override
+  int compareTo(ApiVersion o) =>
+      major != o.major ? major.compareTo(o.major) : minor.compareTo(o.minor);
+
+  /// `<=`.
+  bool operator <=(ApiVersion o) => compareTo(o) <= 0;
+
+  /// `<`.
+  bool operator <(ApiVersion o) => compareTo(o) < 0;
+
+  /// `>`.
+  bool operator >(ApiVersion o) => compareTo(o) > 0;
+
+  @override
+  bool operator ==(Object other) =>
+      other is ApiVersion && other.major == major && other.minor == minor;
+
+  @override
+  int get hashCode => Object.hash(major, minor);
+
+  @override
+  String toString() => minor == 0 ? '$major' : '$major.$minor';
+}
+
 /// Lifecycle versions of a symbol on its platform.
-///
-/// Android uses API levels. Apple support will add per-OS version strings.
 final class Availability {
   /// Creates availability metadata.
-  const Availability({this.introduced, this.deprecated, this.removed});
+  const Availability({
+    this.introduced,
+    this.deprecated,
+    this.removed,
+    this.sdkExtensions,
+  });
 
   /// Decodes from JSON.
-  factory Availability.fromJson(Map<String, Object?> json) => Availability(
-    introduced: json.intOrNull('introduced'),
-    deprecated: json.intOrNull('deprecated'),
-    removed: json.intOrNull('removed'),
-  );
+  factory Availability.fromJson(Map<String, Object?> json) {
+    ApiVersion? v(String k) {
+      final s = json.strOrNull(k);
+      return s == null ? null : ApiVersion.parse(s);
+    }
+
+    return Availability(
+      introduced: v('introduced'),
+      deprecated: v('deprecated'),
+      removed: v('removed'),
+      sdkExtensions: json.strOrNull('sdkExtensions'),
+    );
+  }
 
   /// Unknown availability.
   static const unknown = Availability();
 
-  /// Version (API level) the symbol was introduced in.
-  final int? introduced;
+  /// Version the symbol was introduced in.
+  final ApiVersion? introduced;
 
   /// Version the symbol was deprecated in.
-  final int? deprecated;
+  final ApiVersion? deprecated;
 
   /// Version the symbol was removed in.
-  final int? removed;
+  final ApiVersion? removed;
+
+  /// Raw SDK-extension availability (`api-versions.xml` `sdks` attribute).
+  final String? sdkExtensions;
 
   /// Whether the symbol is deprecated at or before [version].
-  bool isDeprecatedAt(int version) =>
+  bool isDeprecatedAt(ApiVersion version) =>
       deprecated != null && deprecated! <= version;
 
   /// Whether the symbol exists at [version].
-  bool isAvailableAt(int version) =>
+  bool isAvailableAt(ApiVersion version) =>
       (introduced == null || introduced! <= version) &&
       (removed == null || removed! > version);
 
-  /// JSON form.
+  /// JSON form (versions as strings so `36.1` is exact).
   Map<String, Object?> toJson() => {
-    if (introduced != null) 'introduced': introduced,
-    if (deprecated != null) 'deprecated': deprecated,
-    if (removed != null) 'removed': removed,
+    if (introduced != null) 'introduced': '$introduced',
+    if (deprecated != null) 'deprecated': '$deprecated',
+    if (removed != null) 'removed': '$removed',
+    if (sdkExtensions != null) 'sdkExtensions': sdkExtensions,
   };
 
   @override
@@ -143,10 +211,12 @@ final class Availability {
       other is Availability &&
       other.introduced == introduced &&
       other.deprecated == deprecated &&
-      other.removed == removed;
+      other.removed == removed &&
+      other.sdkExtensions == sdkExtensions;
 
   @override
-  int get hashCode => Object.hash(introduced, deprecated, removed);
+  int get hashCode =>
+      Object.hash(introduced, deprecated, removed, sdkExtensions);
 
   @override
   String toString() =>
