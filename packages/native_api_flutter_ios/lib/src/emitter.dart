@@ -34,38 +34,6 @@ final class DartObjCOptions {
   final ApiVersion minIos;
 }
 
-/// One Dart-visible instance or static member of a type.
-final class _Member {
-  _Member(
-    this.key,
-    this.owner, {
-    this.method,
-    this.property,
-    required this.isStatic,
-  });
-
-  /// `-sel` / `+sel` for methods, `P-name` / `P+name` for properties.
-  final String key;
-  final ApiType owner;
-  final ApiMethod? method;
-  final ApiProperty? property;
-  final bool isStatic;
-}
-
-final class _Names {
-  /// Instance members visible (declared + inherited) by key.
-  final visible = <String, _Member>{};
-
-  /// key -> Dart name (instance members, consistent through inheritance).
-  final keyToName = <String, String>{};
-
-  /// Declared members of this type with their Dart names.
-  final declared = <(_Member, String)>[];
-
-  /// Inherited names that conflict between supertypes: name -> provider.
-  final conflicts = <String, _Member>{};
-}
-
 /// Emits Dart bindings over `package:objective_c` from Apple IR (TRD §28).
 ///
 /// Output: `apple/<module>.dart` per framework, `apple/_msgsend.dart` with one
@@ -94,7 +62,19 @@ final class DartObjCEmitter {
   final _bindings = <BindingMapEntry>[];
   final _diagnostics = <Diagnostic>[];
   final _trampolines = SplayTreeMap<String, String>();
-  final _namesCache = <String, _Names>{};
+  late final _resolver = ObjCMemberResolver(
+    _all,
+    escape: Identifiers.dartMember,
+    reserved: const {
+      r'object$',
+      'ref',
+      'isA',
+      'alloc',
+      r'new$',
+      'as',
+      'fromPointer',
+    },
+  );
   String _ns = '';
   String _file = '';
   final _usedNs = <String>{};
@@ -157,137 +137,6 @@ final class DartObjCEmitter {
   }
 
   static String _prefix(String ns) => 'apple_${ns.toLowerCase()}';
-
-  static String _firstKeyword(String selector) {
-    final i = selector.indexOf(':');
-    return i < 0 ? selector : selector.substring(0, i);
-  }
-
-  static List<String> _keywords(String selector) =>
-      selector.split(':').where((k) => k.isNotEmpty).toList();
-
-  List<ApiType> _directSupers(ApiType t) => [
-    for (final s in [?t.superClass, ...t.interfaces])
-      ?_all[(s as DeclaredTypeRef).name],
-  ];
-
-  Set<String> _accessorIds(ApiType t) => {
-    for (final p in t.properties) ...[p.getterId, ?p.setterId],
-  };
-
-  _Names _names(ApiType t) {
-    final cached = _namesCache[t.id];
-    if (cached != null) return cached;
-    final r = _Names();
-    final providers = <String, Set<String>>{}; // name -> super ids
-    final firstProvider = <String, _Member>{};
-    for (final s in _directSupers(t)) {
-      final sn = _names(s);
-      for (final e in sn.visible.entries) {
-        r.visible.putIfAbsent(e.key, () => e.value);
-        final name = sn.keyToName[e.key]!;
-        r.keyToName.putIfAbsent(e.key, () => name);
-        (providers[name] ??= {}).add(s.id);
-        firstProvider.putIfAbsent(name, () => e.value);
-      }
-    }
-    final inheritedNames = <String, String>{}; // name -> key
-    r.keyToName.forEach((k, n) => inheritedNames.putIfAbsent(n, () => k));
-    final taken = <String>{
-      ...inheritedNames.keys,
-      'object\$',
-      'ref',
-      'isA',
-      'alloc',
-      'new\$',
-      'as',
-      'fromPointer',
-    };
-
-    String assign(String key, String base, List<String> keywords) {
-      final inherited = r.keyToName[key];
-      if (inherited != null) return inherited; // override keeps the name
-      var name = Identifiers.dartMember(base);
-      if (!taken.add(name)) {
-        name = Identifiers.dartMember([base, ...keywords.skip(1)].join(r'$'));
-        while (!taken.add(name)) {
-          name = '$name\$';
-        }
-      }
-      return name;
-    }
-
-    final accessors = _accessorIds(t);
-    final declaredRaw = <_Member>[
-      for (final p
-          in t.properties.toList()..sort((a, b) => a.name.compareTo(b.name)))
-        if (_propertySupported(t, p))
-          _Member(
-            _propKey(p),
-            t,
-            property: p,
-            isStatic: p.getterId.contains('#+'),
-          ),
-      for (final m in t.methods.toList()..sort((a, b) => a.id.compareTo(b.id)))
-        if (m.isGeneratable && !accessors.contains(m.id))
-          _Member(
-            '${m.isStatic ? '+' : '-'}${m.name}',
-            t,
-            method: m,
-            isStatic: m.isStatic,
-          ),
-    ];
-    // Categories can redeclare a member: keep the first declaration per key.
-    final seenKeys = <String>{};
-    final declared = [
-      for (final m in declaredRaw)
-        if (seenKeys.add(m.key)) m,
-    ];
-    for (final m in declared.where((m) => !m.isStatic)) {
-      final base = m.property?.name ?? _firstKeyword(m.method!.name);
-      final name = assign(
-        m.key,
-        base,
-        m.method == null ? const [] : _keywords(m.method!.name),
-      );
-      r.keyToName[m.key] = name;
-      r.visible[m.key] = m;
-      r.declared.add((m, name));
-    }
-    for (final m in declared.where((m) => m.isStatic)) {
-      final base = m.property?.name ?? _firstKeyword(m.method!.name);
-      var name = Identifiers.dartMember(base);
-      if (!taken.add(name)) {
-        name = Identifiers.dartMember(
-          [
-            base,
-            ...m.method == null
-                ? const <String>[]
-                : _keywords(m.method!.name).skip(1),
-          ].join(r'$'),
-        );
-        while (!taken.add(name)) {
-          name = '$name\$';
-        }
-      }
-      r.declared.add((m, name));
-    }
-    final declaredNames = {for (final (_, n) in r.declared) n};
-    providers.forEach((name, from) {
-      if (from.length > 1 && !declaredNames.contains(name)) {
-        r.conflicts[name] = firstProvider[name]!;
-      }
-    });
-    return _namesCache[t.id] = r;
-  }
-
-  static String _propKey(ApiProperty p) =>
-      'P${p.getterId.contains('#+') ? '+' : '-'}${p.name}';
-
-  bool _propertySupported(ApiType t, ApiProperty p) {
-    final getter = t.methods.where((m) => m.id == p.getterId).firstOrNull;
-    return getter != null && getter.isGeneratable;
-  }
 
   // ------------------------------------------------------------- library
 
@@ -459,10 +308,10 @@ final class DartObjCEmitter {
 
   void _emitObjCType(StringBuffer b, ApiType t) {
     final n = _typeName(t);
-    final names = _names(t);
+    final names = _resolver.names(t);
     final supers = <String>[
       'objc.ObjCObject',
-      for (final s in _directSupers(t)) _ref(s.id),
+      for (final s in _resolver.directSupers(t)) _ref(s.id),
     ];
     _docLines(
       b,
@@ -532,7 +381,7 @@ final class DartObjCEmitter {
   void _emitMember(
     StringBuffer b,
     ApiType t,
-    _Member m,
+    ObjCMember m,
     String name, {
     bool redeclared = false,
   }) {
@@ -839,7 +688,7 @@ final class DartObjCEmitter {
     String name, {
     bool redeclared = false,
   }) {
-    final keywords = _keywords(m.name);
+    final keywords = objcKeywords(m.name);
     final params = <String>[];
     final named = <String>[];
     final args = <(String, TypeRef)>[];
@@ -891,7 +740,7 @@ final class DartObjCEmitter {
       m,
       '  ',
       objc: objcSig,
-      generatedAs: name == _firstKeyword(m.name) ? null : name,
+      generatedAs: name == objcFirstKeyword(m.name) ? null : name,
     );
     b.writeln('  ${m.isStatic ? 'static ' : ''}$ret $name($sigParams) {');
     b.write(_guard(m, '${t.name}.${m.name}'));
@@ -940,7 +789,7 @@ final class DartObjCEmitter {
   void _emitProperty(
     StringBuffer b,
     ApiType t,
-    _Member m,
+    ObjCMember m,
     String name, {
     bool redeclared = false,
   }) {
