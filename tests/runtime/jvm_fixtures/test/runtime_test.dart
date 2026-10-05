@@ -85,6 +85,19 @@ void main() {
       expect(first!.toDartString(), 'a');
     });
 
+    test('bean properties delegate to native getters/setters', () {
+      final b = BeanClass();
+      expect(b.title!.toDartString(), 'untitled');
+      b.title = js('Report');
+      expect(b.getTitle()!.toDartString(), 'Report');
+      expect(b.enabled, isFalse);
+      b.enabled = true;
+      expect(b.isEnabled(), isTrue);
+      b.increment();
+      expect(b.count, 1);
+      expect(b.URL!.toDartString(), 'https://example.com/1');
+    });
+
     test('multiple supertypes: inherited and redeclared members work', () {
       final d = DualImpl.create(3)!;
       expect(

@@ -34,6 +34,17 @@ void main() {
     expect(intent.setAction(js('a.b.C')).getAction()!.toDartString(), 'a.b.C');
   });
 
+  test('Bean properties delegate to the native getters', () {
+    final uri = Uri.parse(js('https://example.com/p?q=1'))!;
+    expect(uri.scheme!.toDartString(), 'https');
+    expect(uri.host!.toDartString(), 'example.com');
+    expect(uri.scheme!.toDartString(), uri.getScheme()!.toDartString());
+    final intent = Intent();
+    expect(intent.data, isNull);
+    intent.setData(uri);
+    expect(intent.data.toString(), 'https://example.com/p?q=1');
+  });
+
   test('Intent.putExtra overloads reach distinct Java methods', () {
     final intent = Intent();
     intent.putExtra(js('i'), 7); // primary overload: putExtra(String, int)

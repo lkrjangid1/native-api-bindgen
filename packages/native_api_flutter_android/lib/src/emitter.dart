@@ -204,6 +204,54 @@ final class DartJniEmitter {
       ?_types[(s as DeclaredTypeRef).name],
   ];
 
+  final _namespaceTypeNames = <String, Set<String>>{};
+
+  /// Unqualified Dart type names declared in [namespace]'s library.
+  Set<String> _typeNamesIn(String namespace) =>
+      _namespaceTypeNames[namespace] ??= {
+        for (final x in _types.values)
+          if (x.namespace == namespace) ...[dartName(x), '\$${dartName(x)}'],
+      };
+
+  /// `dart:core` types that generated signatures may mention unqualified.
+  static const _coreTypeNames = {
+    'int',
+    'double',
+    'num',
+    'bool',
+    'String',
+    'Object',
+    'dynamic',
+    'void',
+    'Null',
+    'Never',
+    'Function',
+    'Future',
+    'Stream',
+    'List',
+    'Map',
+    'Set',
+    'Iterable',
+    'Iterator',
+    'Type',
+    'Record',
+    'Enum',
+    'Symbol',
+    'Uri',
+    'Duration',
+    'DateTime',
+    'Pattern',
+    'RegExp',
+    'Match',
+    'Comparable',
+    'Error',
+    'Exception',
+    'StackTrace',
+    'BigInt',
+    'Sink',
+    'Invocation',
+  };
+
   _TypeNames _names(ApiType t) {
     final cached = _namesCache[t.id];
     if (cached != null) return cached;
@@ -247,6 +295,25 @@ final class DartJniEmitter {
       fieldNames[f.id] = n;
       if (!f.isStatic) instanceMembers[n] = {f.id};
     }
+    // Bean properties (getX/isX + setX) alongside the accessor methods; only
+    // where the name is free or inherited from another bean property.
+    final properties = <String, BeanProperty>{};
+    final taken = {...methodSet, ...fieldNames.values};
+    for (final bp in beanProperties(t)) {
+      final n = Identifiers.dartMember(bp.name);
+      // A getter named like a type would shadow that type in member
+      // signatures of this extension type.
+      if (taken.contains(n) ||
+          n == 'type' ||
+          _coreTypeNames.contains(n) ||
+          _typeNamesIn(t.namespace).contains(n)) {
+        continue;
+      }
+      final inh = inherited[n];
+      if (inh != null && inh.any((id) => !id.startsWith('P:'))) continue;
+      properties[n] = bp;
+      instanceMembers[n] = {'P:${bp.getter.id}'};
+    }
     // Static names must not collide with any visible instance member name.
     for (final m in declared.where((m) => m.isStatic)) {
       if (instanceMembers.containsKey(methodNames[m.id])) {
@@ -265,7 +332,8 @@ final class DartJniEmitter {
     for (final e in inherited.entries) {
       final declaredHere =
           declared.any((m) => methodNames[m.id] == e.key) ||
-          fieldNames.containsValue(e.key);
+          fieldNames.containsValue(e.key) ||
+          properties.containsKey(e.key);
       if (e.value.length > 1 && !declaredHere) {
         conflicts[e.key] = (e.value.toList()..sort()).first;
       }
@@ -275,6 +343,7 @@ final class DartJniEmitter {
       fieldNames,
       instanceMembers,
       conflicts,
+      properties,
     );
   }
 
@@ -338,8 +407,22 @@ final class DartJniEmitter {
       _emitMethod(b, ctx, m, names.methodNames[m.id]!);
     }
     for (final e
+        in names.properties.entries.toList()
+          ..sort((a, b) => a.key.compareTo(b.key))) {
+      _emitBeanProperty(b, ctx, e.key, e.value);
+    }
+    for (final e
         in names.conflicts.entries.toList()
           ..sort((a, b) => a.key.compareTo(b.key))) {
+      if (e.value.startsWith('P:')) {
+        final getter = module.nodeById(e.value.substring(2)) as ApiMethod;
+        final owner = _types[SymbolIds.ownerOf(getter.id)]!;
+        final bp = beanProperties(
+          owner,
+        ).firstWhere((x) => x.getter.id == getter.id);
+        _emitBeanProperty(b, ctx, e.key, bp, redeclared: true);
+        continue;
+      }
       final node = module.nodeById(e.value);
       if (node is ApiMethod) {
         _emitMethod(b, ctx, node, e.key, redeclared: true);
@@ -900,6 +983,65 @@ final class DartJniEmitter {
     );
   }
 
+  /// `T get x => getX();` and `set x(T value) => setX(value);` (TRD §60:
+  /// backed by the native getter/setter; the methods stay available).
+  void _emitBeanProperty(
+    StringBuffer b,
+    _MemberContext c,
+    String dart,
+    BeanProperty bp, {
+    bool redeclared = false,
+  }) {
+    final owner = _types[SymbolIds.ownerOf(bp.getter.id)] ?? c.type;
+    final ownerNames = _names(owner);
+    final scope = _scope(c, owner, bp.getter);
+    final tv = _typeVars(owner, bp.getter);
+    final g = bp.getter;
+    final gm = c.mapper.map(
+      g.returnType,
+      typeVariableBounds: tv,
+      typeVariables: scope,
+    );
+    final getterType = _apiType(g.returnType, gm);
+    final getterName = ownerNames.methodNames[g.id]!;
+    b.writeln();
+    b.writeln(
+      '  /// Java bean property `${bp.name}`: read-${bp.setter == null ? 'only' : 'write'}, backed by the native getter `${g.name}`${bp.setter == null ? '' : ' and setter `${bp.setter!.name}`'}.',
+    );
+    if (redeclared) {
+      b.writeln('  // Redeclared: inherited from more than one supertype.');
+    }
+    if (g.isDeprecated) {
+      b.writeln("  @Deprecated('${_deprecationText(g.availability)}')");
+    }
+    b.writeln('  $getterType get $dart => $getterName();');
+    final st = bp.setter;
+    if (st != null) {
+      final p = st.parameters.single;
+      final pm = c.mapper.map(
+        p.type,
+        typeVariableBounds: tv,
+        typeVariables: scope,
+      );
+      final setterType = _apiType(p.type, pm);
+      // Dart requires the getter type to be assignable to the setter type.
+      if (setterType == getterType || setterType == '$getterType?') {
+        if (st.isDeprecated) {
+          b.writeln("  @Deprecated('${_deprecationText(st.availability)}')");
+        }
+        b.writeln(
+          '  set $dart($setterType value) => ${ownerNames.methodNames[st.id]!}(value);',
+        );
+      }
+    }
+    _binding(
+      '${owner.id}#${bp.name}<property>',
+      '${c.name}.$dart',
+      c.file,
+      'bean property over ${g.name}${st == null ? '' : '/${st.name}'}',
+    );
+  }
+
   // -------------------------------------------------------------- callbacks
 
   List<(ApiMethod, String)> _callbackMethods(ApiType t) {
@@ -1261,7 +1403,11 @@ final class _TypeNames {
     this.fieldNames,
     this.instanceMembers,
     this.conflicts,
+    this.properties,
   );
+
+  /// Dart name -> bean property declared by this type.
+  final Map<String, BeanProperty> properties;
 
   final Map<String, String> methodNames;
   final Map<String, String> fieldNames;

@@ -19,6 +19,7 @@
 - Implementing Java interfaces in Dart (callbacks/listeners)
 - Java exceptions surfaced as `NativeJavaException`
 - Generics (Flutter): generated types and methods take Dart type parameters (`GenericClass<$T>`, `first<$E>(…)`), parameterized types keep their arguments (`JList<JString?>`), results are cast for free (every wrapper is a `JObject` at run time); supertypes stay raw. `java.util.List/Map/Set/Collection/Iterator` and boxed numbers map to `package:jni`'s wrappers when not generated. On android-36 this removed all 2,384 `E003` notes of the Flutter target.
+- Bean properties (Flutter and React Native): `getX()`/`isX()` plus a matching `void setX(T)` also generate a property `x` backed by the native getter/setter (`uri.scheme`, `intent.data`, `paint.underlineText = true`). The methods stay; a property is skipped when its name is already a member or a type name, and it is read-only when the setter's type differs from the getter's. android-36: 12,513 properties (Flutter), 11,886 (React Native).
 - Kotlin `suspend` functions (Flutter target): detected from the compiled JVM signature (trailing `kotlin.coroutines.Continuation<? super T>`), generated as `Future<T?>` over `package:jni`'s `PortContinuation`; boxed results are unboxed (`Int` → `int?`), `Unit` → `Future<void>`, Kotlin exceptions → `NativeJavaException`. The app needs `kotlinx-coroutines-android` at run time. React Native reports them as unsupported (`E004`).
 
 ## Not yet supported (reported with reason codes)

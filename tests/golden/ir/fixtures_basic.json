@@ -699,6 +699,259 @@
       "availability": {
         "introduced": "1"
       },
+      "id": "com.example.fixtures.BeanClass",
+      "kind": "classType",
+      "methods": [
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.BeanClass#<init>()",
+          "kind": "constructor",
+          "modifiers": [
+            "public"
+          ],
+          "name": "<init>",
+          "nativeDescriptor": "()V",
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.BeanClass#getCount()",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "getCount",
+          "nativeDescriptor": "()I",
+          "returnType": {
+            "kind": "primitive",
+            "name": "int"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.BeanClass#getLabel(int)",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "getLabel",
+          "nativeDescriptor": "(I)Ljava/lang/String;",
+          "parameters": [
+            {
+              "name": "index",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "primitive",
+                "name": "int"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "declared",
+            "name": "java.lang.String",
+            "nullability": "unknown"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.BeanClass#getTitle()",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "getTitle",
+          "nativeDescriptor": "()Ljava/lang/String;",
+          "returnType": {
+            "kind": "declared",
+            "name": "java.lang.String",
+            "nullability": "unknown"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.BeanClass#getURL()",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "getURL",
+          "nativeDescriptor": "()Ljava/lang/String;",
+          "returnType": {
+            "kind": "declared",
+            "name": "java.lang.String",
+            "nullability": "unknown"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.BeanClass#increment()",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "increment",
+          "nativeDescriptor": "()V",
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.BeanClass#isEnabled()",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "isEnabled",
+          "nativeDescriptor": "()Z",
+          "returnType": {
+            "kind": "primitive",
+            "name": "boolean"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.BeanClass#setCount(java.lang.String)",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "setCount",
+          "nativeDescriptor": "(Ljava/lang/String;)V",
+          "parameters": [
+            {
+              "name": "count",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "declared",
+                "name": "java.lang.String",
+                "nullability": "unknown"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.BeanClass#setEnabled(boolean)",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "setEnabled",
+          "nativeDescriptor": "(Z)V",
+          "parameters": [
+            {
+              "name": "enabled",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "primitive",
+                "name": "boolean"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "availability": {
+            "introduced": "1"
+          },
+          "id": "com.example.fixtures.BeanClass#setTitle(java.lang.String)",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "setTitle",
+          "nativeDescriptor": "(Ljava/lang/String;)V",
+          "parameters": [
+            {
+              "name": "title",
+              "nameSource": "LocalVariableTable",
+              "type": {
+                "kind": "declared",
+                "name": "java.lang.String",
+                "nullability": "unknown"
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        }
+      ],
+      "modifiers": [
+        "public"
+      ],
+      "name": "BeanClass",
+      "namespace": "com.example.fixtures",
+      "provenance": {
+        "artifactEntry": "com/example/fixtures/BeanClass.class",
+        "localArtifact": "fixtures",
+        "platform": "android",
+        "sdkVersion": "fixture",
+        "sourceKind": "fixture"
+      },
+      "superClass": {
+        "kind": "declared",
+        "name": "java.lang.Object",
+        "nullability": "unknown"
+      },
+      "support": "supported",
+      "visibility": "public"
+    },
+    {
+      "availability": {
+        "introduced": "1"
+      },
       "id": "com.example.fixtures.CallbackInterface",
       "kind": "interfaceType",
       "methods": [

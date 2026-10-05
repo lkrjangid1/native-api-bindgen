@@ -91,6 +91,19 @@ const tests: Array<[string, () => void | Promise<void>]> = [
   ],
 
   [
+    'Bean properties delegate to the native getters',
+    () => {
+      const uri = Uri.parse('https://example.com/p?q=1');
+      expectEqual(uri?.scheme, 'https', 'scheme');
+      expectEqual(uri?.host, 'example.com', 'host');
+      const intent = Intent.new();
+      expectEqual(intent.data, null, 'no data');
+      intent.setData(uri);
+      expectEqual(intent.data?.toString(), 'https://example.com/p?q=1', 'data');
+    },
+  ],
+
+  [
     'Intent.putExtra overloads reach distinct Java methods (incl. bigint long)',
     () => {
       const intent = Intent.new();

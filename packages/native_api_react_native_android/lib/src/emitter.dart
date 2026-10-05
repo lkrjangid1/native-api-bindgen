@@ -491,6 +491,9 @@ final class RnJsiEmitter {
         (k, v) => r.visibleFields.putIfAbsent(k, () => v),
       );
       sn.fieldToName.forEach((k, v) => r.fieldToName.putIfAbsent(k, () => v));
+      sn.visibleProperties.forEach(
+        (k, v) => r.visibleProperties.putIfAbsent(k, () => v),
+      );
     }
     final declared =
         t.methods
@@ -596,6 +599,25 @@ final class RnJsiEmitter {
       r.visibleFields[f.name] = (f, t);
       r.declaredFields[f.id] = name;
     }
+    // Bean properties: accessors over getX/isX + setX, only where the name
+    // is free (not a method, Promise variant, field or reserved name).
+    final memberNames = {
+      ...r.keyToName.values,
+      ...r.keyToAsync.values,
+      ...r.fieldToName.values,
+    };
+    // Own members (e.g. a public field) shadow inherited properties.
+    r.visibleProperties.removeWhere((k, _) => memberNames.contains(k));
+    for (final bp in beanProperties(t)) {
+      final name = bp.name;
+      if (memberNames.contains(name) ||
+          _instanceReserved.contains(name) ||
+          Identifiers.typescript(name) != name) {
+        continue;
+      }
+      r.visibleProperties[name] = (bp, t);
+      r.declaredProperties[name] = bp;
+    }
     return _namesCache[t.id] = r;
   }
 
@@ -655,6 +677,23 @@ final class RnJsiEmitter {
       b.writeln('  /** Inherited from `${owner.id}`: `${f.id}` */');
       b.writeln(
         '  ${f.isFinal ? 'readonly ' : ''}${names.fieldToName[e.key]}: ${_returnType(f.type, m)};',
+      );
+    }
+    for (final e
+        in names.visibleProperties.entries
+            .where((e) => !names.declaredProperties.containsKey(e.key))
+            .toList()
+          ..sort((a, b) => a.key.compareTo(b.key))) {
+      final (bp, owner) = e.value;
+      final m = _mapper.map(
+        bp.getter.returnType,
+        typeVariableBounds: _typeVars(owner, bp.getter),
+      );
+      b.writeln(
+        '  /** Inherited bean property of `${owner.id}` (`${bp.getter.name}`${bp.setter == null ? '' : '/`${bp.setter!.name}`'}) */',
+      );
+      b.writeln(
+        '  ${_beanSetterName(owner, bp, _names(owner)) == null ? 'readonly ' : ''}${e.key}: ${_returnType(bp.getter.returnType, m)};',
       );
     }
     b.writeln('}');
@@ -756,6 +795,12 @@ final class RnJsiEmitter {
       _emitMethod(b, t, t, m, names.declaredMethods[m.id]!, isStatic: false);
       final a = names.declaredAsync[m.id];
       if (a != null) _emitMethod(b, t, t, m, a, isStatic: false, async: true);
+    }
+    // Bean properties (backed by the native getter/setter methods above).
+    for (final e
+        in names.declaredProperties.entries.toList()
+          ..sort((a, b) => a.key.compareTo(b.key))) {
+      _emitBeanProperty(b, t, e.value, e.key, names);
     }
     // Inherited members whose name collides across supertypes are forwarded
     // explicitly (own properties win over prototype copies).
@@ -1016,6 +1061,59 @@ final class RnJsiEmitter {
         ),
       );
     }
+  }
+
+  /// The TS name of [bp]'s setter, or null when the property is read-only
+  /// here: no setter, or one whose parameter type differs from the getter's
+  /// (e.g. a nullable getter with a non-null setter).
+  String? _beanSetterName(ApiType owner, BeanProperty bp, _RnNames names) {
+    final s = bp.setter;
+    if (s == null) return null;
+    final vars = _typeVars(owner, bp.getter);
+    final g = bp.getter.returnType;
+    final p = s.parameters.single.type;
+    if (_paramType(g, _mapper.map(g, typeVariableBounds: vars)) !=
+        _paramType(p, _mapper.map(p, typeVariableBounds: vars))) {
+      return null;
+    }
+    return names.declaredMethods[s.id] ?? names.keyToName[_key(s)];
+  }
+
+  void _emitBeanProperty(
+    StringBuffer b,
+    ApiType t,
+    BeanProperty bp,
+    String name,
+    _RnNames names,
+  ) {
+    final getter = names.declaredMethods[bp.getter.id];
+    if (getter == null) return;
+    final m = _mapper.map(
+      bp.getter.returnType,
+      typeVariableBounds: _typeVars(t, bp.getter),
+    );
+    final setter = _beanSetterName(t, bp, names);
+    b.writeln(
+      '  /** Bean property backed by `${bp.getter.name}()`${setter == null ? '' : ' / `${bp.setter!.name}()`'}. */',
+    );
+    b.writeln('  get $name(): ${_returnType(bp.getter.returnType, m)} {');
+    b.writeln('    return this.$getter();');
+    b.writeln('  }');
+    if (setter != null) {
+      b.writeln('  set $name(value: ${_paramType(bp.getter.returnType, m)}) {');
+      b.writeln('    this.$setter(value);');
+      b.writeln('  }');
+    }
+    _bindings.add(
+      BindingMapEntry(
+        symbolId: '${t.id}#$name<property>',
+        generated: '${_tsName(t)}.$name',
+        file: _file,
+        generator: _generatorId,
+        runtimeAdapter:
+            'TS accessor -> ${bp.getter.name}/${bp.setter?.name ?? '-'}',
+      ),
+    );
   }
 
   bool _safeInt(String lit) {
@@ -1361,6 +1459,12 @@ final class _RnNames {
 
   /// Inherited keys re-declared in the class because of name conflicts.
   final forwarded = <String>{};
+
+  /// Visible bean properties by TS name (declared + inherited), with owner.
+  final visibleProperties = <String, (BeanProperty, ApiType)>{};
+
+  /// Bean properties declared (or re-declared) by this type, by TS name.
+  final declaredProperties = <String, BeanProperty>{};
 
   /// Declared method id -> name / async name; declared field id -> name.
   final declaredMethods = <String, String>{};

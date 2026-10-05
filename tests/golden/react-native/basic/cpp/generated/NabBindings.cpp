@@ -47,6 +47,19 @@ const MemberSpec k_com_example_fixtures_AsyncClass[] = {
     {"loadOnThread(java.lang.String,com.example.fixtures.CallbackInterface)V", "loadOnThread", "(Ljava/lang/String;Lcom/example/fixtures/CallbackInterface;)V", MemberKind::InstanceMethod},
 };
 
+const MemberSpec k_com_example_fixtures_BeanClass[] = {
+    {"<init>()V", "<init>", "()V", MemberKind::Constructor},
+    {"getCount()I", "getCount", "()I", MemberKind::InstanceMethod},
+    {"getLabel(int)Ljava/lang/String;", "getLabel", "(I)Ljava/lang/String;", MemberKind::InstanceMethod},
+    {"getTitle()Ljava/lang/String;", "getTitle", "()Ljava/lang/String;", MemberKind::InstanceMethod},
+    {"getURL()Ljava/lang/String;", "getURL", "()Ljava/lang/String;", MemberKind::InstanceMethod},
+    {"increment()V", "increment", "()V", MemberKind::InstanceMethod},
+    {"isEnabled()Z", "isEnabled", "()Z", MemberKind::InstanceMethod},
+    {"setCount(java.lang.String)V", "setCount", "(Ljava/lang/String;)V", MemberKind::InstanceMethod},
+    {"setEnabled(boolean)V", "setEnabled", "(Z)V", MemberKind::InstanceMethod},
+    {"setTitle(java.lang.String)V", "setTitle", "(Ljava/lang/String;)V", MemberKind::InstanceMethod},
+};
+
 const MemberSpec k_com_example_fixtures_CallbackInterface[] = {
     {"label()Ljava/lang/String;", "label", "()Ljava/lang/String;", MemberKind::InstanceMethod},
     {"noop()Lcom/example/fixtures/CallbackInterface;", "noop", "()Lcom/example/fixtures/CallbackInterface;", MemberKind::StaticMethod},
@@ -175,6 +188,7 @@ const ClassSpec kClasses[] = {
     {"com.example.fixtures.AnnotatedClass", "com/example/fixtures/AnnotatedClass", k_com_example_fixtures_AnnotatedClass, std::size(k_com_example_fixtures_AnnotatedClass)},
     {"com.example.fixtures.ApiLevelClass", "com/example/fixtures/ApiLevelClass", k_com_example_fixtures_ApiLevelClass, std::size(k_com_example_fixtures_ApiLevelClass)},
     {"com.example.fixtures.AsyncClass", "com/example/fixtures/AsyncClass", k_com_example_fixtures_AsyncClass, std::size(k_com_example_fixtures_AsyncClass)},
+    {"com.example.fixtures.BeanClass", "com/example/fixtures/BeanClass", k_com_example_fixtures_BeanClass, std::size(k_com_example_fixtures_BeanClass)},
     {"com.example.fixtures.CallbackInterface", "com/example/fixtures/CallbackInterface", k_com_example_fixtures_CallbackInterface, std::size(k_com_example_fixtures_CallbackInterface)},
     {"com.example.fixtures.Countable", "com/example/fixtures/Countable", k_com_example_fixtures_Countable, std::size(k_com_example_fixtures_Countable)},
     {"com.example.fixtures.DeprecatedClass", "com/example/fixtures/DeprecatedClass", k_com_example_fixtures_DeprecatedClass, std::size(k_com_example_fixtures_DeprecatedClass)},
@@ -199,7 +213,7 @@ const ClassSpec kClasses[] = {
 
 const ClassSpec* lookupClass(const std::string& key) {
   std::size_t lo = 0;
-  std::size_t hi = 21;
+  std::size_t hi = 22;
   while (lo < hi) {
     const std::size_t mid = (lo + hi) / 2;
     const int c = std::strcmp(kClasses[mid].key, key.c_str());

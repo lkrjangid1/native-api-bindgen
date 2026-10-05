@@ -2,6 +2,7 @@
 /// mapping, identifier escaping, overload naming and deterministic output.
 library;
 
+export 'src/bean_properties.dart';
 export 'src/identifiers.dart';
 export 'src/jvm_planner.dart';
 export 'src/kotlin.dart';

@@ -271,6 +271,133 @@ final class _$AsyncClass$Type extends jni$.JType<AsyncClass> {
   String get signature => r'Lcom/example/fixtures/AsyncClass;';
 }
 
+/// Native API: `com.example.fixtures.BeanClass` (class)
+///
+/// - Android API: 1+
+/// - Superclass: `java.lang.Object`
+extension type BeanClass._(jni$.JObject _$BeanClass) implements jni$.JObject {
+  static final _$class = jni$.JClass.forName(r'com/example/fixtures/BeanClass');
+
+  /// `package:jni` type descriptor for `com.example.fixtures.BeanClass`.
+  static const jni$.JType<BeanClass> type = _$BeanClass$Type();
+
+  static final _$c$ = _$class.constructorId(r'()V');
+  /// Native API: `com.example.fixtures.BeanClass#<init>()`
+  ///
+  /// - Android API: 1+
+  factory BeanClass() {
+    return rt$.guardJni(() => _$c$.call<BeanClass>(_$class, []));
+  }
+
+  static final _$m$getCount = _$class.instanceMethodId(r'getCount', r'()I');
+  /// Native API: `com.example.fixtures.BeanClass#getCount()`
+  ///
+  /// - Android API: 1+
+  int getCount() {
+    return rt$.guardJni(() => _$m$getCount.call(this, jni$.jint.type, []));
+  }
+
+  static final _$m$getLabel = _$class.instanceMethodId(r'getLabel', r'(I)Ljava/lang/String;');
+  /// Native API: `com.example.fixtures.BeanClass#getLabel(int)`
+  ///
+  /// - Android API: 1+
+  /// - Returns `java.lang.String`, nullability unknown (treated as nullable)
+  String? getLabel(int index) {
+    return rt$.guardJni(() => _$m$getLabel.callNullable(this, jni$.JString.type, [jni$.JValueInt(index)])?.toDartString(releaseOriginal: true));
+  }
+
+  static final _$m$getTitle = _$class.instanceMethodId(r'getTitle', r'()Ljava/lang/String;');
+  /// Native API: `com.example.fixtures.BeanClass#getTitle()`
+  ///
+  /// - Android API: 1+
+  /// - Returns `java.lang.String`, nullability unknown (treated as nullable)
+  String? getTitle() {
+    return rt$.guardJni(() => _$m$getTitle.callNullable(this, jni$.JString.type, [])?.toDartString(releaseOriginal: true));
+  }
+
+  static final _$m$getURL = _$class.instanceMethodId(r'getURL', r'()Ljava/lang/String;');
+  /// Native API: `com.example.fixtures.BeanClass#getURL()`
+  ///
+  /// - Android API: 1+
+  /// - Returns `java.lang.String`, nullability unknown (treated as nullable)
+  String? getURL() {
+    return rt$.guardJni(() => _$m$getURL.callNullable(this, jni$.JString.type, [])?.toDartString(releaseOriginal: true));
+  }
+
+  static final _$m$increment = _$class.instanceMethodId(r'increment', r'()V');
+  /// Native API: `com.example.fixtures.BeanClass#increment()`
+  ///
+  /// - Android API: 1+
+  void increment() {
+    rt$.guardJni(() => _$m$increment.call(this, jni$.jvoid.type, []));
+  }
+
+  static final _$m$isEnabled = _$class.instanceMethodId(r'isEnabled', r'()Z');
+  /// Native API: `com.example.fixtures.BeanClass#isEnabled()`
+  ///
+  /// - Android API: 1+
+  bool isEnabled() {
+    return rt$.guardJni(() => _$m$isEnabled.call(this, jni$.jboolean.type, []));
+  }
+
+  static final _$m$setCount = _$class.instanceMethodId(r'setCount', r'(Ljava/lang/String;)V');
+  /// Native API: `com.example.fixtures.BeanClass#setCount(java.lang.String)`
+  ///
+  /// - Android API: 1+
+  /// - `count`: `java.lang.String`, nullability unknown (treated as nullable)
+  void setCount(String? count) {
+    final _$count = count?.toJString();
+    try {
+      rt$.guardJni(() => _$m$setCount.call(this, jni$.jvoid.type, [_$count]));
+    } finally {
+      _$count?.release();
+    }
+  }
+
+  static final _$m$setEnabled = _$class.instanceMethodId(r'setEnabled', r'(Z)V');
+  /// Native API: `com.example.fixtures.BeanClass#setEnabled(boolean)`
+  ///
+  /// - Android API: 1+
+  void setEnabled(bool enabled) {
+    rt$.guardJni(() => _$m$setEnabled.call(this, jni$.jvoid.type, [enabled]));
+  }
+
+  static final _$m$setTitle = _$class.instanceMethodId(r'setTitle', r'(Ljava/lang/String;)V');
+  /// Native API: `com.example.fixtures.BeanClass#setTitle(java.lang.String)`
+  ///
+  /// - Android API: 1+
+  /// - `title`: `java.lang.String`, nullability unknown (treated as nullable)
+  void setTitle(String? title) {
+    final _$title = title?.toJString();
+    try {
+      rt$.guardJni(() => _$m$setTitle.call(this, jni$.jvoid.type, [_$title]));
+    } finally {
+      _$title?.release();
+    }
+  }
+
+  /// Java bean property `URL`: read-only, backed by the native getter `getURL`.
+  String? get URL => getURL();
+
+  /// Java bean property `count`: read-only, backed by the native getter `getCount`.
+  int get count => getCount();
+
+  /// Java bean property `enabled`: read-write, backed by the native getter `isEnabled` and setter `setEnabled`.
+  bool get enabled => isEnabled();
+  set enabled(bool value) => setEnabled(value);
+
+  /// Java bean property `title`: read-write, backed by the native getter `getTitle` and setter `setTitle`.
+  String? get title => getTitle();
+  set title(String? value) => setTitle(value);
+}
+
+final class _$BeanClass$Type extends jni$.JType<BeanClass> {
+  const _$BeanClass$Type();
+
+  @override
+  String get signature => r'Lcom/example/fixtures/BeanClass;';
+}
+
 /// Native API: `com.example.fixtures.CallbackInterface` (interface)
 ///
 /// - Android API: 1+

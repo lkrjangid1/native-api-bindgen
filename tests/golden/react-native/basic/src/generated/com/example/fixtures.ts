@@ -21,6 +21,8 @@ export type AnnotatedClass$Like = JavaObject & {readonly __brand_com_example_fix
 export type ApiLevelClass$Like = JavaObject & {readonly __brand_com_example_fixtures_ApiLevelClass: true};
 /** Any object that is a `com.example.fixtures.AsyncClass` (subclasses and implementations included). */
 export type AsyncClass$Like = JavaObject & {readonly __brand_com_example_fixtures_AsyncClass: true};
+/** Any object that is a `com.example.fixtures.BeanClass` (subclasses and implementations included). */
+export type BeanClass$Like = JavaObject & {readonly __brand_com_example_fixtures_BeanClass: true};
 /** Any object that is a `com.example.fixtures.CallbackInterface` (subclasses and implementations included). */
 export type CallbackInterface$Like = JavaObject & {readonly __brand_com_example_fixtures_CallbackInterface: true};
 /** Any object that is a `com.example.fixtures.Countable` (subclasses and implementations included). */
@@ -303,6 +305,148 @@ export class AsyncClass extends JavaObject {
   /** Promise variant of `com.example.fixtures.AsyncClass#loadOnThread(java.lang.String,com.example.fixtures.CallbackInterface)`: the JNI call runs on a background thread. */
   loadOnThreadAsync(key: string | null, callback: CallbackInterface$Like | null): Promise<void> {
     return (AsyncClass.$t()['loadOnThread(java.lang.String,com.example.fixtures.CallbackInterface)V'](true, this.$h, key, $rt.h(callback)) as Promise<unknown>).then(r => undefined);
+  }
+}
+
+/**
+ * Native API: `com.example.fixtures.BeanClass`
+ * - Android API: 1+
+ * - Kind: class
+ */
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
+export interface BeanClass {
+  readonly __brand_com_example_fixtures_BeanClass: true;
+}
+export class BeanClass extends JavaObject {
+  static readonly javaInternalName: string = 'com/example/fixtures/BeanClass';
+  /** @internal */ static readonly $t = $rt.classTable('com.example.fixtures.BeanClass');
+  /**
+   * Native API: `com.example.fixtures.BeanClass#<init>()`
+   * - Android API: 1+
+   */
+  static new(): BeanClass {
+    return $rt.wrapNonNull(BeanClass, BeanClass.$t()['<init>()V'](false), 'com.example.fixtures.BeanClass#<init>()');
+  }
+  /**
+   * Native API: `com.example.fixtures.BeanClass#getCount()`
+   * - Android API: 1+
+   */
+  getCount(): number {
+    return BeanClass.$t()['getCount()I'](false, this.$h) as number;
+  }
+  /** Promise variant of `com.example.fixtures.BeanClass#getCount()`: the JNI call runs on a background thread. */
+  getCountAsync(): Promise<number> {
+    return (BeanClass.$t()['getCount()I'](true, this.$h) as Promise<unknown>).then(r => r as number);
+  }
+  /**
+   * Native API: `com.example.fixtures.BeanClass#getLabel(int)`
+   * - Android API: 1+
+   */
+  getLabel(index: number): string | null {
+    return BeanClass.$t()['getLabel(int)Ljava/lang/String;'](false, this.$h, index) as string | null;
+  }
+  /** Promise variant of `com.example.fixtures.BeanClass#getLabel(int)`: the JNI call runs on a background thread. */
+  getLabelAsync(index: number): Promise<string | null> {
+    return (BeanClass.$t()['getLabel(int)Ljava/lang/String;'](true, this.$h, index) as Promise<unknown>).then(r => r as string | null);
+  }
+  /**
+   * Native API: `com.example.fixtures.BeanClass#getTitle()`
+   * - Android API: 1+
+   */
+  getTitle(): string | null {
+    return BeanClass.$t()['getTitle()Ljava/lang/String;'](false, this.$h) as string | null;
+  }
+  /** Promise variant of `com.example.fixtures.BeanClass#getTitle()`: the JNI call runs on a background thread. */
+  getTitleAsync(): Promise<string | null> {
+    return (BeanClass.$t()['getTitle()Ljava/lang/String;'](true, this.$h) as Promise<unknown>).then(r => r as string | null);
+  }
+  /**
+   * Native API: `com.example.fixtures.BeanClass#getURL()`
+   * - Android API: 1+
+   */
+  getURL(): string | null {
+    return BeanClass.$t()['getURL()Ljava/lang/String;'](false, this.$h) as string | null;
+  }
+  /** Promise variant of `com.example.fixtures.BeanClass#getURL()`: the JNI call runs on a background thread. */
+  getURLAsync(): Promise<string | null> {
+    return (BeanClass.$t()['getURL()Ljava/lang/String;'](true, this.$h) as Promise<unknown>).then(r => r as string | null);
+  }
+  /**
+   * Native API: `com.example.fixtures.BeanClass#increment()`
+   * - Android API: 1+
+   */
+  increment(): void {
+    BeanClass.$t()['increment()V'](false, this.$h);
+  }
+  /** Promise variant of `com.example.fixtures.BeanClass#increment()`: the JNI call runs on a background thread. */
+  incrementAsync(): Promise<void> {
+    return (BeanClass.$t()['increment()V'](true, this.$h) as Promise<unknown>).then(r => undefined);
+  }
+  /**
+   * Native API: `com.example.fixtures.BeanClass#isEnabled()`
+   * - Android API: 1+
+   */
+  isEnabled(): boolean {
+    return BeanClass.$t()['isEnabled()Z'](false, this.$h) as boolean;
+  }
+  /** Promise variant of `com.example.fixtures.BeanClass#isEnabled()`: the JNI call runs on a background thread. */
+  isEnabledAsync(): Promise<boolean> {
+    return (BeanClass.$t()['isEnabled()Z'](true, this.$h) as Promise<unknown>).then(r => r as boolean);
+  }
+  /**
+   * Native API: `com.example.fixtures.BeanClass#setCount(java.lang.String)`
+   * - Android API: 1+
+   */
+  setCount(count: string | null): void {
+    BeanClass.$t()['setCount(java.lang.String)V'](false, this.$h, count);
+  }
+  /** Promise variant of `com.example.fixtures.BeanClass#setCount(java.lang.String)`: the JNI call runs on a background thread. */
+  setCountAsync(count: string | null): Promise<void> {
+    return (BeanClass.$t()['setCount(java.lang.String)V'](true, this.$h, count) as Promise<unknown>).then(r => undefined);
+  }
+  /**
+   * Native API: `com.example.fixtures.BeanClass#setEnabled(boolean)`
+   * - Android API: 1+
+   */
+  setEnabled(enabled: boolean): void {
+    BeanClass.$t()['setEnabled(boolean)V'](false, this.$h, enabled);
+  }
+  /** Promise variant of `com.example.fixtures.BeanClass#setEnabled(boolean)`: the JNI call runs on a background thread. */
+  setEnabledAsync(enabled: boolean): Promise<void> {
+    return (BeanClass.$t()['setEnabled(boolean)V'](true, this.$h, enabled) as Promise<unknown>).then(r => undefined);
+  }
+  /**
+   * Native API: `com.example.fixtures.BeanClass#setTitle(java.lang.String)`
+   * - Android API: 1+
+   */
+  setTitle(title: string | null): void {
+    BeanClass.$t()['setTitle(java.lang.String)V'](false, this.$h, title);
+  }
+  /** Promise variant of `com.example.fixtures.BeanClass#setTitle(java.lang.String)`: the JNI call runs on a background thread. */
+  setTitleAsync(title: string | null): Promise<void> {
+    return (BeanClass.$t()['setTitle(java.lang.String)V'](true, this.$h, title) as Promise<unknown>).then(r => undefined);
+  }
+  /** Bean property backed by `getURL()`. */
+  get URL(): string | null {
+    return this.getURL();
+  }
+  /** Bean property backed by `getCount()`. */
+  get count(): number {
+    return this.getCount();
+  }
+  /** Bean property backed by `isEnabled()` / `setEnabled()`. */
+  get enabled(): boolean {
+    return this.isEnabled();
+  }
+  set enabled(value: boolean) {
+    this.setEnabled(value);
+  }
+  /** Bean property backed by `getTitle()` / `setTitle()`. */
+  get title(): string | null {
+    return this.getTitle();
+  }
+  set title(value: string | null) {
+    this.setTitle(value);
   }
 }
 
