@@ -1,0 +1,13 @@
+name: native_api_ir
+description: Canonical Native IR for native-api-bindgen — platform-neutral, JSON-serializable model of public platform SDK APIs.
+version: 0.1.0-dev.1
+resolution: workspace
+
+environment:
+  sdk: ^3.9.0
+
+dependencies:
+  collection: ^1.19.0
+
+dev_dependencies:
+  test: ^1.29.0
