@@ -94,8 +94,9 @@ void main() {
 
   test('long constants: bigint in strict, number in ergonomic', () {
     String ts(GenerationOutput o) => o.files
-        .firstWhere((f) => f.path == 'src/generated/bindings.ts')
-        .contents;
+        .where((f) => f.path.startsWith('src/generated/'))
+        .map((f) => f.contents)
+        .join();
     expect(
       ts(gen()),
       contains('static readonly BIG: bigint = 9223372036854775807n;'),

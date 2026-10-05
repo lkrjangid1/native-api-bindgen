@@ -66,7 +66,22 @@ final class RnJsiEmitter {
     mode: options.mode,
   );
 
-  static const _bindingsFile = 'src/generated/bindings.ts';
+  /// Namespace / file currently being emitted (cross-package references are
+  /// qualified with namespace imports).
+  String _ns = '';
+  String _file = '';
+  final _usedNs = <String>{};
+
+  /// Output path of the module for a Java package.
+  static String modulePath(String ns) =>
+      'src/generated/${ns.isEmpty ? r'$default' : ns.replaceAll('.', '/')}.ts';
+
+  /// Reference to a generated class from the current module.
+  String _ref(ApiType t) {
+    if (t.namespace == _ns) return _tsName(t);
+    _usedNs.add(t.namespace);
+    return '${Identifiers.packagePrefix(t.namespace)}.${_tsName(t)}';
+  }
 
   static const _instanceReserved = {
     'constructor',
@@ -99,7 +114,7 @@ final class RnJsiEmitter {
   /// Generates all files.
   GenerationOutput emit() {
     final files = <GeneratedFile>[
-      GeneratedFile(_bindingsFile, _ts()),
+      ..._tsFiles(),
       GeneratedFile('cpp/generated/NabBindings.cpp', _cpp()),
       GeneratedFile('index.ts', _index()),
       GeneratedFile('native-api-bindings.cmake', _cmake()),
@@ -221,45 +236,87 @@ final class RnJsiEmitter {
 
   // ------------------------------------------------------------- TypeScript
 
-  String _ts() {
-    final b = StringBuffer(generatedHeader(module))
-      ..writeln('/* eslint-disable */')
-      ..writeln()
-      ..writeln("import * as \$rt from '../runtime';")
-      ..writeln("import {JavaObject} from '../runtime';")
-      ..writeln('type Handle = \$rt.Handle;')
-      ..writeln()
-      ..writeln(
-        '/** Thrown by non-null-declared accessors that returned null. */',
-      )
-      ..writeln('function nn<T>(v: T | null, symbol: string): T {')
-      ..writeln(
-        '  if (v === null || v === undefined) throw new Error(`\${symbol} returned null although the SDK declares it non-null`);',
-      )
-      ..writeln('  return v;')
-      ..writeln('}')
-      ..writeln();
+  List<GeneratedFile> _tsFiles() {
+    final byNs = SplayTreeMap<String, List<ApiType>>();
     for (final t in _types.values) {
-      _emitBrandType(b, t);
+      (byNs[t.namespace] ??= []).add(t);
     }
-    b.writeln();
-    for (final t in _types.values) {
-      _emitClass(b, t);
+    final files = <GeneratedFile>[];
+    for (final e in byNs.entries) {
+      _ns = e.key;
+      _file = modulePath(e.key);
+      _usedNs.clear();
+      final body = StringBuffer();
+      for (final t in e.value) {
+        _emitBrandType(body, t);
+      }
+      body.writeln();
+      for (final t in e.value) {
+        _emitClass(body, t);
+      }
+      _emitContextHelpers(body);
+      final out = StringBuffer(generatedHeader(module))
+        ..writeln('/* eslint-disable */')
+        ..writeln()
+        ..writeln(
+          "import * as \$rt from '${_relative(_file, 'src/runtime.ts')}';",
+        )
+        ..writeln(
+          "import {JavaObject} from '${_relative(_file, 'src/runtime.ts')}';",
+        );
+      for (final ns in _usedNs.toList()..sort()) {
+        out.writeln(
+          "import * as ${Identifiers.packagePrefix(ns)} from '${_relative(_file, modulePath(ns))}';",
+        );
+      }
+      out
+        ..writeln('type Handle = \$rt.Handle;')
+        ..writeln()
+        ..writeln(
+          '/** Thrown by non-null-declared accessors that returned null. */',
+        )
+        ..writeln('function nn<T>(v: T | null, symbol: string): T {')
+        ..writeln(
+          '  if (v === null || v === undefined) throw new Error(`\${symbol} returned null although the SDK declares it non-null`);',
+        )
+        ..writeln('  return v;')
+        ..writeln('}')
+        ..writeln()
+        ..write(body.toString().trimRight())
+        ..writeln();
+      files.add(GeneratedFile(_file, out.toString()));
     }
-    b.writeln(
-      '// Inherited members: copied from ancestors (nearest first) at load time.',
-    );
-    for (final t in _types.values) {
-      final anc = _ancestors(t);
-      if (anc.isEmpty) continue;
-      b.writeln(
-        '\$rt.inherit(${_tsName(t)}, [${anc.map(_tsName).join(', ')}]);',
+    final index = StringBuffer(generatedHeader(module))..writeln();
+    for (final ns in byNs.keys) {
+      index.writeln(
+        "export * from '${_relative('src/generated/index.ts', modulePath(ns))}';",
       );
     }
-    b.writeln();
-    if (_types.containsKey('android.content.Context')) {
-      final n = _tsName(_types['android.content.Context']!);
+    files.add(GeneratedFile('src/generated/index.ts', index.toString()));
+    return files;
+  }
+
+  static String _relative(String from, String to) {
+    final fromParts = from.split('/')..removeLast();
+    final toParts = to.split('/');
+    var i = 0;
+    while (i < fromParts.length &&
+        i < toParts.length - 1 &&
+        fromParts[i] == toParts[i]) {
+      i++;
+    }
+    final up = List.filled(fromParts.length - i, '..');
+    final rel = [...up, ...toParts.sublist(i)].join('/');
+    final noExt = rel.endsWith('.ts') ? rel.substring(0, rel.length - 3) : rel;
+    return noExt.startsWith('.') ? noExt : './$noExt';
+  }
+
+  void _emitContextHelpers(StringBuffer b) {
+    final ctx = _types['android.content.Context'];
+    if (ctx != null && ctx.namespace == _ns) {
+      final n = _tsName(ctx);
       b
+        ..writeln()
         ..writeln(
           '/** The application `Context` (requires `NabContext.init(application)` in Java). */',
         )
@@ -267,21 +324,20 @@ final class RnJsiEmitter {
         ..writeln(
           "  return \$rt.wrapNonNull($n, \$rt.applicationContextHandle(), 'NabContext.applicationContext()');",
         )
-        ..writeln('}')
-        ..writeln();
+        ..writeln('}');
     }
-    if (_types.containsKey('android.app.Activity')) {
-      final n = _tsName(_types['android.app.Activity']!);
+    final act = _types['android.app.Activity'];
+    if (act != null && act.namespace == _ns) {
+      final n = _tsName(act);
       b
+        ..writeln()
         ..writeln(
           '/** The current `Activity`, or null. Use synchronously; activities are short-lived. */',
         )
         ..writeln('export function currentActivity(): $n | null {')
         ..writeln('  return \$rt.wrap($n, \$rt.currentActivityHandle());')
-        ..writeln('}')
-        ..writeln();
+        ..writeln('}');
     }
-    return '${b.toString().trimRight()}\n';
   }
 
   void _emitBrandType(StringBuffer b, ApiType t) {
@@ -609,11 +665,19 @@ final class RnJsiEmitter {
     b.writeln(
       "  /** @internal */ static readonly \$t = \$rt.classTable('${t.id}');",
     );
+    final anc = _ancestors(t);
+    if (anc.isNotEmpty) {
+      // Evaluated on first instantiation (after all modules are loaded), so
+      // import cycles between package modules are harmless.
+      b.writeln(
+        '  /** @internal */ static readonly \$anc = (): Array<{prototype: object}> => [${anc.map(_ref).join(', ')}];',
+      );
+    }
     _bindings.add(
       BindingMapEntry(
         symbolId: t.id,
         generated: n,
-        file: _bindingsFile,
+        file: _file,
         generator: _generatorId,
         runtimeAdapter: 'JSI class table',
       ),
@@ -783,7 +847,7 @@ final class RnJsiEmitter {
       params.add('$pn: ${_paramType(p.type, mt)}');
       args.add(_argExpr(pn, p.type, mt));
     }
-    final ownerName = _tsName(owner);
+    final ownerName = _ref(owner);
     final key = ctor
         ? '<init>${m.id.substring(m.id.indexOf('('))}V'
         : _cppKey(m);
@@ -842,7 +906,7 @@ final class RnJsiEmitter {
         BindingMapEntry(
           symbolId: m.id,
           generated: '$n.$name',
-          file: _bindingsFile,
+          file: _file,
           generator: _generatorId,
           runtimeAdapter:
               'JSI host function -> JNI (${ctor
@@ -879,7 +943,7 @@ final class RnJsiEmitter {
           BindingMapEntry(
             symbolId: f.id,
             generated: '${_tsName(t)}.$name',
-            file: _bindingsFile,
+            file: _file,
             generator: _generatorId,
             runtimeAdapter: 'TypeScript constant',
           ),
@@ -907,7 +971,7 @@ final class RnJsiEmitter {
       BindingMapEntry(
         symbolId: f.id,
         generated: '$n.$name',
-        file: _bindingsFile,
+        file: _file,
         generator: _generatorId,
         runtimeAdapter: 'JSI host function -> JNI static field',
       ),
@@ -922,7 +986,7 @@ final class RnJsiEmitter {
     String name,
   ) {
     final m = _mapper.map(f.type, typeVariableBounds: _typeVars(owner, null));
-    final o = _tsName(owner);
+    final o = _ref(owner);
     _doc(
       b,
       f,
@@ -946,7 +1010,7 @@ final class RnJsiEmitter {
         BindingMapEntry(
           symbolId: f.id,
           generated: '${_tsName(t)}.$name',
-          file: _bindingsFile,
+          file: _file,
           generator: _generatorId,
           runtimeAdapter: 'JSI host function -> JNI field',
         ),
@@ -1113,7 +1177,7 @@ final class RnJsiEmitter {
       BindingMapEntry(
         symbolId: '${t.id}#<implement>',
         generated: '$n.implement',
-        file: _bindingsFile,
+        file: _file,
         generator: _generatorId,
         runtimeAdapter: 'java.lang.reflect.Proxy -> JNI -> CallInvoker',
       ),
@@ -1243,7 +1307,7 @@ final class RnJsiEmitter {
   String _index() =>
       '${generatedHeader(module)}\n'
       "export * from './src/runtime';\n"
-      "export * from './src/generated/bindings';\n";
+      "export * from './src/generated';\n";
 
   String _cmake() =>
       '${generatedHeader(module, comment: '#')}\n'
@@ -1312,6 +1376,6 @@ final class _Resolver implements TsTypeResolver {
   @override
   String? qualifiedName(String typeId) {
     final t = e._types[typeId];
-    return t == null ? null : e._tsName(t);
+    return t == null ? null : e._ref(t);
   }
 }

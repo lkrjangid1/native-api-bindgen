@@ -5,8 +5,8 @@
 // docs/legal/source-provenance.md before redistributing.
 /* eslint-disable */
 
-import * as $rt from '../runtime';
-import {JavaObject} from '../runtime';
+import * as $rt from '../../../runtime';
+import {JavaObject} from '../../../runtime';
 type Handle = $rt.Handle;
 
 /** Thrown by non-null-declared accessors that returned null. */
@@ -493,6 +493,7 @@ export interface DualImpl {
 export class DualImpl extends JavaObject {
   static readonly javaInternalName: string = 'com/example/fixtures/DualImpl';
   /** @internal */ static readonly $t = $rt.classTable('com.example.fixtures.DualImpl');
+  /** @internal */ static readonly $anc = (): Array<{prototype: object}> => [Sizable, Countable, Marker];
   /**
    * Native API: `com.example.fixtures.DualImpl#create(int)`
    * - Android API: 1+
@@ -674,6 +675,7 @@ export interface MultiParent {
 export class MultiParent extends JavaObject {
   static readonly javaInternalName: string = 'com/example/fixtures/MultiParent';
   /** @internal */ static readonly $t = $rt.classTable('com.example.fixtures.MultiParent');
+  /** @internal */ static readonly $anc = (): Array<{prototype: object}> => [NestedClass, CallbackInterface];
   /**
    * Native API: `com.example.fixtures.MultiParent#<init>()`
    * - Android API: 1+
@@ -1338,7 +1340,3 @@ export class ThrowsClass extends JavaObject {
     return (ThrowsClass.$t()['read()V'](true, this.$h) as Promise<unknown>).then(r => undefined);
   }
 }
-
-// Inherited members: copied from ancestors (nearest first) at load time.
-$rt.inherit(DualImpl, [Sizable, Countable, Marker]);
-$rt.inherit(MultiParent, [NestedClass, CallbackInterface]);

@@ -233,14 +233,14 @@ void main() {
       expect(
         files,
         containsAll([
-          'src/generated/bindings.ts',
+          'src/generated/android/os.ts',
           'cpp/generated/NabBindings.cpp',
           'cpp/runtime/NabRuntime.cpp',
           'specs/NativeApiBindgen.ts',
         ]),
       );
       final ts = File(
-        p.join(project.path, 'native-api-bindings/src/generated/bindings.ts'),
+        p.join(project.path, 'native-api-bindings/src/generated/android/os.ts'),
       ).readAsStringSync();
       expect(ts, contains('export class Handler extends JavaObject'));
       expect(ts, contains('static getMainLooper()'));

@@ -4,5 +4,4 @@
 // Derived from SDK metadata installed on the build machine; see
 // docs/legal/source-provenance.md before redistributing.
 
-export * from './src/runtime';
-export * from './src/generated';
+export * from './com/example/fixtures';

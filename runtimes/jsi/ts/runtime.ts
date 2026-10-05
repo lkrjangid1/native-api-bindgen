@@ -74,6 +74,7 @@ export class JavaObject {
 
   constructor(handle: Handle) {
     this.$h = handle;
+    ensureInherited(new.target as unknown as InheritingClass);
   }
 
   /** Releases the Java reference now (otherwise released on JS GC). */
@@ -214,14 +215,26 @@ export function valueCallback<T>(symbol: string, body: () => T): T {
   }
 }
 
+/** Shape of generated classes with ancestors. */
+interface InheritingClass {
+  prototype: object;
+  $anc?: () => Array<{prototype: object}>;
+}
+
+const inherited = new WeakSet<object>();
+
 /**
- * @internal Copies inherited members from [ancestors] (nearest first) onto
- * [target]'s prototype. Generated classes declare only their own members;
- * this keeps output linear in the API size instead of duplicating every
- * inherited member into each subclass.
+ * @internal Copies inherited members onto a generated class's prototype the
+ * first time the class is instantiated. Generated classes declare only their
+ * own members and list ancestors (nearest first) in a `$anc` thunk, which
+ * keeps output linear in the API size and makes import cycles between the
+ * per-package modules harmless.
  */
-export function inherit(target: {prototype: object}, ancestors: Array<{prototype: object}>): void {
-  const own = target.prototype;
+export function ensureInherited(cls: InheritingClass): void {
+  if (inherited.has(cls)) return;
+  inherited.add(cls);
+  const ancestors = cls.$anc?.() ?? [];
+  const own = cls.prototype;
   for (const a of ancestors) {
     for (const key of Object.getOwnPropertyNames(a.prototype)) {
       if (key === 'constructor' || Object.prototype.hasOwnProperty.call(own, key)) continue;

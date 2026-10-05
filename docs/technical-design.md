@@ -15,7 +15,7 @@ Status: living document. Scope: foundation + Android → Flutter vertical slice.
 | D7 | Default distribution policy `local-only`, documentation mode `links-only` | Safest legal default; see `docs/legal`. |
 | D8 | Threading defaults to `unspecified` | Never claim thread-safety without metadata. |
 | D10 | React Native: one pure C++ Turbo Module installs `global.__nab`; generated C++ is *data* (member tables keyed by Java name + JNI descriptor) interpreted by one runtime | Official New Architecture mechanism (reactnative.dev pure C++ modules); no per-API TurboModule/Codegen surface; small, uniform C++ |
-| D11 | React Native TS output is a single module without `extends` between generated classes; inherited members are copied onto prototypes (`$rt.inherit`) and typed via declaration merging; parameters use brand types | Avoids ES-module cycle initialisation failures under Metro and TypeScript override/static-side conflicts; keeps output linear in API size (full android-36: 187 MB → 98 MB) |
+| D11 | React Native TS output: one module per Java package, no `extends` between generated classes; inherited members copied onto prototypes lazily on first instantiation (`$anc` thunks) and typed via declaration merging; parameters use brand types | Import cycles are harmless (no cross-module work at load); avoids TypeScript override/static-side conflicts; output linear in API size (full android-36: 187 MB flattened → 97.7 MB); Metro transforms modules independently |
 | D12 | RN callbacks via `java.lang.reflect.Proxy` + `CallInvoker`; context via `NabContext.init(app)` | Public SDK APIs only (no hidden `ActivityThread`) |
 | D9 | Apache-2.0 for project source | Permissive with explicit patent grant. This is a project/legal decision the owner may revisit. |
 

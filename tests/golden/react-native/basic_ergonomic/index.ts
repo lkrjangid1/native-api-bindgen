@@ -5,4 +5,4 @@
 // docs/legal/source-provenance.md before redistributing.
 
 export * from './src/runtime';
-export * from './src/generated/bindings';
+export * from './src/generated';

@@ -6,7 +6,7 @@
 
 | Path | Contents |
 |---|---|
-| `src/generated/bindings.ts` | one TypeScript class per Java type (constructors as `X.new…()`, static/instance methods, `…Async()` Promise variants, constants, fields, `X.implement({...})` for interfaces) |
+| `src/generated/<package>.ts` (+ `index.ts`) | one TypeScript module per Java package, one class per Java type (constructors as `X.new…()`, static/instance methods, `…Async()` Promise variants, constants, fields, `X.implement({...})` for interfaces) |
 | `cpp/generated/NabBindings.cpp` | constant member tables (Java name + JNI descriptor) — no per-API C++ code |
 | `cpp/runtime/`, `src/runtime.ts`, `android/java/…` | the runtime (copied, Apache-2.0) |
 | `specs/NativeApiBindgen.ts` | Codegen spec of the single pure C++ Turbo Module that installs `global.__nab` |
