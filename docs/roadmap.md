@@ -7,7 +7,7 @@ Items below are **plans**, not features. Completed items are marked with the rel
 - **Phase 3 — Objective-C / iOS.** Flutter vertical slice working (unreleased): Xcode SDK discovery, libclang extraction, Dart over `package:objective_c`; Foundation/UIKit APIs verified on an iOS 26.4 simulator (12 tests). Planned: blocks and Dart-implemented protocols (native trampolines via a build hook).
 - **Phase 4 — Flutter production runtime.** Planned: callback threading policy, size/perf benchmarks, sharded packages.
 - **Phase 5 — React Native New Architecture.** Android and iOS vertical slices working (unreleased): TypeScript + one pure C++ Turbo Module + JSI HostObjects, backed by JNI on Android and an Objective-C++ `NSInvocation` runtime on iOS; 12 self-tests each on an Android emulator and an iOS simulator. Planned: iOS blocks/protocol implementation from JS.
-- **Phase 6 — Swift-only API adapters.** Planned, conservative.
+- **Phase 6 — Swift-only API adapters.** Layer 2 working for Flutter (unreleased): symbol-graph discovery + generated `@objc` adapters for the Objective-C-representable subset, verified on a simulator. Planned: async (completion handlers), `throws` (NSError **), enums with raw values, collections, React Native.
 - **Phase 7 — Native UI integration layer.** Planned.
 - **Website (GitHub Pages).** Planned after the first vertical slices.
 

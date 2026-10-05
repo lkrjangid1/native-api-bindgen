@@ -119,6 +119,26 @@ final class AndroidConfig {
   final List<String> libraries;
 }
 
+/// A Swift module whose Swift-only APIs get `@objc` adapters.
+final class SwiftModuleConfig {
+  /// Creates the configuration.
+  const SwiftModuleConfig({
+    required this.name,
+    this.sources = const [],
+    this.types = const [],
+  });
+
+  /// Module name (an SDK module, or one built from [sources]).
+  final String name;
+
+  /// Swift sources of a non-SDK module (relative to the project); the app
+  /// provides the module itself (e.g. a pod named [name]).
+  final List<String> sources;
+
+  /// Types to adapt (empty: all public types).
+  final List<String> types;
+}
+
 /// Apple (iOS) platform configuration.
 final class IosConfig {
   /// Creates iOS configuration.
@@ -130,6 +150,8 @@ final class IosConfig {
     this.classes = const [],
     this.entries = const [],
     this.depth = 1,
+    this.swiftModules = const [],
+    this.swiftAdaptersDir = 'ios/NativeApiSwiftAdapters',
   });
 
   /// `auto` (iphonesimulator), `iphonesimulator` or `iphoneos`.
@@ -152,6 +174,12 @@ final class IosConfig {
 
   /// Dependency depth from entries (0 = entries only).
   final int depth;
+
+  /// Swift modules to adapt (Layer 2).
+  final List<SwiftModuleConfig> swiftModules;
+
+  /// Where generated adapter sources and their podspec go.
+  final String swiftAdaptersDir;
 
   /// The xcrun SDK name.
   String get sdkName => sdk == 'auto' ? 'iphonesimulator' : sdk;
@@ -215,8 +243,34 @@ final class BindgenConfig {
       'classes',
       'entries',
       'depth',
+      'swift',
     });
     final iosSdk = _str(ios['sdk'], 'platform.ios.sdk', 'auto');
+    final swift = _optMap(ios['swift'], 'platform.ios.swift');
+    _keys(swift, 'platform.ios.swift', {'adaptersDir', 'modules'});
+    final swiftModules = <SwiftModuleConfig>[];
+    final rawModules = swift['modules'];
+    if (rawModules != null && rawModules is! List) {
+      throw ConfigException('platform.ios.swift.modules must be a list');
+    }
+    for (final m in (rawModules as List?) ?? const []) {
+      final mm = _map(m, 'platform.ios.swift.modules[]');
+      _keys(mm, 'platform.ios.swift.modules[]', {'name', 'sources', 'types'});
+      final name = _str(mm['name'], 'platform.ios.swift.modules[].name', '');
+      if (!RegExp(r'^[A-Za-z_][A-Za-z0-9_]*$').hasMatch(name)) {
+        throw ConfigException('Invalid Swift module name: $name');
+      }
+      swiftModules.add(
+        SwiftModuleConfig(
+          name: name,
+          sources: _paths(
+            mm['sources'],
+            'platform.ios.swift.modules[].sources',
+          ),
+          types: _names(mm['types'], 'platform.ios.swift.modules[].types'),
+        ),
+      );
+    }
     if (!{'auto', 'iphonesimulator', 'iphoneos'}.contains(iosSdk)) {
       throw ConfigException(
         'platform.ios.sdk must be auto, iphonesimulator or iphoneos',
@@ -278,6 +332,12 @@ final class BindgenConfig {
         classes: _names(ios['classes'], 'platform.ios.classes'),
         entries: _names(ios['entries'], 'platform.ios.entries'),
         depth: iosDepth,
+        swiftModules: swiftModules,
+        swiftAdaptersDir: _str(
+          swift['adaptersDir'],
+          'platform.ios.swift.adaptersDir',
+          'ios/NativeApiSwiftAdapters',
+        ),
       ),
       flutter: _bool(targets['flutter'], 'targets.flutter', true),
       reactNative: _bool(targets['reactNative'], 'targets.reactNative', false),
@@ -376,6 +436,8 @@ final class BindgenConfig {
     ios.classes.join(','),
     ios.entries.join(','),
     ios.depth,
+    for (final m in ios.swiftModules)
+      '${m.name}:${m.sources.join(',')}:${m.types.join(',')}',
   ].join('|');
 
   /// Default configuration file written by `init`.

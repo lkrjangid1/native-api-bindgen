@@ -2,21 +2,32 @@ PODS:
   - Flutter (1.0.0)
   - integration_test (0.0.1):
     - Flutter
+  - NABSwiftFixtures (0.1.0)
+  - NativeApiSwiftAdapters (0.1.0.1):
+    - NABSwiftFixtures
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
   - integration_test (from `.symlinks/plugins/integration_test/ios`)
+  - NABSwiftFixtures (from `../../../../fixtures/swift/basic`)
+  - NativeApiSwiftAdapters (from `NativeApiSwiftAdapters`)
 
 EXTERNAL SOURCES:
   Flutter:
     :path: Flutter
   integration_test:
     :path: ".symlinks/plugins/integration_test/ios"
+  NABSwiftFixtures:
+    :path: "../../../../fixtures/swift/basic"
+  NativeApiSwiftAdapters:
+    :path: NativeApiSwiftAdapters
 
 SPEC CHECKSUMS:
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   integration_test: 4a889634ef21a45d28d50d622cf412dc6d9f586e
+  NABSwiftFixtures: bc3c1dc597cfa4ad19e7acbc3f628aa76e426475
+  NativeApiSwiftAdapters: 4e70ddb5336ef44b280f021a88650fa5998ae07c
 
-PODFILE CHECKSUM: 4b015915ec662986b54bf30ab778da63f7dda016
+PODFILE CHECKSUM: fe8d0fe57fd516df8de0bcede9aa4721abfa0411
 
 COCOAPODS: 1.16.2

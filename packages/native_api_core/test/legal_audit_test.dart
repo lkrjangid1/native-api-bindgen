@@ -128,6 +128,10 @@ void main() {
       '{"id":"0x1","kind" : "TranslationUnitDecl"}',
     );
     write('dumps/Foundation.pcm', 'x');
+    write(
+      'dumps/WeatherKit.symbols.json',
+      '{"metadata":{"formatVersion":{"major":0},"generator":"Apple Swift version 6.4"},"symbols":[]}',
+    );
     final r = rules(auditor.audit(tmp.path));
     expect(r['lib/apple/uikit.dart:generated-sdk-binding'], AuditStatus.warn);
     expect(
@@ -136,6 +140,10 @@ void main() {
     );
     expect(r['dumps/uikit-ast.json:clang-ast-dump'], AuditStatus.block);
     expect(r['dumps/Foundation.pcm:clang-ast-dump'], AuditStatus.block);
+    expect(
+      r['dumps/WeatherKit.symbols.json:clang-ast-dump'],
+      AuditStatus.block,
+    );
   });
 
   test('dependency licenses are read offline and never assumed', () {

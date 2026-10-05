@@ -12,6 +12,11 @@ platform:
       - NSProcessInfo
       - NSFileManager
     depth: 0
+    swift:                 # Swift-only APIs get generated @objc adapters (Layer 2)
+      adaptersDir: ios/NativeApiSwiftAdapters
+      modules:
+        - name: NABSwiftFixtures
+          sources: [../../../fixtures/swift/basic/NABSwiftFixtures.swift]
 
 targets:
   flutter: true

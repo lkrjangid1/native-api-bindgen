@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:native_api_android/native_api_android.dart';
+import 'package:native_api_android/testing.dart' show findRepoRoot;
 import 'package:native_api_bindgen/native_api_bindgen.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
@@ -180,6 +181,52 @@ void main() {
             ),
           ).readAsStringSync(),
           contains('export class UIDevice extends ObjCObject'),
+        );
+      },
+      skip: xcode ? false : 'Xcode not available',
+    );
+
+    test(
+      'Swift modules get @objc adapters and Dart bindings',
+      () async {
+        final fixture = p.join(
+          findRepoRoot(),
+          'fixtures',
+          'swift',
+          'basic',
+          'NABSwiftFixtures.swift',
+        );
+        File(p.join(project.path, 'native_api_bindgen.yaml')).writeAsStringSync(
+          'platform:\n  ios:\n    swift:\n      modules:\n'
+          '        - name: NABSwiftFixtures\n          sources: [$fixture]\n',
+        );
+        final r = await cli(['--json', 'generate', 'ios'], cwd: project.path);
+        expect(r.code, ExitCodes.ok, reason: r.err);
+        final adapters = p.join(project.path, 'ios', 'NativeApiSwiftAdapters');
+        expect(
+          File(
+            p.join(adapters, 'NABSwiftFixturesAdapters.swift'),
+          ).readAsStringSync(),
+          contains('@objc(NABSwiftFixtures_Counter)'),
+        );
+        expect(
+          File(
+            p.join(adapters, 'NativeApiSwiftAdapters.podspec'),
+          ).readAsStringSync(),
+          contains("s.dependency 'NABSwiftFixtures'"),
+        );
+        expect(
+          File(
+            p.join(
+              project.path,
+              'lib',
+              'src',
+              'generated',
+              'apple',
+              'swiftadapters.dart',
+            ),
+          ).readAsStringSync(),
+          contains('int incrementBy(int step)'),
         );
       },
       skip: xcode ? false : 'Xcode not available',

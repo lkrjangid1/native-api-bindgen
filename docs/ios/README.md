@@ -53,6 +53,30 @@ The app needs `objective_c` (^9.5) and `ffi` (^2.1) as dependencies. Android and
 | API newer than `minVersion` | runtime guard: throws `objc.OsVersionError` on older iOS |
 | deprecated API | `@Deprecated` with the iOS version |
 
+## Swift-only APIs (Layer 2: generated `@objc` adapters)
+
+Swift APIs that are not visible to Objective-C are discovered with the official toolchain and wrapped:
+
+1. `xcrun swiftc -emit-module` (for a module built from sources) and `xcrun swift-symbolgraph-extract` produce the module's public symbol graph (kept in a temporary directory, never written to the project).
+2. For the Objective-C-representable subset (classes and structs; `Int`, `UInt`, `Double`, `Float`, `Bool`, `String`, `Date`, `Data`, `URL`, other adapted types, optionals of object types), `<Module>Adapters.swift` defines `@objc(<Module>_<Type>)` classes with explicit selectors that wrap the Swift value (`wrapped`), plus `NativeApiSwiftAdapters.podspec`.
+3. A matching Objective-C interface is fed through the same libclang pipeline as the SDK headers, so the Dart bindings (`apple/swiftadapters.dart`) come from the regular emitter.
+
+```yaml
+platform:
+  ios:
+    swift:
+      adaptersDir: ios/NativeApiSwiftAdapters   # add: pod 'NativeApiSwiftAdapters', :path => 'NativeApiSwiftAdapters'
+      modules:
+        - name: NABSwiftFixtures                  # a pod of the same name provides the module
+          sources: [../../../fixtures/swift/basic/NABSwiftFixtures.swift]
+        - name: WeatherKit                        # SDK module: no sources
+          types: [Weather]
+```
+
+Selectors: the first argument label is appended to the base name (`increment(by:)` → `incrementBy:`, `init(start:label:)` → `initWithStart:label:`). APIs newer than `minVersion` carry `@available` / `API_AVAILABLE`. Not adapted (with reasons): closures and `async` (`E004`), generics (`E003`), tuples, collections, enums, protocols, `throws`, failable initializers, members colliding with `NSObject` (`E002`), iOS-unavailable APIs (`E012`). Adapters copy values, so object identity is not preserved across calls; `alloc()` must be followed by one of the adapter's `init…` methods.
+
+Measured with Xcode 27.0 (`packages/native_api_ios/tool/swift_sdk_report.dart`, deployment target 18.0): of the members of three Swift-only SDK modules, 8 of 111 (TipKit), 71 of 3,466 (Charts) and 89 of 446 (WeatherKit) are adaptable today; the generated adapters for all three type-check with zero errors. The synthetic fixture (`fixtures/swift/basic`) runs on the iPhone 17 / iOS 26.4 simulator (3 integration tests in `examples/flutter/ios_slice`).
+
 ## Not supported yet (with codes)
 
 | Construct | Code |
@@ -64,7 +88,7 @@ The app needs `objective_c` (^9.5) and `ffi` (^2.1) as dependencies. Android and
 | Types outside the generation closure | exposed as `objc.ObjCObject` (`E016` info) |
 | `_`-prefixed (private) selectors | `E005` |
 | `API_UNAVAILABLE(ios)` | `E012` |
-| Swift-only APIs | not visible in Objective-C headers |
+| Swift-only APIs outside the adaptable subset | see "Swift-only APIs" above |
 
 ## Tested (2026-10-05, maintainer machine)
 

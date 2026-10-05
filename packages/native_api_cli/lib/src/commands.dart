@@ -504,15 +504,41 @@ final class GenerateCommand extends BindgenCommand {
 
   int _ios() {
     final sdk = ctx.appleSdk();
-    final module = ctx.extractIos(
-      sdk,
-      ctx.iosRequest(
-        frameworks: _multi('framework'),
-        classes: _multi('class'),
-        entries: _multi('entry'),
-        depth: _intOpt('depth'),
-      ),
+    final request = ctx.iosRequest(
+      frameworks: _multi('framework'),
+      classes: _multi('class'),
+      entries: _multi('entry'),
+      depth: _intOpt('depth'),
     );
+    final temp = Directory.systemTemp.createTempSync('nab_swift_');
+    late final ApiModule module;
+    late final List<ApiModule> swiftModules;
+    try {
+      final adapters = ctx.swiftAdapters(sdk, temp);
+      swiftModules = adapters.swift;
+      module = ctx.extractIos(
+        sdk,
+        request,
+        headerFiles: adapters.headers,
+        extraClasses: adapters.classes,
+      );
+    } finally {
+      temp.deleteSync(recursive: true);
+    }
+    for (final s in swiftModules) {
+      ctx.writeState(
+        s,
+        const [],
+        const {},
+        subdir:
+            'ios-swift/${s.types.isEmpty ? 'empty' : s.types.first.namespace}',
+      );
+      final cov = CoverageReport.of(s);
+      _log.info(
+        'Swift ${s.types.isEmpty ? '' : s.types.first.namespace}: ${s.types.where((t) => t.isGeneratable).length} of ${s.types.length} types adapted; skipped members by reason: ${cov.excludedByReason}',
+        event: 'swift-adapters',
+      );
+    }
     final out = ctx.generateFlutterIos(module);
     final outDir = p.normalize(
       p.join(ctx.projectDir, _opt('output') ?? ctx.config.outputDir),

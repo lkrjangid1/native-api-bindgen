@@ -268,10 +268,11 @@ final class CliContext {
       depth: depth ?? c.depth,
     );
     if ([
-      ...request.frameworks,
-      ...request.classes,
-      ...request.entries,
-    ].isEmpty) {
+          ...request.frameworks,
+          ...request.classes,
+          ...request.entries,
+        ].isEmpty &&
+        c.swiftModules.isEmpty) {
       throw CliFailure(
         const Diagnostic(
           DiagnosticCode.configInvalid,
@@ -283,6 +284,7 @@ final class CliContext {
       );
     }
     final parse = <String>{
+      if (c.swiftModules.isNotEmpty) 'Foundation',
       ...c.frameworks,
       ...request.frameworks,
       for (final n in [...request.classes, ...request.entries])
@@ -302,11 +304,104 @@ final class CliContext {
     return (request: request, parse: parse.toList()..sort());
   }
 
-  /// Parses the requested frameworks and extracts Apple IR.
+  /// Generates `@objc` adapters for `platform.ios.swift` modules (Swift
+  /// sources + podspec into `swiftAdaptersDir`). Returns the adapter
+  /// headers (binding input, in [temp]), adapter class names, and each
+  /// module's Swift API with support decisions.
+  ({List<String> headers, List<String> classes, List<ApiModule> swift})
+  swiftAdapters(AppleSdk sdk, Directory temp) {
+    final c = config.ios;
+    if (c.swiftModules.isEmpty) {
+      return (headers: const [], classes: const [], swift: const []);
+    }
+    final tc = SwiftToolchain(sdk, minIos: c.minVersion);
+    final guard = OutputGuard(p.join(projectDir, c.swiftAdaptersDir));
+    final headers = <String>[];
+    final classes = <String>[];
+    final swift = <ApiModule>[];
+    final deps = <String>[];
+    final frameworks = <String>[];
+    for (final m in c.swiftModules) {
+      final include = <String>[];
+      try {
+        if (m.sources.isNotEmpty) {
+          final sources = [
+            for (final s in m.sources)
+              p.normalize(p.isAbsolute(s) ? s : p.join(projectDir, s)),
+          ];
+          for (final s in sources) {
+            if (!File(s).existsSync()) {
+              throw CliFailure(
+                Diagnostic(
+                  DiagnosticCode.sdkNotFound,
+                  'Swift source not found: $s',
+                  severity: Severity.error,
+                ),
+              );
+            }
+          }
+          final mod = tc.emitModule(
+            m.name,
+            sources,
+            p.join(temp.path, 'modules'),
+          );
+          include.add(p.dirname(mod));
+          deps.add(m.name);
+        } else {
+          frameworks.add(m.name);
+        }
+        logger.info('Swift module: ${m.name}', event: 'swift-module');
+        final graph = SwiftModuleGraph.read(
+          tc.extractSymbolGraph(
+            m.name,
+            p.join(temp.path, 'symbolgraphs'),
+            includeDirs: include,
+          ),
+        );
+        final out = SwiftAdapterGenerator(
+          graph,
+          types: m.types,
+          sdkVersion: sdk.version,
+        ).generate();
+        guard.writeString('${m.name}Adapters.swift', out.swift);
+        final h = File(p.join(temp.path, '${m.name}Adapters.h'))
+          ..writeAsStringSync(out.header);
+        headers.add(h.path);
+        swift.add(out.module);
+        for (final t in out.module.types) {
+          if (t.isGeneratable) {
+            classes.add('${m.name}_${t.name.replaceAll('.', '_')}');
+          }
+        }
+      } on SwiftToolchainException catch (e) {
+        throw CliFailure(
+          Diagnostic(
+            DiagnosticCode.invalidAst,
+            'Swift toolchain failed for ${m.name}: ${e.message}',
+            severity: Severity.error,
+          ),
+        );
+      }
+    }
+    guard.writeString(
+      'NativeApiSwiftAdapters.podspec',
+      SwiftAdapterGenerator.podspec(
+        dependencies: deps,
+        frameworks: frameworks,
+        minIos: c.minVersion,
+      ),
+    );
+    return (headers: headers, classes: classes, swift: swift);
+  }
+
+  /// Parses the requested frameworks (plus Swift adapter [headerFiles]) and
+  /// extracts Apple IR.
   ApiModule extractIos(
     AppleSdk sdk,
-    ({ObjCRequest request, List<String> parse}) r,
-  ) {
+    ({ObjCRequest request, List<String> parse}) r, {
+    List<String> headerFiles = const [],
+    List<String> extraClasses = const [],
+  }) {
     logger.info(
       'SDK detected: ${sdk.name} ${sdk.version} (${sdk.xcodeVersion})',
       event: 'sdk-detected',
@@ -318,8 +413,17 @@ final class CliContext {
           ? 'arm64-apple-ios${config.ios.minVersion}'
           : 'arm64-apple-ios${config.ios.minVersion}-simulator',
       sdkVersion: sdk.version,
-    )..parse([for (final f in r.parse) '$f/$f.h']);
-    final module = ex.extract(r.request);
+      fixtureModule: headerFiles.isEmpty ? null : 'SwiftAdapters',
+      fixtureArtifact: 'generated Swift adapters',
+    )..parse([for (final f in r.parse) '$f/$f.h'], headerFiles: headerFiles);
+    final module = ex.extract(
+      ObjCRequest(
+        frameworks: r.request.frameworks,
+        classes: [...r.request.classes, ...extraClasses],
+        entries: r.request.entries,
+        depth: r.request.depth,
+      ),
+    );
     logger.info('Parsed ${module.types.length} types', event: 'parsed');
     for (final d in module.diagnostics) {
       logger.diagnostic(d);

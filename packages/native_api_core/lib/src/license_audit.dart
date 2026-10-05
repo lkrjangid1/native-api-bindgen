@@ -460,11 +460,13 @@ final class LicenseAuditor {
     if (ext == '.pch' ||
         ext == '.pcm' ||
         ext == '.ast' ||
-        (ext == '.json' && text.contains(_clangAstMarker))) {
+        (ext == '.json' &&
+            (text.contains(_clangAstMarker) ||
+                text.contains(_symbolGraphMarker)))) {
       add(
         AuditStatus.block,
         'clang-ast-dump',
-        'Clang AST dump or precompiled header derived from SDK headers; never commit it.',
+        'Clang AST dump, Swift symbol graph or precompiled header derived from SDK modules; never commit it.',
       );
     }
     final top = segments.first;
@@ -599,6 +601,9 @@ String classifyLicenseText(String text) {
   if (t.contains('This software is provided \'as-is\'')) return 'Zlib';
   return 'UNKNOWN';
 }
+
+// `swift-symbolgraph-extract` output (generator metadata).
+final _symbolGraphMarker = RegExp(r'"generator"\s*:\s*"Apple Swift version');
 
 // `clang -ast-dump=json` root node.
 final _clangAstMarker = RegExp(r'"kind"\s*:\s*"TranslationUnitDecl"');

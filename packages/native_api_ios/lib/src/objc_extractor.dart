@@ -63,6 +63,7 @@ final class ObjCExtractor {
     this.sourceKind = 'headers',
     this.fixtureModule,
     this.linkOfficialDocs = true,
+    this.fixtureArtifact = 'fixture headers',
   }) : _clang = LibClang(libclangPath);
 
   final LibClang _clang;
@@ -84,6 +85,9 @@ final class ObjCExtractor {
 
   /// Whether to attach developer.apple.com links.
   final bool linkOfficialDocs;
+
+  /// Provenance artifact recorded for [fixtureModule] declarations.
+  final String fixtureArtifact;
 
   final _decls = <String, _Decl>{}; // id -> decl
   final _byName =
@@ -436,7 +440,7 @@ final class ObjCExtractor {
     sourceKind: sourceKind,
     sdkVersion: sdkVersion,
     localArtifact: d.module == fixtureModule
-        ? 'fixture headers'
+        ? fixtureArtifact
         : '${d.module}.framework',
     artifactEntry: p.basename(_clang.fileOf(d.cursor)),
     officialReference: _docLink(d),

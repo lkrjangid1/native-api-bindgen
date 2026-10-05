@@ -131,6 +131,44 @@ void main() {
     }
   });
 
+  group('Swift-only APIs through generated @objc adapters', () {
+    test('Swift class: init with labels, methods, properties, statics', () {
+      final c = ios.NABSwiftFixtures_Counter.alloc().initWithStart(
+        5,
+        label: 'apples'.toNSString(),
+      );
+      expect(c.incrementBy(2), 7);
+      expect(c.value, 7);
+      expect(c.describePrefix(null).toDartString(), 'apples=7');
+      c.label = 'pears'.toNSString();
+      expect(c.describePrefix('#'.toNSString()).toDartString(), '#pears=7');
+      expect(ios.NABSwiftFixtures_Counter.make().value, 0);
+      expect(ios.NABSwiftFixtures_Counter.instances, 0);
+    });
+
+    test('Swift struct: value semantics in a box, mutating method', () {
+      final t = ios.NABSwiftFixtures_Temperature.alloc().initWithCelsius(100);
+      expect(t.fahrenheit, 212);
+      final warmer = t.adding(5);
+      expect(warmer.celsius, 105);
+      expect(t.celsius, 100, reason: 'adding returns a new value');
+      t.reset();
+      expect(t.celsius, 0);
+      t.celsius = 37;
+      expect(t.fahrenheit, closeTo(98.6, 1e-9));
+    });
+
+    test('adapted types as parameters and results', () {
+      final c = ios.NABSwiftFixtures_Counter.alloc().initWithStart(
+        30,
+        label: 'c'.toNSString(),
+      );
+      expect(c.temperature().celsius, 30);
+      expect(c.isAbove(ios.NABSwiftFixtures_Temperature.alloc().initWithCelsius(20)), isTrue);
+      expect(c.isAbove(ios.NABSwiftFixtures_Temperature.alloc().initWithCelsius(40)), isFalse);
+    });
+  });
+
   testWidgets('app renders values from the bindings', (tester) async {
     await tester.pumpWidget(const SliceApp());
     expect(find.text('iOS'), findsOneWidget);
