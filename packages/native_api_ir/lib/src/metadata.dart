@@ -99,14 +99,20 @@ enum AnnotationClassification {
 /// A platform version: Android API level (`36`, `36.1`) or OS version.
 final class ApiVersion implements Comparable<ApiVersion> {
   /// Creates a version.
-  const ApiVersion(this.major, [this.minor = 0])
-    : assert(major >= 0 && minor >= 0);
+  const ApiVersion(this.major, [this.minor = 0, this.patch = 0])
+    : assert(major >= 0 && minor >= 0 && patch >= 0);
 
-  /// Parses `36`, `36.1`, `37.0`. Throws [FormatException] otherwise.
+  /// Parses `36`, `36.1`, `17.0.1`. Throws [FormatException] otherwise.
   factory ApiVersion.parse(String text) {
-    final m = RegExp(r'^(\d{1,6})(?:\.(\d{1,6}))?$').firstMatch(text.trim());
+    final m = RegExp(
+      r'^(\d{1,6})(?:\.(\d{1,6}))?(?:\.(\d{1,6}))?$',
+    ).firstMatch(text.trim());
     if (m == null) throw FormatException('Invalid version "$text"');
-    return ApiVersion(int.parse(m[1]!), m[2] == null ? 0 : int.parse(m[2]!));
+    return ApiVersion(
+      int.parse(m[1]!),
+      m[2] == null ? 0 : int.parse(m[2]!),
+      m[3] == null ? 0 : int.parse(m[3]!),
+    );
   }
 
   /// Parses or returns null.
@@ -125,9 +131,15 @@ final class ApiVersion implements Comparable<ApiVersion> {
   /// Minor version (Android minor SDK release), 0 if none.
   final int minor;
 
+  /// Patch version (Apple), 0 if none.
+  final int patch;
+
   @override
-  int compareTo(ApiVersion o) =>
-      major != o.major ? major.compareTo(o.major) : minor.compareTo(o.minor);
+  int compareTo(ApiVersion o) => major != o.major
+      ? major.compareTo(o.major)
+      : minor != o.minor
+      ? minor.compareTo(o.minor)
+      : patch.compareTo(o.patch);
 
   /// `<=`.
   bool operator <=(ApiVersion o) => compareTo(o) <= 0;
@@ -140,13 +152,74 @@ final class ApiVersion implements Comparable<ApiVersion> {
 
   @override
   bool operator ==(Object other) =>
-      other is ApiVersion && other.major == major && other.minor == minor;
+      other is ApiVersion &&
+      other.major == major &&
+      other.minor == minor &&
+      other.patch == patch;
 
   @override
-  int get hashCode => Object.hash(major, minor);
+  int get hashCode => Object.hash(major, minor, patch);
 
   @override
-  String toString() => minor == 0 ? '$major' : '$major.$minor';
+  String toString() => patch != 0
+      ? '$major.$minor.$patch'
+      : minor == 0
+      ? '$major'
+      : '$major.$minor';
+}
+
+/// Availability on one Apple platform (`ios`, `macos`, `maccatalyst`, ...).
+final class PlatformAvailability {
+  /// Creates platform availability.
+  const PlatformAvailability({
+    this.introduced,
+    this.deprecated,
+    this.obsoleted,
+    this.unavailable = false,
+  });
+
+  /// Decodes from JSON.
+  factory PlatformAvailability.fromJson(Map<String, Object?> json) {
+    ApiVersion? v(String k) => ApiVersion.tryParse(json.strOrNull(k));
+    return PlatformAvailability(
+      introduced: v('introduced'),
+      deprecated: v('deprecated'),
+      obsoleted: v('obsoleted'),
+      unavailable: json.boolOr('unavailable', false),
+    );
+  }
+
+  /// Introduced in.
+  final ApiVersion? introduced;
+
+  /// Deprecated in.
+  final ApiVersion? deprecated;
+
+  /// Obsoleted (removed) in.
+  final ApiVersion? obsoleted;
+
+  /// Unconditionally unavailable on this platform.
+  final bool unavailable;
+
+  /// JSON form.
+  Map<String, Object?> toJson() => {
+    if (introduced != null) 'introduced': '$introduced',
+    if (deprecated != null) 'deprecated': '$deprecated',
+    if (obsoleted != null) 'obsoleted': '$obsoleted',
+    if (unavailable) 'unavailable': true,
+  };
+
+  @override
+  bool operator ==(Object other) =>
+      other is PlatformAvailability &&
+      other.introduced == introduced &&
+      other.deprecated == deprecated &&
+      other.obsoleted == obsoleted &&
+      other.unavailable == unavailable;
+
+  @override
+  int get hashCode =>
+      Object.hash(introduced, deprecated, obsoleted, unavailable);
 }
 
 /// Lifecycle versions of a symbol on its platform.
@@ -157,6 +230,7 @@ final class Availability {
     this.deprecated,
     this.removed,
     this.sdkExtensions,
+    this.platforms = const {},
   });
 
   /// Decodes from JSON.
@@ -171,6 +245,14 @@ final class Availability {
       deprecated: v('deprecated'),
       removed: v('removed'),
       sdkExtensions: json.strOrNull('sdkExtensions'),
+      platforms: {
+        for (final e in (json.objOrNull('platforms') ?? const {}).entries)
+          e.key: PlatformAvailability.fromJson(
+            e.value is Map<String, Object?>
+                ? e.value! as Map<String, Object?>
+                : throw const FormatException('platforms entries are objects'),
+          ),
+      },
     );
   }
 
@@ -189,6 +271,9 @@ final class Availability {
   /// Raw SDK-extension availability (`api-versions.xml` `sdks` attribute).
   final String? sdkExtensions;
 
+  /// Apple: availability per platform (`ios`, `macos`, ...). Empty for Android.
+  final Map<String, PlatformAvailability> platforms;
+
   /// Whether the symbol is deprecated at or before [version].
   bool isDeprecatedAt(ApiVersion version) =>
       deprecated != null && deprecated! <= version;
@@ -204,6 +289,8 @@ final class Availability {
     if (deprecated != null) 'deprecated': '$deprecated',
     if (removed != null) 'removed': '$removed',
     if (sdkExtensions != null) 'sdkExtensions': sdkExtensions,
+    if (platforms.isNotEmpty)
+      'platforms': {for (final e in platforms.entries) e.key: e.value.toJson()},
   };
 
   @override
@@ -212,7 +299,8 @@ final class Availability {
       other.introduced == introduced &&
       other.deprecated == deprecated &&
       other.removed == removed &&
-      other.sdkExtensions == sdkExtensions;
+      other.sdkExtensions == sdkExtensions &&
+      _platformsEq(other.platforms, platforms);
 
   @override
   int get hashCode =>
@@ -372,6 +460,17 @@ final class Documentation {
     'sourceType': sourceType,
     if (reference != null) 'reference': reference,
   };
+}
+
+bool _platformsEq(
+  Map<String, PlatformAvailability> a,
+  Map<String, PlatformAvailability> b,
+) {
+  if (a.length != b.length) return false;
+  for (final e in a.entries) {
+    if (b[e.key] != e.value) return false;
+  }
+  return true;
 }
 
 bool _mapEq(Map<String, String> a, Map<String, String> b) {

@@ -39,7 +39,19 @@ enum PrimitiveKind {
   float('float', 'F'),
 
   /// 64-bit IEEE 754.
-  double_('double', 'D');
+  double_('double', 'D'),
+
+  /// C unsigned 8-bit (Apple). Not a JVM type.
+  uint8('uint8', '~u8'),
+
+  /// C unsigned 16-bit (Apple). Not a JVM type.
+  uint16('uint16', '~u16'),
+
+  /// C unsigned 32-bit (Apple). Not a JVM type.
+  uint32('uint32', '~u32'),
+
+  /// C unsigned 64-bit, e.g. `NSUInteger` on 64-bit Apple platforms.
+  uint64('uint64', '~u64');
 
   const PrimitiveKind(this.javaName, this.descriptor);
 
@@ -105,6 +117,17 @@ sealed class TypeRef {
       case 'array':
         return ArrayTypeRef(
           TypeRef.fromJson(json.obj('component'), depth + 1),
+          nullability: nullability,
+        );
+      case 'pointer':
+        return PointerTypeRef(
+          TypeRef.fromJson(json.obj('pointee'), depth + 1),
+          nullability: nullability,
+        );
+      case 'block':
+        return BlockTypeRef(
+          TypeRef.fromJson(json.obj('returnType'), depth + 1),
+          json.list('parameters', (j) => TypeRef.fromJson(j, depth + 1)),
           nullability: nullability,
         );
       default:
@@ -358,6 +381,106 @@ final class ArrayTypeRef extends TypeRef {
 
   @override
   int get hashCode => Object.hash(component, nullability);
+}
+
+/// A C pointer to a non-object type (`void *`, `NSError **`, `char *`).
+final class PointerTypeRef extends TypeRef {
+  /// Creates a pointer reference.
+  const PointerTypeRef(this.pointee, {this.nullability = Nullability.unknown});
+
+  /// Pointee type.
+  final TypeRef pointee;
+
+  @override
+  final Nullability nullability;
+
+  @override
+  String get erasedId => '${pointee.erasedId}*';
+
+  @override
+  String get display => '${pointee.display} *';
+
+  @override
+  Iterable<String> get referencedTypes => pointee.referencedTypes;
+
+  @override
+  PointerTypeRef withNullability(Nullability n) =>
+      PointerTypeRef(pointee, nullability: n);
+
+  @override
+  Map<String, Object?> toJson() => {
+    'kind': 'pointer',
+    'pointee': pointee.toJson(),
+    'nullability': nullability.name,
+  };
+
+  @override
+  bool operator ==(Object other) =>
+      other is PointerTypeRef &&
+      other.pointee == pointee &&
+      other.nullability == nullability;
+
+  @override
+  int get hashCode => Object.hash('ptr', pointee, nullability);
+}
+
+/// An Objective-C block (closure) type.
+final class BlockTypeRef extends TypeRef {
+  /// Creates a block reference.
+  const BlockTypeRef(
+    this.returnType,
+    this.parameters, {
+    this.nullability = Nullability.unknown,
+  });
+
+  /// Return type.
+  final TypeRef returnType;
+
+  /// Parameter types.
+  final List<TypeRef> parameters;
+
+  @override
+  final Nullability nullability;
+
+  @override
+  String get erasedId =>
+      'block(${parameters.map((p) => p.erasedId).join(',')})';
+
+  @override
+  String get display =>
+      '${returnType.display} (^)(${parameters.map((p) => p.display).join(', ')})';
+
+  @override
+  Iterable<String> get referencedTypes sync* {
+    yield* returnType.referencedTypes;
+    for (final p in parameters) {
+      yield* p.referencedTypes;
+    }
+  }
+
+  @override
+  BlockTypeRef withNullability(Nullability n) =>
+      BlockTypeRef(returnType, parameters, nullability: n);
+
+  @override
+  Map<String, Object?> toJson() => {
+    'kind': 'block',
+    'returnType': returnType.toJson(),
+    if (parameters.isNotEmpty)
+      'parameters': [for (final p in parameters) p.toJson()],
+    'nullability': nullability.name,
+  };
+
+  @override
+  bool operator ==(Object other) =>
+      other is BlockTypeRef &&
+      other.returnType == returnType &&
+      other.nullability == nullability &&
+      _listEq(other.parameters, parameters);
+
+  @override
+  int get hashCode =>
+      Object.hash('block', returnType, Object.hashAll(parameters), nullability);
 }
 
 /// A generic type parameter declaration: `T extends Comparable<T>`.

@@ -78,10 +78,15 @@ final class OverloadNamer {
       PrimitiveKind.short => 6,
       PrimitiveKind.byte => 7,
       PrimitiveKind.void_ => 8,
+      PrimitiveKind.uint8 ||
+      PrimitiveKind.uint16 ||
+      PrimitiveKind.uint32 ||
+      PrimitiveKind.uint64 => 9,
     },
     DeclaredTypeRef(:final name) => name == 'java.lang.String' ? 10 : 11,
     TypeVariableRef() || WildcardTypeRef() => 12,
     ArrayTypeRef() => 13,
+    PointerTypeRef() || BlockTypeRef() => 14,
   };
 
   /// Signature-derived suffix: `String$int`, `intArray`, or `noArgs`.
@@ -99,5 +104,7 @@ final class OverloadNamer {
           ? name.replaceAll(RegExp(r'[.$]'), '_')
           : name.substring(name.lastIndexOf(RegExp(r'[.$]')) + 1),
     TypeVariableRef() || WildcardTypeRef() => 'Object',
+    PointerTypeRef(:final pointee) => '${_typeToken(pointee, qualified)}Ptr',
+    BlockTypeRef() => 'Block',
   };
 }

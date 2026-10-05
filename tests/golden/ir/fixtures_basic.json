@@ -1,7 +1,7 @@
 {
   "generatorVersion": "0.1.0-dev.1",
   "platform": "android",
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "sdkVersion": "fixture",
   "types": [
     {

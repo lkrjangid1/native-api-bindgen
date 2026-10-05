@@ -136,6 +136,9 @@ final class DartJniTypeMapper {
       case WildcardTypeRef(:final bound, :final isSuper):
         if (bound == null || isSuper) return _declared('java.lang.Object');
         return map(bound, typeVariableBounds: typeVariableBounds);
+      case PointerTypeRef() || BlockTypeRef():
+        // Not JVM types; never produced by the Android parser.
+        return _declared('java.lang.Object');
     }
   }
 
@@ -275,6 +278,8 @@ final class TsJsiTypeMapper {
       case WildcardTypeRef(:final bound, :final isSuper):
         if (bound == null || isSuper) return _declared('java.lang.Object');
         return map(bound, typeVariableBounds: typeVariableBounds);
+      case PointerTypeRef() || BlockTypeRef():
+        return _declared('java.lang.Object');
     }
   }
 

@@ -216,6 +216,59 @@ void main() {
     });
   });
 
+  group('schema v2 (Apple)', () {
+    test(
+      'pointer, block, unsigned and per-platform availability round-trip',
+      () {
+        const refs = <TypeRef>[
+          PrimitiveTypeRef(PrimitiveKind.uint64),
+          PointerTypeRef(PointerTypeRef(DeclaredTypeRef('Foundation.NSError'))),
+          BlockTypeRef(
+            PrimitiveTypeRef(PrimitiveKind.void_),
+            [
+              PrimitiveTypeRef(PrimitiveKind.boolean),
+              DeclaredTypeRef(
+                'Foundation.NSError',
+                nullability: Nullability.nullable,
+              ),
+            ],
+            nullability: Nullability.nonnull,
+          ),
+        ];
+        for (final r in refs) {
+          expect(TypeRef.fromJson(r.toJson()), r);
+        }
+        const a = Availability(
+          platforms: {
+            'ios': PlatformAvailability(
+              introduced: ApiVersion(15, 0),
+              deprecated: ApiVersion(17, 0, 1),
+            ),
+            'macos': PlatformAvailability(unavailable: true),
+          },
+        );
+        expect(Availability.fromJson(a.toJson()), a);
+        expect('${ApiVersion.parse('17.0.1')}', '17.0.1');
+        expect(ApiVersion.parse('17.0.1') > ApiVersion.parse('17'), isTrue);
+      },
+    );
+
+    test('v1 documents still decode', () {
+      final v1 = {
+        'schemaVersion': 1,
+        'platform': 'android',
+        'sdkVersion': '36',
+        'generatorVersion': 'x',
+        'types': <Object?>[],
+      };
+      expect(ApiModule.fromJson(v1).types, isEmpty);
+      expect(
+        () => ApiModule.fromJson({...v1, 'schemaVersion': 99}),
+        throwsFormatException,
+      );
+    });
+  });
+
   group('diagnostics', () {
     test('codes are unique and stable', () {
       final codes = DiagnosticCode.values.map((c) => c.code).toSet();

@@ -43,7 +43,7 @@ ApiModule planJvmTarget(ApiModule module, {bool callbacks = true}) {
       DeclaredTypeRef(:final typeArguments) => typeArguments.any(walk),
       ArrayTypeRef(:final component) => walk(component),
       WildcardTypeRef(:final bound) => bound != null && walk(bound),
-      PrimitiveTypeRef() => false,
+      PrimitiveTypeRef() || PointerTypeRef() || BlockTypeRef() => false,
     };
     return refs.any(walk);
   }

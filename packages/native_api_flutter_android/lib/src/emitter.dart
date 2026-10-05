@@ -1001,6 +1001,10 @@ final class DartJniEmitter {
         PrimitiveKind.float => ('JFloat', 'toDartDouble'),
         PrimitiveKind.double_ => ('JDouble', 'toDartDouble'),
         PrimitiveKind.void_ => throw StateError('void parameter'),
+        PrimitiveKind.uint8 ||
+        PrimitiveKind.uint16 ||
+        PrimitiveKind.uint32 ||
+        PrimitiveKind.uint64 => throw StateError('not a JVM type'),
       };
       return '($expr as jni\$.$box).$conv(releaseOriginal: true)';
     }
@@ -1023,6 +1027,10 @@ final class DartJniEmitter {
         PrimitiveKind.float => 'toJFloat',
         PrimitiveKind.double_ => 'toJDouble',
         PrimitiveKind.void_ => throw StateError('void'),
+        PrimitiveKind.uint8 ||
+        PrimitiveKind.uint16 ||
+        PrimitiveKind.uint32 ||
+        PrimitiveKind.uint64 => throw StateError('not a JVM type'),
       };
       return '$expr.$conv().reference.toPointer()';
     }

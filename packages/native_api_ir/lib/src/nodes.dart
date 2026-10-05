@@ -4,7 +4,9 @@ import 'metadata.dart';
 import 'types.dart';
 
 /// IR schema version. Bump on any incompatible JSON change.
-const int irSchemaVersion = 1;
+/// v2 (backward compatible with v1 documents): unsigned primitives, pointer
+/// and block types, Apple per-platform availability, patch versions.
+const int irSchemaVersion = 2;
 
 /// Declaration modifiers (union over supported platforms).
 enum Modifier {
@@ -689,7 +691,7 @@ final class ApiModule {
   /// Decodes from JSON, validating structure.
   factory ApiModule.fromJson(Map<String, Object?> json) {
     final schema = json.intOrNull('schemaVersion');
-    if (schema != irSchemaVersion) {
+    if (schema == null || schema < 1 || schema > irSchemaVersion) {
       throw FormatException(
         'Unsupported IR schemaVersion $schema (expected $irSchemaVersion)',
       );
