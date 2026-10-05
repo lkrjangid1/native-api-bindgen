@@ -157,6 +157,45 @@ packages:
     expect(report.status, AuditStatus.reviewRequired);
   });
 
+  test('allowlist waives reviewed files only when the checksum matches', () {
+    write(
+      'tools/wrapper.jar',
+      Uint8List.fromList([0x50, 0x4B, 0x03, 0x04, 1, 2, 3, 4, 5, 6]),
+    );
+    write('ios/Foo.framework/x.h', 'int x;\n');
+    const sha =
+        'f1f1ae6e3c3c0f3c3d3e6b1c0d4c8bbd2c96f3bc3b5d7b2b5d3c2e7b0f2b1c4a';
+    write(LicenseAuditor.allowlistFile, '''
+entries:
+  - path: tools/wrapper.jar
+    sha256: $sha
+    license: Apache-2.0
+    justification: test
+  - path: ios/Foo.framework/x.h
+    sha256: $sha
+    license: x
+    justification: cannot waive BLOCK
+''');
+    var r = rules(auditor.audit(tmp.path));
+    expect(r['tools/wrapper.jar:allowlist-mismatch'], AuditStatus.block);
+    final real = LicenseAuditor.sha256Of(
+      File(p.join(tmp.path, 'tools/wrapper.jar')),
+    );
+    write(LicenseAuditor.allowlistFile, '''
+entries:
+  - path: tools/wrapper.jar
+    sha256: $real
+    license: Apache-2.0
+    justification: reviewed
+''');
+    r = rules(auditor.audit(tmp.path));
+    expect(r.keys.where((k) => k.startsWith('tools/wrapper.jar')), isEmpty);
+    expect(
+      r['ios/Foo.framework/x.h:apple-framework-bundle'],
+      AuditStatus.block,
+    );
+  });
+
   test('license text classification', () {
     expect(
       classifyLicenseText('Apache License\n Version 2.0, January 2004'),

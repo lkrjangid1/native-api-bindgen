@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:crypto/crypto.dart';
 import 'package:path/path.dart' as p;
 import 'package:yaml/yaml.dart';
 
@@ -249,16 +250,75 @@ final class LicenseAuditor {
   /// ignored local output is not reported; otherwise walks the directory.
   AuditReport audit(String root, {bool dependencies = true}) {
     final files = _listFiles(root);
+    final allow = _loadAllowlist(root);
     final findings = <AuditFinding>[];
     final lockfiles = <String>[];
     for (final rel in files) {
-      findings.addAll(scanFile(root, rel));
+      var fileFindings = scanFile(root, rel);
+      final entry = allow[rel];
+      if (entry != null && fileFindings.isNotEmpty) {
+        fileFindings = _applyAllowlist(root, rel, entry, fileFindings);
+      }
+      findings.addAll(fileFindings);
       if (p.basename(rel) == 'pubspec.lock') lockfiles.add(rel);
     }
     final deps = dependencies
         ? _auditLockfiles(root, lockfiles)
         : <DependencyLicense>[];
     return AuditReport(findings, deps)..filesScanned = files.length;
+  }
+
+  /// SHA-256 (hex) of [f].
+  static String sha256Of(File f) =>
+      sha256.convert(f.readAsBytesSync()).toString();
+
+  /// File name of the reviewed-exceptions list at the audit root.
+  static const allowlistFile = 'license-audit-allowlist.yaml';
+
+  /// Reads `license-audit-allowlist.yaml`: entries pinned by SHA-256 that a
+  /// human reviewed. Missing file = no exceptions.
+  Map<String, Map<Object?, Object?>> _loadAllowlist(String root) {
+    final f = File(p.join(root, allowlistFile));
+    if (!f.existsSync()) return const {};
+    final doc = loadYaml(f.readAsStringSync());
+    final entries = doc is Map ? doc['entries'] : null;
+    if (entries is! List) return const {};
+    return {
+      for (final e in entries)
+        if (e is Map && e['path'] is String) e['path'] as String: e,
+    };
+  }
+
+  /// Waives WARN / REVIEW_REQUIRED findings for an allowlisted file whose
+  /// checksum matches. BLOCK findings are never waived; a checksum mismatch
+  /// is itself a BLOCK.
+  List<AuditFinding> _applyAllowlist(
+    String root,
+    String rel,
+    Map<Object?, Object?> entry,
+    List<AuditFinding> found,
+  ) {
+    final digest = sha256
+        .convert(File(p.join(root, rel)).readAsBytesSync())
+        .toString();
+    final pinned = '${entry['sha256'] ?? ''}'.toLowerCase();
+    final complete =
+        entry['license'] is String && entry['justification'] is String;
+    if (pinned != digest || !complete) {
+      return [
+        ...found,
+        AuditFinding(
+          rel,
+          AuditStatus.block,
+          'allowlist-mismatch',
+          'Allowlisted file changed or entry incomplete (sha256 $digest); re-review it.',
+        ),
+      ];
+    }
+    return [
+      for (final f in found)
+        if (f.status == AuditStatus.block) f,
+    ];
   }
 
   /// Scans one file. Returns non-PASS findings.
