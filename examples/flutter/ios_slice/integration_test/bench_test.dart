@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io' show ProcessInfo;
 
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -78,6 +79,16 @@ void main() {
         if (d.toList().length != size) throw StateError('size');
       });
     }
+
+    // Memory per handle: RSS before/after 10k live NSObject handles.
+    // Warm-up allocation first (heap growth), then 50k live handles.
+    var warm = [for (var i = 0; i < 20000; i++) ios.NSOperationQueue.new$()];
+    warm = [];
+    final rss0 = ProcessInfo.currentRss;
+    final keep = [for (var i = 0; i < 50000; i++) ios.NSOperationQueue.new$()];
+    final rss1 = ProcessInfo.currentRss;
+    results['rss_per_handle_bytes'] = ((rss1 - rss0) / keep.length).round();
+    results['rss_handles_measured'] = keep.length + warm.length;
 
     const channel = MethodChannel('nab/bench');
     results['methodchannel_noop_us'] = await usPerAsyncCall(

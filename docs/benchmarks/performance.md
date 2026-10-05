@@ -71,6 +71,20 @@ JSON: [`bytes-2026-10-05.json`](bytes-2026-10-05.json). Each value is the mean o
 | React Native Android: same with `number[]` (element by element) | 99.6 ms | — |
 | React Native iOS (release, simulator): `nsDataFromBytes` + `bytesFromNSData` | 0.153 ms | 1.75 ms |
 
+## Memory and callback latency (WP7) — emulator / simulator
+
+JSON: [`perf-2026-10-05-wp7.json`](perf-2026-10-05-wp7.json).
+
+| Measurement | Value |
+|---|---|
+| Flutter Android (profile): RSS per live generated handle (`Bundle`), 50k handles after a warm-up, median of 3 runs | 216 bytes (runs: 216, 470, 216) |
+| Flutter iOS (debug): RSS per live `NSOperationQueue` handle (Dart wrapper + native object), 50k, 3 runs | 906 / 923 / 930 bytes |
+| React Native Android (release): PSS per live `Bundle` handle, 10k handles, single run | 46 bytes |
+| React Native Android: `Handler.post` → JS `Runnable` (async callback), median of 200, single run | 125 µs |
+| React Native iOS (release): `NSOperationQueue` block (background thread) → JS, median of 200, single run | 13 µs |
+
+Flutter Android's `Handler.post` → Dart latency (median 46653 µs over the 3 runs) is dominated by when the main Looper runs the posted message during frame work in profile mode, not by the binding call; React Native's JS thread is separate from the main thread, so its posted callbacks arrive faster.
+
 ## Not measured yet
 
-Physical devices; release-mode Flutter on iOS; callback latency on React Native; memory per handle.
+Physical devices (none measured: no consent was given to install on the attached phone); release-mode Flutter on iOS (the simulator supports debug only).

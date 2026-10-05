@@ -1,0 +1,87 @@
+{
+  "android_aab": {
+    "baseline": {
+      "aab_bytes": 38041563,
+      "dex_bytes": 526004,
+      "libapp_so_arm64_bytes": 2687920,
+      "libdartjni_so_arm64_bytes": 0
+    },
+    "imported-unused": {
+      "aab_bytes": 38227476,
+      "dex_bytes": 533700,
+      "libapp_so_arm64_bytes": 2687920,
+      "libdartjni_so_arm64_bytes": 131432
+    },
+    "one-api-fullsdk": {
+      "aab_bytes": 38334736,
+      "dex_bytes": 533700,
+      "libapp_so_arm64_bytes": 2753456,
+      "libdartjni_so_arm64_bytes": 131432
+    },
+    "one-api-slice": {
+      "aab_bytes": 38334631,
+      "dex_bytes": 533700,
+      "libapp_so_arm64_bytes": 2753456,
+      "libdartjni_so_arm64_bytes": 131432
+    }
+  },
+  "android_cold_start_emulator": {
+    "baseline": {
+      "median_ms": 4570.5,
+      "runs": [
+        4538,
+        4471,
+        4617,
+        4251,
+        4924,
+        4717,
+        4343,
+        4603,
+        5406,
+        3373
+      ]
+    },
+    "device": "emulator-5554",
+    "one-api-slice": {
+      "median_ms": 4793.5,
+      "runs": [
+        4393,
+        5143,
+        3573,
+        5352,
+        4898,
+        4601,
+        5124,
+        3896,
+        4851,
+        4736
+      ]
+    }
+  },
+  "ios_release_device_arm64": {
+    "baseline": {
+      "app_framework_binary_bytes": 2883888,
+      "flutter_framework_binary_bytes": 8975392,
+      "objective_c_framework_bytes": 0,
+      "runner_app_bytes": 13160396
+    },
+    "one-api-full": {
+      "app_framework_binary_bytes": 2916992,
+      "flutter_framework_binary_bytes": 8975392,
+      "objective_c_framework_bytes": 268989,
+      "runner_app_bytes": 13463317
+    },
+    "one-api-slice": {
+      "app_framework_binary_bytes": 2916992,
+      "flutter_framework_binary_bytes": 8975392,
+      "objective_c_framework_bytes": 269005,
+      "runner_app_bytes": 13463333
+    },
+    "slice-example": {
+      "app_framework_binary_bytes": 3812080,
+      "flutter_framework_binary_bytes": 8975392,
+      "objective_c_framework_bytes": 268813,
+      "runner_app_bytes": 15039537
+    }
+  }
+}

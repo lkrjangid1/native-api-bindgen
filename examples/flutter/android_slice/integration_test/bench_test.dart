@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io' show ProcessInfo;
 
 import 'package:android_slice/src/generated/bindings.dart';
 import 'package:flutter/services.dart';
@@ -98,6 +99,19 @@ void main() {
       });
     }
 
+    // Memory per handle: RSS before/after 10k live Bundle handles.
+    // Warm-up allocation first (heap growth), then 50k live handles.
+    for (final b in [for (var i = 0; i < 20000; i++) Bundle()]) {
+      b.release();
+    }
+    final rss0 = ProcessInfo.currentRss;
+    final keep = [for (var i = 0; i < 50000; i++) Bundle()];
+    final rss1 = ProcessInfo.currentRss;
+    results['rss_per_handle_bytes'] = ((rss1 - rss0) / keep.length).round();
+    for (final b in keep) {
+      b.release();
+    }
+
     const channel = MethodChannel('nab/bench');
     results['methodchannel_noop_us'] = await usPerAsyncCall(
       5000,
@@ -171,5 +185,5 @@ void main() {
 
     // ignore: avoid_print
     print('NAB_BENCH ${jsonEncode(results)}');
-  });
+  }, timeout: const Timeout(Duration(minutes: 10)));
 }

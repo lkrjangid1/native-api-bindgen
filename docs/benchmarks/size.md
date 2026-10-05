@@ -31,6 +31,34 @@ Findings:
 - **Unlike Dart, React Native does not remove unused bindings.** Metro does not tree-shake and the C++ member tables are looked up by name at runtime, so every generated class ships. With full-SDK bindings the APK grows by 39 MB. Generate only what the app uses (`entries` + `depth`); the slice costs 0.69 MB (runtime + 24 types).
 - The fixed overhead (runtime + 24 types) is ~452 KB of Hermes bytecode and ~322 KB of native code.
 
+## Flutter on iOS (release, device arm64, unsigned)
+
+Measured 2026-10-05 with `tools/measure_ios_size.py` (`flutter build ios --release --no-codesign`, Xcode 27.0 SDK, deployment target 15.0). Raw data: [`size-startup-2026-10-05-wp7.json`](size-startup-2026-10-05-wp7.json). Sizes are of the built `Runner.app` (an IPA is not produced without signing).
+
+| Variant | `Runner.app` bytes | Δ vs baseline | `App.framework/App` (Dart AOT) | `objective_c.framework` |
+|---|---:|---:|---:|---:|
+| baseline (no bindings) | 13,160,396 | — | 2,883,888 | 0 |
+| one API (`UIDevice.systemName`), 6-class bindings | 13,463,333 | +302,937 | 2,916,992 | 269,005 |
+| one API, **bindings for all of Foundation + UIKit** | 13,463,317 | +302,921 | 2,916,992 | 268,989 |
+| full example (`examples/flutter/ios_slice`, incl. Swift adapters) | 15,039,537 | +1,879,141 | 3,812,080 | 268,813 |
+
+The Dart AOT binary is identical with 6-class bindings and with bindings for all of Foundation + UIKit: unused generated APIs are removed on iOS too. The fixed overhead is `package:objective_c`'s framework (~269 KB) plus 33,104 bytes of AOT code for the call.
+
+## Android App Bundle (Flutter, release)
+
+`tools/measure_size.py --aab` (all ABIs in the bundle).
+
+| Variant | `.aab` bytes | Δ vs baseline | arm64 `libapp.so` | arm64 `libdartjni.so` |
+|---|---:|---:|---:|---:|
+| baseline | 38,041,563 | — | 2,687,920 | 0 |
+| bindings imported, unused | 38,227,476 | +185,913 | 2,687,920 | 131,432 |
+| one API, slice bindings | 38,334,631 | +293,068 | 2,753,456 | 131,432 |
+| one API, bindings for every android.jar package | 38,334,736 | +293,173 | 2,753,456 | 131,432 |
+
+## Startup (Android emulator)
+
+`tools/measure_startup.py` (`am start -W` TotalTime, 10 cold starts after one warm-up, API 37 arm64 emulator with software GPU): baseline median 4570.5 ms (range 3373–5406), one API with slice bindings 4793.5 ms (range 3573–5352). The ranges overlap almost entirely; this emulator cannot resolve a startup difference. Bindings do no work at startup (lazy class/method IDs).
+
 ## Not measured yet
 
-Startup time, memory, AAB/split sizes and other ABIs. No claims are made about them.
+Physical devices (none measured without consent), iOS startup, React Native iOS size.

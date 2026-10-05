@@ -1,0 +1,103 @@
+{
+  "flutter_android_median": {
+    "callback_post_to_dart_async_median_us": 46653.0,
+    "callback_post_to_dart_sync_median_us": 46276.0,
+    "callback_sync_dispatch_ns": 145003.25,
+    "jni_bytes_roundtrip_16mb_ms": 29.217599999999997,
+    "jni_bytes_roundtrip_1mb_ms": 2.3891,
+    "jni_direct_buffer_fill_16mb_ms": 8.242700000000001,
+    "jni_direct_buffer_fill_1mb_ms": 1.143,
+    "jni_instance_call_int_ns": 1174.425,
+    "jni_static_call_object_ns": 3847.16,
+    "jni_string_roundtrip_ns": 12640.35,
+    "methodchannel_bundle_size_us": 292.4444,
+    "methodchannel_bytes_roundtrip_16mb_ms": 60.897,
+    "methodchannel_bytes_roundtrip_1mb_ms": 9.729,
+    "methodchannel_noop_us": 286.4902,
+    "methodchannel_string_roundtrip_us": 296.4386,
+    "rss_per_handle_bytes": 216
+  },
+  "flutter_android_profile_emulator_runs": [
+    {
+      "callback_post_to_dart_async_median_us": 32146.0,
+      "callback_post_to_dart_sync_median_us": 28281.0,
+      "callback_sync_dispatch_ns": 139573.4,
+      "jni_bytes_roundtrip_16mb_ms": 30.569499999999998,
+      "jni_bytes_roundtrip_1mb_ms": 2.1825,
+      "jni_direct_buffer_fill_16mb_ms": 8.242700000000001,
+      "jni_direct_buffer_fill_1mb_ms": 1.143,
+      "jni_instance_call_int_ns": 937.275,
+      "jni_static_call_object_ns": 3847.16,
+      "jni_string_roundtrip_ns": 10291.2,
+      "methodchannel_bundle_size_us": 282.091,
+      "methodchannel_bytes_roundtrip_16mb_ms": 64.02,
+      "methodchannel_bytes_roundtrip_1mb_ms": 5.165,
+      "methodchannel_noop_us": 263.812,
+      "methodchannel_string_roundtrip_us": 296.4386,
+      "rss_per_handle_bytes": 216
+    },
+    {
+      "callback_post_to_dart_async_median_us": 50055.0,
+      "callback_post_to_dart_sync_median_us": 53103.0,
+      "callback_sync_dispatch_ns": 149712.2,
+      "jni_bytes_roundtrip_16mb_ms": 29.217599999999997,
+      "jni_bytes_roundtrip_1mb_ms": 3.2729999999999997,
+      "jni_direct_buffer_fill_16mb_ms": 12.4375,
+      "jni_direct_buffer_fill_1mb_ms": 2.4739,
+      "jni_instance_call_int_ns": 1940.07,
+      "jni_static_call_object_ns": 3126.14,
+      "jni_string_roundtrip_ns": 14180.8,
+      "methodchannel_bundle_size_us": 294.73,
+      "methodchannel_bytes_roundtrip_16mb_ms": 55.799,
+      "methodchannel_bytes_roundtrip_1mb_ms": 11.118,
+      "methodchannel_noop_us": 355.1402,
+      "methodchannel_string_roundtrip_us": 296.3992,
+      "rss_per_handle_bytes": 470
+    },
+    {
+      "callback_post_to_dart_async_median_us": 46653.0,
+      "callback_post_to_dart_sync_median_us": 46276.0,
+      "callback_sync_dispatch_ns": 145003.25,
+      "jni_bytes_roundtrip_16mb_ms": 28.6137,
+      "jni_bytes_roundtrip_1mb_ms": 2.3891,
+      "jni_direct_buffer_fill_16mb_ms": 5.4682,
+      "jni_direct_buffer_fill_1mb_ms": 0.687,
+      "jni_instance_call_int_ns": 1174.425,
+      "jni_static_call_object_ns": 4266.58,
+      "jni_string_roundtrip_ns": 12640.35,
+      "methodchannel_bundle_size_us": 292.4444,
+      "methodchannel_bytes_roundtrip_16mb_ms": 60.897,
+      "methodchannel_bytes_roundtrip_1mb_ms": 9.729,
+      "methodchannel_noop_us": 286.4902,
+      "methodchannel_string_roundtrip_us": 344.719,
+      "rss_per_handle_bytes": 216
+    }
+  ],
+  "flutter_ios_debug_simulator_rss_per_handle_bytes_runs": [
+    906,
+    923,
+    930
+  ],
+  "rn_android_release_emulator": {
+    "callback_post_to_js_median_us": 125,
+    "jsi_jni_bytes_roundtrip_16mb_us": 22358,
+    "jsi_jni_bytes_roundtrip_1mb_us": 1539,
+    "jsi_jni_instance_call_int_ns": 851,
+    "jsi_jni_number_array_roundtrip_1mb_us": 75120,
+    "jsi_jni_static_call_object_ns": 5028,
+    "jsi_jni_string_return_ns": 1372,
+    "promise_variant_us": 538,
+    "pss_per_handle_bytes": 46
+  },
+  "rn_ios_release_simulator": {
+    "block_from_background_to_js_median_us": 13,
+    "jsi_objc_class_getter_object_ns": 2286,
+    "jsi_objc_getter_int_ns": 1180,
+    "jsi_objc_nsdata_roundtrip_16mb_us": 2199,
+    "jsi_objc_nsdata_roundtrip_1mb_us": 176,
+    "jsi_objc_string_return_ns": 884,
+    "jsi_objc_uikit_getter_main_thread_ns": 10816,
+    "jsi_objc_uikit_struct_roundtrip_ns": 26394,
+    "promise_variant_us": 11
+  }
+}

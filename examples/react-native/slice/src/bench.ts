@@ -4,11 +4,20 @@
  */
 import { Platform } from 'react-native';
 
-import { Arrays, Bundle, Uri } from '../native-api-bindings';
+import {
+  Arrays,
+  Bundle,
+  Debug,
+  Handler,
+  Looper,
+  Runnable,
+  Uri,
+} from '../native-api-bindings';
 import {
   bytesFromNSData,
   nsDataFromBytes,
   NSFileManager,
+  NSOperationQueue,
   NSProcessInfo,
   UIView,
 } from '../native-api-bindings/ios';
@@ -57,6 +66,32 @@ export async function benchmarks(): Promise<Record<string, number>> {
         if (Arrays.copyOf(data, size).length !== size) throw new Error('size');
       });
     }
+    // Memory per handle: PSS before/after 10k live Bundle handles.
+    const pss0 = Debug.getPss();
+    const keep: Bundle[] = [];
+    for (let i = 0; i < 10000; i++) keep.push(Bundle.new());
+    const pss1 = Debug.getPss();
+    r.pss_per_handle_bytes = Math.round(
+      ((Number(pss1) - Number(pss0)) * 1024) / keep.length,
+    );
+    for (const b of keep) b.release();
+    // Java -> JS callback latency: Handler.post on the main Looper.
+    const handler = Handler.new$Looper(Looper.getMainLooper()!);
+    const samples: number[] = [];
+    for (let i = 0; i < 200; i++) {
+      const t0 = performance.now();
+      await new Promise<void>(resolve => {
+        const task = Runnable.implement(
+          { run: () => resolve() },
+          { async: ['run'] },
+        );
+        handler.post(task);
+        task.release();
+      });
+      samples.push(performance.now() - t0);
+    }
+    samples.sort((a, b) => a - b);
+    r.callback_post_to_js_median_us = Math.round(samples[100] * 1000);
     const plain = Array.from(new Uint8Array(1 << 20).fill(7));
     r.jsi_jni_number_array_roundtrip_1mb_us = usPerCall(3, () => {
       if (Arrays.copyOf(plain, plain.length).length !== plain.length) throw new Error('size');
@@ -76,6 +111,16 @@ export async function benchmarks(): Promise<Record<string, number>> {
     r.jsi_objc_uikit_struct_roundtrip_ns = nsPerCall(10000, () => {
       view.frame = view.frame;
     });
+    // Background thread -> JS block latency (NSOperationQueue).
+    const queue = NSOperationQueue.new$();
+    const lat: number[] = [];
+    for (let k = 0; k < 200; k++) {
+      const t0 = performance.now();
+      await new Promise<void>(resolve => queue.addOperationWithBlock(() => resolve()));
+      lat.push(performance.now() - t0);
+    }
+    lat.sort((a, b) => a - b);
+    r.block_from_background_to_js_median_us = Math.round(lat[100] * 1000);
     for (const [label, size] of [['1mb', 1 << 20], ['16mb', 16 << 20]] as const) {
       const data = new Uint8Array(size).fill(7);
       r[`jsi_objc_nsdata_roundtrip_${label}_us`] = usPerCall(10, () => {

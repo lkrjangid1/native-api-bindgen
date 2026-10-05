@@ -13,7 +13,11 @@ Variants:
                    package (proves unused generated APIs are tree-shaken)
   slice-example    examples/flutter/android_slice (all demos)
 
-Usage: tools/measure_size.py [--platform 36] [--keep]
+With --aab, builds release app bundles (`flutter build appbundle`) instead
+and reports the .aab size and arm64 libapp.so inside it (baseline,
+one-api-slice and one-api-fullsdk only).
+
+Usage: tools/measure_size.py [--platform 36] [--keep] [--aab]
 Requires Flutter, an Android SDK with the platform installed, and a JDK.
 """
 import argparse
@@ -109,6 +113,20 @@ def generate(project, platform, entries=None, packages=None):
     run(args, cwd=ROOT)
 
 
+def build_aab(project):
+    run(["flutter", "pub", "get"], cwd=project)
+    run(["flutter", "build", "appbundle", "--release"], cwd=project)
+    aab = os.path.join(project, "build", "app", "outputs", "bundle", "release", "app-release.aab")
+    z = zipfile.ZipFile(aab)
+    sizes = {i.filename: i.file_size for i in z.infolist()}
+    return {
+        "aab_bytes": os.path.getsize(aab),
+        "libapp_so_arm64_bytes": sizes.get("base/lib/arm64-v8a/libapp.so", 0),
+        "libdartjni_so_arm64_bytes": sizes.get("base/lib/arm64-v8a/libdartjni.so", 0),
+        "dex_bytes": sum(v for k, v in sizes.items() if k.endswith(".dex")),
+    }
+
+
 def build(project):
     run(["flutter", "pub", "get"], cwd=project)
     run(["flutter", "build", "apk", "--release", "--target-platform", "android-arm64"], cwd=project)
@@ -132,6 +150,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--platform", default="36")
     ap.add_argument("--keep", action="store_true")
+    ap.add_argument("--aab", action="store_true")
     a = ap.parse_args()
     work = tempfile.mkdtemp(prefix="nab_size_")
     results = {}
@@ -149,12 +168,15 @@ def main():
             if entries or packages:
                 generate(d, a.platform, entries, packages)
             print(f"building {name} ...", file=sys.stderr)
-            results[name] = build(d)
+            results[name] = build_aab(d) if a.aab else build(d)
 
         variant("baseline", False, BASELINE_MAIN)
         variant("imported-unused", True, UNUSED_MAIN, entries=SLICE_ENTRIES)
         variant("one-api-slice", True, ONE_API_MAIN, entries=SLICE_ENTRIES)
         variant("one-api-fullsdk", True, ONE_API_MAIN, packages=all_packages(a.platform))
+        if a.aab:
+            print(json.dumps(results, indent=2, sort_keys=True))
+            return
         ex = os.path.join(ROOT, "examples", "flutter", "android_slice")
         generate(ex, a.platform, entries=SLICE_ENTRIES)
         print("building slice-example ...", file=sys.stderr)
