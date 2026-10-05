@@ -202,13 +202,6 @@ ApiModule planTsObjC(ApiModule module) {
       );
     }
     final typeDiags = <Diagnostic>[
-      if (t.kind == TypeKind.protocol)
-        d(
-          DiagnosticCode.unsupportedCallback,
-          t.id,
-          'Implementing Objective-C protocols in JavaScript is not supported yet; the protocol is usable for typing and calling',
-          Severity.info,
-        ),
       if (t.kind == TypeKind.struct && !representableStruct(t.id))
         d(
           DiagnosticCode.unsupportedType,

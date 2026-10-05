@@ -9,6 +9,9 @@
 
 #include <cstring>
 #include <string>
+#include <algorithm>
+#include <atomic>
+#include <mutex>
 #include <thread>
 #include <unordered_map>
 #include <utility>
@@ -27,6 +30,9 @@ Tables gTables{};
 std::shared_ptr<CallInvoker> gInvoker;
 std::thread::id gJsThread;
 jsi::Runtime* gRuntime = nullptr;
+// True while the JS thread waits in dispatch_sync for the main thread: a
+// protocol method needing a JS result must not block the main thread then.
+std::atomic<bool> gJsWaitingOnMain{false};
 
 // ------------------------------------------------------------------ errors
 
@@ -496,7 +502,249 @@ id callBlock(const std::shared_ptr<BlockTarget>& target, std::vector<id> args) {
   return nil;
 }
 
+// --------------------------------------------------------------- protocols
+
+/// JS implementation of protocol methods: selector -> [codes, function].
+struct ProtocolDispatcher {
+  std::shared_ptr<jsi::Object> table;                 // JS thread only
+  std::unordered_map<std::string, std::string> codes; // selector -> codes
+
+  ~ProtocolDispatcher() {
+    auto t = std::move(table);
+    if (t && gInvoker) gInvoker->invokeAsync([t](jsi::Runtime&) mutable { t.reset(); });
+  }
+};
+
+/// One forwarded protocol call: arguments captured from the NSInvocation
+/// (objects retained), result written back.
+struct ProtocolCall {
+  std::string selector;
+  std::string codes;
+  std::vector<std::string> encodings; // argument type encodings
+  std::vector<std::vector<uint8_t>> bytes;
+  std::vector<id> objects;             // strong; nil for non-objects
+  std::string retEnc;
+  std::vector<uint8_t> retBytes;
+  __strong id retObject = nil;
+  bool failed = false;
+};
+
 namespace {
+
+void runProtocolCall(jsi::Runtime& rt, const ProtocolDispatcher& d, ProtocolCall& c) {
+  try {
+    const auto codes = parseConv(c.codes.c_str());
+    std::vector<jsi::Value> args;
+    for (std::size_t i = 0; i < c.encodings.size(); i++) {
+      const Code code = i + 1 < codes.size() ? codes[i + 1] : Code{'o', {}};
+      switch (code.kind) {
+        case 'o': args.push_back(wrap(rt, c.objects[i])); break;
+        case 's':
+          if (c.objects[i] == nil) {
+            args.push_back(jsi::Value::null());
+          } else if ([c.objects[i] isKindOfClass:[NSString class]]) {
+            args.push_back(toJsString(rt, (NSString*)c.objects[i]));
+          } else {
+            args.push_back(wrap(rt, c.objects[i]));
+          }
+          break;
+        default:
+          args.push_back(readValue(rt, c.encodings[i].c_str(), c.bytes[i].data(),
+                                   code.structName.empty() ? nullptr : code.structName.c_str()));
+      }
+    }
+    auto entry = d.table->getPropertyAsObject(rt, c.selector.c_str()).asArray(rt);
+    auto fn = entry.getValueAtIndex(rt, 1).asObject(rt).asFunction(rt);
+    auto r = fn.call(rt, static_cast<const jsi::Value*>(args.data()), args.size());
+    const char rk = codes.empty() ? 'v' : codes[0].kind;
+    const char* enc = skipQualifiers(c.retEnc.c_str());
+    if (rk == 'v' || *enc == 'v') return;
+    if (rk == 'o') {
+      c.retObject = objectArg(rt, r, c.selector.c_str());
+    } else if (rk == 's') {
+      c.retObject = r.isString() ? toNSString(rt, r) : objectArg(rt, r, c.selector.c_str());
+    } else {
+      NSUInteger size = 0;
+      NSGetSizeAndAlignment(enc, &size, nullptr);
+      c.retBytes.assign(size, 0);
+      writeValue(rt, enc, r, c.retBytes.data(), codes[0].structName.empty() ? nullptr : codes[0].structName.c_str());
+    }
+  } catch (const jsi::JSError& e) {
+    c.failed = true;
+    NSLog(@"native-api-bindgen: error in JavaScript protocol method %s: %s", c.selector.c_str(), e.getMessage().c_str());
+  } catch (const std::exception& e) {
+    c.failed = true;
+    NSLog(@"native-api-bindgen: error in JavaScript protocol method %s: %s", c.selector.c_str(), e.what());
+  }
+}
+
+void setProtocolResult(NSInvocation* inv, ProtocolCall& c) {
+  const char* enc = skipQualifiers(c.retEnc.c_str());
+  if (*enc == 'v') return;
+  if (*enc == '@' || *enc == '#') {
+    // +0 for the caller: hand over an autoreleased reference.
+    id r = c.retObject;
+    if (r != nil) CFAutorelease(CFBridgingRetain(r));
+    __unsafe_unretained id raw = r;
+    [inv setReturnValue:&raw];
+    return;
+  }
+  NSUInteger size = 0;
+  NSGetSizeAndAlignment(enc, &size, nullptr);
+  if (c.retBytes.size() < size) c.retBytes.assign(size, 0); // failed: zero
+  [inv setReturnValue:c.retBytes.data()];
+}
+
+} // namespace
+
+void forwardProtocolCall(const std::shared_ptr<ProtocolDispatcher>& d, NSInvocation* inv) {
+  auto call = std::make_shared<ProtocolCall>();
+  call->selector = sel_getName(inv.selector);
+  auto it = d->codes.find(call->selector);
+  if (it == d->codes.end()) return;
+  call->codes = it->second;
+  NSMethodSignature* sig = inv.methodSignature;
+  call->retEnc = sig.methodReturnType;
+  for (NSUInteger i = 2; i < sig.numberOfArguments; i++) {
+    const char* enc = skipQualifiers([sig getArgumentTypeAtIndex:i]);
+    call->encodings.emplace_back(enc);
+    if (*enc == '@') {
+      __unsafe_unretained id o = nil;
+      [inv getArgument:&o atIndex:i];
+      call->objects.push_back(o);
+      call->bytes.emplace_back();
+    } else {
+      NSUInteger size = 0;
+      NSGetSizeAndAlignment(enc, &size, nullptr);
+      std::vector<uint8_t> buf(size, 0);
+      [inv getArgument:buf.data() atIndex:i];
+      call->objects.push_back(nil);
+      call->bytes.push_back(std::move(buf));
+    }
+  }
+  const bool isVoid = *skipQualifiers(call->retEnc.c_str()) == 'v';
+  if (std::this_thread::get_id() == gJsThread && gRuntime != nullptr) {
+    runProtocolCall(*gRuntime, *d, *call);
+    setProtocolResult(inv, *call);
+    return;
+  }
+  if (!gInvoker) return;
+  if (isVoid) {
+    gInvoker->invokeAsync([d, call](jsi::Runtime& rt) { runProtocolCall(rt, *d, *call); });
+    return;
+  }
+  if (gJsWaitingOnMain && [NSThread isMainThread]) {
+    NSLog(@"native-api-bindgen: %s needs a JavaScript result while JS waits for the main thread; returning nil/0",
+          call->selector.c_str());
+    call->failed = true;
+    setProtocolResult(inv, *call);
+    return;
+  }
+  // Wait for the JS thread to answer.
+  dispatch_semaphore_t done = dispatch_semaphore_create(0);
+  gInvoker->invokeAsync([d, call, done](jsi::Runtime& rt) {
+    runProtocolCall(rt, *d, *call);
+    dispatch_semaphore_signal(done);
+  });
+  dispatch_semaphore_wait(done, DISPATCH_TIME_FOREVER);
+  setProtocolResult(inv, *call);
+}
+
+} // namespace nab::objc
+
+/// Base class of objects implementing protocols in JavaScript. A subclass per
+/// protocol set adopts the protocols (class_addProtocol); calls are forwarded
+/// to the JS dispatcher.
+@interface NabJSProtocolObject : NSObject
+@end
+
+@implementation NabJSProtocolObject {
+ @public
+  std::shared_ptr<nab::objc::ProtocolDispatcher> _dispatcher;
+}
+
+- (BOOL)respondsToSelector:(SEL)sel {
+  if (_dispatcher && _dispatcher->codes.count(sel_getName(sel)) > 0) return YES;
+  return [super respondsToSelector:sel];
+}
+
+- (NSMethodSignature*)methodSignatureForSelector:(SEL)sel {
+  NSMethodSignature* s = [super methodSignatureForSelector:sel];
+  if (s != nil) return s;
+  unsigned int n = 0;
+  Protocol* __unsafe_unretained* protos = class_copyProtocolList([self class], &n);
+  NSMethodSignature* found = nil;
+  for (unsigned int i = 0; i < n && found == nil; i++) {
+    for (BOOL required : {YES, NO}) {
+      struct objc_method_description d = protocol_getMethodDescription(protos[i], sel, required, YES);
+      if (d.types != nullptr) {
+        found = [NSMethodSignature signatureWithObjCTypes:d.types];
+        break;
+      }
+    }
+  }
+  free(protos);
+  return found;
+}
+
+- (void)forwardInvocation:(NSInvocation*)inv {
+  if (_dispatcher && _dispatcher->codes.count(sel_getName(inv.selector)) > 0) {
+    nab::objc::forwardProtocolCall(_dispatcher, inv);
+  } else {
+    [super forwardInvocation:inv];
+  }
+}
+
+@end
+
+namespace nab::objc {
+namespace {
+
+/// Creates an object implementing [protocols] whose methods are the entries
+/// of [table] (selector -> [codes, function]).
+jsi::Value implementProtocols(jsi::Runtime& rt, const jsi::Array& names, const jsi::Object& table) {
+  static std::mutex lock;
+  static std::unordered_map<std::string, Class> classes;
+  std::vector<std::string> list;
+  for (std::size_t i = 0; i < names.size(rt); i++) {
+    list.push_back(names.getValueAtIndex(rt, i).getString(rt).utf8(rt));
+  }
+  std::sort(list.begin(), list.end());
+  std::string key;
+  for (const auto& n : list) key += n + ",";
+  Class cls = nil;
+  {
+    std::lock_guard<std::mutex> g(lock);
+    auto it = classes.find(key);
+    if (it != classes.end()) {
+      cls = it->second;
+    } else {
+      const std::string name = "NabJSProtocolObject_" + std::to_string(classes.size() + 1);
+      cls = objc_allocateClassPair([NabJSProtocolObject class], name.c_str(), 0);
+      if (cls == nil) typeError(rt, "could not create a protocol class");
+      for (const auto& n : list) {
+        Protocol* p = objc_getProtocol(n.c_str());
+        if (p == nil) {
+          fail(rt, "NativeApiUnavailableError", "E010 RUNTIME_BINDING_FAILURE: protocol " + n + " is not available");
+        }
+        class_addProtocol(cls, p);
+      }
+      objc_registerClassPair(cls);
+      classes.emplace(key, cls);
+    }
+  }
+  auto d = std::make_shared<ProtocolDispatcher>();
+  d->table = std::make_shared<jsi::Object>(jsi::Value(rt, table).asObject(rt));
+  auto selectors = table.getPropertyNames(rt);
+  for (std::size_t i = 0; i < selectors.size(rt); i++) {
+    const std::string sel = selectors.getValueAtIndex(rt, i).getString(rt).utf8(rt);
+    auto entry = table.getPropertyAsObject(rt, sel.c_str()).asArray(rt);
+    d->codes.emplace(sel, entry.getValueAtIndex(rt, 0).getString(rt).utf8(rt));
+  }
+  NabJSProtocolObject* o = [[cls alloc] init];
+  o->_dispatcher = std::move(d);
+  return wrap(rt, o);
+}
 
 /// Host-function body shared by every generated member.
 /// JS calling convention: (async: boolean, [self], ...args).
@@ -591,9 +839,11 @@ jsi::Value callMember(jsi::Runtime& rt, const ClassSpec* cls, const MemberSpec* 
 
   if (!async) {
     if (main && ![NSThread isMainThread]) {
+      gJsWaitingOnMain = true;
       dispatch_sync(dispatch_get_main_queue(), ^{
         invokeNow(*call);
       });
+      gJsWaitingOnMain = false;
     } else {
       invokeNow(*call);
     }
@@ -762,6 +1012,13 @@ class Root : public jsi::HostObject {
         if (c == 0) typeError(rt, "log(message)");
         NSLog(@"%@", toNSString(rt, a[0]) ?: @"");
         return V::undefined();
+      });
+    }
+    if (n == "implementProtocols") {
+      // implementProtocols(names: string[], table: {sel: [codes, fn]})
+      return fn(rt, "implementProtocols", [](jsi::Runtime& rt, const V&, const V* a, std::size_t c) -> V {
+        if (c < 2 || !a[0].isObject() || !a[1].isObject()) typeError(rt, "implementProtocols(names, table)");
+        return implementProtocols(rt, a[0].getObject(rt).getArray(rt), a[1].getObject(rt));
       });
     }
     if (n == "string") {

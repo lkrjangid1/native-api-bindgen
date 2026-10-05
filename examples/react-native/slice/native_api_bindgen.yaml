@@ -33,6 +33,10 @@ platform:
       - NSFileManager
       - NSArray
       - NSOperationQueue
+      - NSFileManagerDelegate
+      - NSCache
+      - NSCacheDelegate
+      - NSURL
     depth: 0
 
 targets:

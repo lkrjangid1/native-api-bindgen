@@ -6,7 +6,10 @@
 import {
   IosApi,
   NSArray,
+  NSCache,
+  NSCacheDelegate,
   NSFileManager,
+  NSFileManagerDelegate,
   NSOperationQueue,
   NSProcessInfo,
   NativeApiUnavailableError,
@@ -189,6 +192,43 @@ const tests: Array<[string, () => void | Promise<void>]> = [
         await new Promise<void>(r => setTimeout(() => r(), 10));
       }
       expectEqual(done.size, 5, 'background blocks delivered');
+    },
+  ],
+
+  [
+    'Objective-C protocols implemented in JavaScript',
+    () => {
+      // Value-returning delegate method, called synchronously on the JS thread.
+      const fm = NSFileManager.new$();
+      const path = `${fm.temporaryDirectory.path}nab-protocol-test.txt`;
+      expectEqual(fm.createFileAtPath(path, null, null), true, 'created');
+      const asked: string[] = [];
+      const delegate = NSFileManagerDelegate.implement({
+        fileManager$shouldRemoveItemAtPath(manager, p) {
+          asked.push(p);
+          return manager !== null && false;
+        },
+      });
+      expectEqual(NSFileManagerDelegate.conformsTo(delegate), true, 'conforms');
+      fm.delegate = delegate;
+      expectEqual(fm.removeItemAtPath(path), true, 'declined removal succeeds');
+      expectEqual(asked.length, 1, 'delegate asked');
+      expectEqual(fm.fileExistsAtPath(path), true, 'file kept by delegate');
+      fm.delegate = null;
+      fm.removeItemAtPath(path);
+      expectEqual(fm.fileExistsAtPath(path), false, 'removed without delegate');
+      // void method with object arguments.
+      const cache = NSCache.new$();
+      let evicted = 0;
+      const cacheDelegate = NSCacheDelegate.implement({
+        cache(c, obj) {
+          if (c.isSameObject(cache) && obj !== null) evicted++;
+        },
+      });
+      cache.delegate = cacheDelegate;
+      cache.setObject(UIView.new$(), UIView.new$());
+      cache.removeAllObjects();
+      expectEqual(evicted, 1, 'evictions reported');
     },
   ],
 

@@ -22,6 +22,11 @@ interface ObjCRoot {
   iosVersion(): string;
   string(h: Handle): string | null;
   log(message: string): void;
+  /** Object implementing [protocols]; [table] maps selectors to [codes, function]. */
+  implementProtocols(
+    protocols: string[],
+    table: Record<string, [string, (...args: never[]) => unknown]>,
+  ): Handle;
   [key: string]: unknown;
 }
 

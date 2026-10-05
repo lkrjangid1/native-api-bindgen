@@ -489,6 +489,10 @@ final class RnObjCEmitter {
     });
     b.writeln('}');
 
+    final impl = isProtocol
+        ? _implementable(t, names)
+        : const <(ApiMethod, String)>[];
+    if (impl.isNotEmpty) _emitImplInterface(b, t, impl);
     b.writeln('export class $n extends ObjCObject {');
     b.writeln("  static readonly objcName: string = '${t.name}';");
     if (isProtocol) b.writeln('  static readonly objcProtocol = true;');
@@ -510,6 +514,7 @@ final class RnObjCEmitter {
           "    return o !== null && o !== undefined && \$rt.objc().conformsToProtocol(o.\$h, '${t.name}');",
         )
         ..writeln('  }');
+      if (impl.isNotEmpty) _emitImplement(b, t, impl);
     } else {
       final main =
           t.threading == Threading.mainThread ||
@@ -614,6 +619,127 @@ final class RnObjCEmitter {
       args.add(_isObject(p.type) && !_isString(p.type) ? '\$rt.h($pn)' : pn);
     }
     return (decl: decl.join(', '), args: args.join(', '));
+  }
+
+  /// Instance methods of protocol [t] and its ancestor protocols that
+  /// JavaScript can implement (convertible values, no blocks or `NSError **`),
+  /// with their TypeScript names. `NSObject` protocol methods are excluded.
+  List<(ApiMethod, String)> _implementable(ApiType t, ObjCMemberNames names) {
+    final out = <(ApiMethod, String)>[];
+    final seen = <String>{};
+    names.keyToName.forEach((key, name) {
+      final m = names.visible[key]!;
+      final method = m.method;
+      if (method == null || method.isStatic || !method.isGeneratable) return;
+      if (m.owner.kind != TypeKind.protocol || m.owner.name == 'NSObject') {
+        return;
+      }
+      if (method.parameters.any(
+        (p) => p.type is BlockTypeRef || isErrorOut(p.type),
+      )) {
+        return;
+      }
+      if (seen.add(method.name)) out.add((method, name));
+    });
+    out.sort((a, b) => a.$2.compareTo(b.$2));
+    return out;
+  }
+
+  /// Conversion of raw value [v] (from the runtime) to the declared type.
+  String _jsArg(TypeRef t, String v, String symbol) {
+    if (_primitive(t) != null) return '$v as ${_numberType(_primitive(t)!)}';
+    if (_isString(t)) {
+      return '$v as ${_nullable(t) ? 'string | null' : 'string'}';
+    }
+    if (t is DeclaredTypeRef && _all[t.name]?.kind == TypeKind.struct) {
+      return '$v as ${_ref(t.name)}';
+    }
+    final cls = t is DeclaredTypeRef && _types.containsKey(t.name)
+        ? _ref(t.name)
+        : 'ObjCObject';
+    return _nullable(t)
+        ? '\$rt.wrap($cls, $v)'
+        : "\$rt.wrapNonNull($cls, $v, '$symbol')";
+  }
+
+  void _emitImplInterface(
+    StringBuffer b,
+    ApiType t,
+    List<(ApiMethod, String)> methods,
+  ) {
+    final n = _typeName(t);
+    b.writeln(
+      '/** JavaScript implementation of `<${t.name}>` (see [$n.implement]); every method is optional. */',
+    );
+    b.writeln('export interface $n\$Impl {');
+    for (final (m, name) in methods) {
+      final params = [
+        for (var i = 0; i < m.parameters.length; i++)
+          '${Identifiers.typescript(m.parameters[i].name.isEmpty ? 'arg$i' : m.parameters[i].name)}: ${_tsType(m.parameters[i].type)}',
+      ];
+      final ret = _primitive(m.returnType) == PrimitiveKind.void_
+          ? 'void'
+          : _tsType(m.returnType, param: true);
+      b.writeln('  /** Implements `${m.name}`. */');
+      b.writeln('  $name?(${params.join(', ')}): $ret;');
+    }
+    b.writeln('}');
+    b.writeln();
+  }
+
+  void _emitImplement(
+    StringBuffer b,
+    ApiType t,
+    List<(ApiMethod, String)> methods,
+  ) {
+    final n = _typeName(t);
+    b
+      ..writeln('  /**')
+      ..writeln(
+        '   * Creates an object implementing `<${t.name}>` with the methods of [impl].',
+      )
+      ..writeln(
+        '   * `void` methods called off the JS thread run asynchronously on it; methods',
+      )
+      ..writeln('   * returning a value make the calling thread wait for JS.')
+      ..writeln('   */')
+      ..writeln('  static implement(impl: $n\$Impl): $n {')
+      ..writeln(
+        '    const table: Record<string, [string, (...args: never[]) => unknown]> = {};',
+      );
+    for (final (m, name) in methods) {
+      final codes = StringBuffer(_conv(m.returnType));
+      for (final p in m.parameters) {
+        codes.write(_conv(p.type));
+      }
+      final params = [
+        for (var i = 0; i < m.parameters.length; i++) 'a$i: unknown',
+      ];
+      final args = [
+        for (var i = 0; i < m.parameters.length; i++)
+          _jsArg(m.parameters[i].type, 'a$i', '${m.id} argument'),
+      ];
+      final call = 'f(${args.join(', ')})';
+      final r = m.returnType;
+      final body = _isObject(r) && !_isString(r) ? '\$rt.h($call)' : call;
+      b
+        ..writeln('    if (impl.$name) {')
+        ..writeln('      const f = impl.$name.bind(impl);')
+        ..writeln(
+          "      table['${m.name}'] = ['$codes', (${params.join(', ')}) => $body];",
+        )
+        ..writeln('    }');
+    }
+    b
+      ..writeln(
+        "    return \$rt.wrapNonNull($n, \$rt.objc().implementProtocols(['${t.name}'], table), '${t.id}.implement');",
+      )
+      ..writeln('  }');
+    _binding(
+      '${t.id}<implement>',
+      '$n.implement',
+      'NabJSProtocolObject (forwardInvocation -> JS)',
+    );
   }
 
   /// The JS function passed to the runtime for block parameter [pn]: wraps

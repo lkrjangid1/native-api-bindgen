@@ -74,6 +74,11 @@ Block parameters are generated as JavaScript/Dart functions; `NS_NOESCAPE` is re
 - **React Native**: the generated `cpp/generated/NabBlocksObjC.mm` has one block factory per native signature (`B<key>;` conversion codes). A block invoked on the JS thread calls the function synchronously; elsewhere a `void` block posts the call to the JS thread with its arguments retained, so object arguments are supported. Blocks returning a value are bound only when they are `NS_NOESCAPE` on members that run on the JS thread (no Promise variant). After regenerating, run `pod install` when files were added (`tools/run_rn_ios_tests.sh` does this).
 - Measured (iOS 27.0 SDK, Foundation + UIKit): Flutter binds 141 block parameters (11 synchronous and 5 listener signatures), `E004` exclusions 584 → 394, generated methods 10,900 → 11,092; React Native binds 270 block parameters (16 signatures), bindings 15,401 → 15,653. Both full outputs analyze / type-check and compile cleanly.
 
+## Implementing protocols
+
+- **React Native**: `Proto.implement({...})` creates an object adopting the protocol (a runtime subclass of `NabJSProtocolObject` per protocol set, `class_addProtocol`); calls arrive through `forwardInvocation:` using the protocol's method signatures, so no per-signature code is generated. Methods are optional; `respondsToSelector:` reflects which ones were given. On the JS thread a method runs synchronously; elsewhere `void` methods are posted to the JS thread, and methods returning a value make the calling thread wait for JS (unless JS is itself waiting for the main thread, then nil/0 is returned and logged). Methods with block or `NSError **` parameters are not implementable. iOS 27.0 SDK, Foundation + UIKit: 192 protocols, 1,393 methods.
+- **Flutter**: not supported yet (`E004`). `package:objective_c`'s protocol builder needs per-signature native trampolines, and delegate methods are called later from the run loop, where a pure-Dart FFI callback is not valid.
+
 ## Swift-only APIs (Layer 2: generated `@objc` adapters)
 
 Swift APIs that are not visible to Objective-C are discovered with the official toolchain and wrapped:

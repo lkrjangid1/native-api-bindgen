@@ -50,14 +50,15 @@ void main() {
   ).existsSync()) {
     dir = dir.parent;
   }
-  File(
-    p.join(
-      dir.path,
-      'packages',
-      'native_api_react_native_ios',
-      'lib',
-      'src',
-      'runtime_sources.g.dart',
-    ),
-  ).writeAsStringSync(render(dir.path));
+  final out = p.join(
+    dir.path,
+    'packages',
+    'native_api_react_native_ios',
+    'lib',
+    'src',
+    'runtime_sources.g.dart',
+  );
+  File(out).writeAsStringSync(render(dir.path));
+  // Keep the file as `dart format` (checked by CI) leaves it.
+  Process.runSync('dart', ['format', out]);
 }

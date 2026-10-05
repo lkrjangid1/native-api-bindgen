@@ -87,14 +87,19 @@ export const NABFlags = {
 /** Any object that is a `NABListener` (conforms to the protocol). */
 export type NABListener$Like = ObjCObject & {readonly __brand_NABFixtures_NABListener: true};
 
-/**
- * Objective-C: `@protocol NABListener`
- * - Note E004 UNSUPPORTED_CALLBACK: Implementing Objective-C protocols in JavaScript is not supported yet; the protocol is usable for typing and calling
- */
+/** Objective-C: `@protocol NABListener` */
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export interface NABListener {
   readonly __brand_NABFixtures_NABListener: true;
 }
+/** JavaScript implementation of `<NABListener>` (see [NABListener.implement]); every method is optional. */
+export interface NABListener$Impl {
+  /** Implements `shouldStop`. */
+  shouldStop?(): boolean;
+  /** Implements `thing:didChangeValue:`. */
+  thing?(thing: ObjCObject, value: number): void;
+}
+
 export class NABListener extends ObjCObject {
   static readonly objcName: string = 'NABListener';
   static readonly objcProtocol = true;
@@ -102,6 +107,23 @@ export class NABListener extends ObjCObject {
   /** Whether [o] conforms to `<NABListener>`. */
   static conformsTo(o: ObjCObject | null | undefined): boolean {
     return o !== null && o !== undefined && $rt.objc().conformsToProtocol(o.$h, 'NABListener');
+  }
+  /**
+   * Creates an object implementing `<NABListener>` with the methods of [impl].
+   * `void` methods called off the JS thread run asynchronously on it; methods
+   * returning a value make the calling thread wait for JS.
+   */
+  static implement(impl: NABListener$Impl): NABListener {
+    const table: Record<string, [string, (...args: never[]) => unknown]> = {};
+    if (impl.shouldStop) {
+      const f = impl.shouldStop.bind(impl);
+      table['shouldStop'] = ['z', () => f()];
+    }
+    if (impl.thing) {
+      const f = impl.thing.bind(impl);
+      table['thing:didChangeValue:'] = ['voj', (a0: unknown, a1: unknown) => f($rt.wrapNonNull(ObjCObject, a0, 'NABFixtures.NABListener#-thing:didChangeValue: argument'), a1 as number)];
+    }
+    return $rt.wrapNonNull(NABListener, $rt.objc().implementProtocols(['NABListener'], table), 'NABFixtures.NABListener.implement');
   }
   /** Objective-C: `-[NABListener shouldStop]` */
   shouldStop(): boolean {
