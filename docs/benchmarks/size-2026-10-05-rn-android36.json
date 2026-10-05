@@ -1,0 +1,20 @@
+{
+  "rn-baseline": {
+    "apk_bytes": 18623666,
+    "dex_bytes": 11615424,
+    "js_bundle_bytes": 1003708,
+    "libappmodules_so_bytes": 146472
+  },
+  "rn-one-api-fullsdk": {
+    "apk_bytes": 57776278,
+    "dex_bytes": 11617940,
+    "js_bundle_bytes": 29319676,
+    "libappmodules_so_bytes": 11060840
+  },
+  "rn-one-api-slice": {
+    "apk_bytes": 19312390,
+    "dex_bytes": 11617940,
+    "js_bundle_bytes": 1456236,
+    "libappmodules_so_bytes": 468104
+  }
+}

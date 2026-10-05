@@ -12,7 +12,8 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 - Flutter Android vertical-slice example with on-device integration tests (12 passing on an API 37 emulator).
 - Host-JVM runtime tests for generated bindings (`tools/run_jvm_runtime_tests.sh`).
 - CLI: init, detect, doctor, inspect, generate, update, diff, coverage, graph, explain, why-generated, why-skipped, audit-license, verify-reproducible, clean.
-- Release-APK size benchmark (`tools/measure_size.py`, `docs/benchmarks/size.md`).
+- Release-APK size benchmarks (`tools/measure_size.py`, `tools/measure_rn_size.py`, `docs/benchmarks/size.md`).
+- `license-audit-allowlist.yaml`: checksum-pinned reviewed exceptions (never waives BLOCK).
 
 - React Native (Android, New Architecture): TypeScript bindings over a JSI/JNI runtime installed by one pure C++ Turbo Module; Promise variants; Java interfaces implemented in JS; `generate react-native`; RN example with on-device self-tests; `tools/run_rn_device_tests.sh`, `tools/measure_rn_size.py`.
 
