@@ -9,6 +9,6 @@ Items below are **plans**, not features. Completed items are marked with the rel
 - **Phase 5 — React Native New Architecture.** Android and iOS vertical slices working (unreleased): TypeScript + one pure C++ Turbo Module + JSI HostObjects, backed by JNI on Android and an Objective-C++ `NSInvocation` runtime on iOS; 12 self-tests each on an Android emulator and an iOS simulator. Planned: iOS blocks/protocol implementation from JS.
 - **Phase 6 — Swift-only API adapters.** Layer 2 working for Flutter (unreleased): symbol-graph discovery + generated `@objc` adapters for the Objective-C-representable subset, verified on a simulator. Planned: async (completion handlers), `throws` (NSError **), enums with raw values, collections, React Native.
 - **Phase 7 — Native UI integration layer.** Planned.
-- **Website (GitHub Pages).** Planned after the first vertical slices.
+- **Website (GitHub Pages).** Built (unreleased): `dart run tools/build_website.dart`; deployment workflow ready, runs once the repository has a remote.
 
 Tracked limitations of the current version are listed in `docs/compatibility/matrix.md`.

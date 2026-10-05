@@ -1,0 +1,61 @@
+name: website
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - website/**
+      - docs/benchmarks/**
+      - tools/build_website.dart
+      - .github/workflows/website.yml
+  pull_request:
+    paths:
+      - website/**
+      - docs/benchmarks/**
+      - tools/build_website.dart
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build and check the static site
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+      - run: dart pub get
+      - id: pages
+        if: github.event_name != 'pull_request'
+        uses: actions/configure-pages@v5
+      - name: Build (fails on broken internal links, duplicate titles, size budgets)
+        run: dart run tools/build_website.dart
+        env:
+          NAB_SITE_URL: ${{ steps.pages.outputs.base_url }}
+      - name: External links
+        run: dart run tools/check_links.dart website/build
+      - if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: website/build
+
+  deploy:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

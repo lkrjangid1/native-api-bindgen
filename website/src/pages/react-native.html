@@ -1,0 +1,28 @@
+<!--
+title: React Native
+description: Generated TypeScript bindings for React Native's New Architecture, backed by one pure C++ Turbo Module, JSI, JNI on Android and Objective-C++ on iOS.
+-->
+<h1>React Native</h1>
+<p class="lead">New Architecture only. <code>generate react-native</code> writes a self-contained library into your app: TypeScript classes, member tables, the runtime, a Codegen spec, and build integration for Android (CMake) and iOS (CocoaPods).</p>
+
+<h2>How a call works</h2>
+<pre><code>Intent.parseUri(...) / UIView.alloc().initWithFrame(...)
+  → generated TypeScript → global.__nab (installed by one C++ Turbo Module)
+  → Android: C++ runtime → JNI            iOS: Objective-C++ runtime → NSInvocation</code></pre>
+<ul>
+  <li>Methods (not constructors or properties) also get a <code>…Async()</code> Promise variant that runs off the JS thread; on iOS, UIKit members run on the main queue.</li>
+  <li><code>long</code> / <code>NSInteger</code> are <code>bigint</code> in <code>strict-typescript</code> mode, <code>number</code> in <code>ergonomic-typescript</code>.</li>
+  <li>Java interfaces can be implemented in JavaScript on Android. Objective-C blocks and protocol implementations are not supported yet.</li>
+  <li>Java exceptions, <code>NSError **</code> failures and Objective-C exceptions become JavaScript errors with their native details.</li>
+</ul>
+
+<h2>One-time app setup</h2>
+<ul>
+  <li><code>package.json</code> <code>codegenConfig</code> pointing at the generated spec (iOS also registers <code>NabModuleProvider</code>).</li>
+  <li>Android: include the generated CMake fragment and provide the module in <code>OnLoad.cpp</code>.</li>
+  <li>iOS: <code>pod 'NativeApiBindings', :path =&gt; '../native-api-bindings'</code>.</li>
+</ul>
+<p>The repository's <code>examples/react-native/slice</code> app does all of this and runs 12 self-tests on each platform.</p>
+
+<h2>Measured</h2>
+<p>Release builds: about {{perf.rn_android.jsi_jni_us}} µs per JSI → JNI call (Android emulator) and {{perf.rn_ios.jsi_objc_us}} µs per JSI → Objective-C call on the JS thread (iOS simulator); UIKit calls that hop to the main thread take about {{perf.rn_ios.uikit_main_us}} µs. Metro does not tree-shake: the example's release APK is {{size.rn.one_api_slice_apk}} bytes with bindings for its slice and {{size.rn.one_api_fullsdk_apk}} bytes with the whole Android SDK generated (baseline {{size.rn.baseline_apk}} bytes) — generate only what you use.</p>

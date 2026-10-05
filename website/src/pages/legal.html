@@ -1,0 +1,23 @@
+<!--
+title: Legal and source policy
+description: How native-api-bindgen uses platform SDKs without copying or redistributing them, what generated output contains, and what still needs legal review.
+-->
+<h1>Legal and source policy</h1>
+<div class="note">This page describes engineering policy. It is not legal advice; organizations should do their own review before redistributing generated bindings.</div>
+<h2>What the tool does</h2>
+<ul>
+  <li>Reads SDKs installed on your machine (Android SDK, Xcode) in place, using their official files and tools.</li>
+  <li>Generates declarations, binding code, symbol names, availability metadata and links to official documentation — never copied documentation text.</li>
+  <li>Keeps generated bindings local by default (<code>generatedArtifacts: local-only</code>).</li>
+</ul>
+<h2>What it never does</h2>
+<ul>
+  <li>Download, vendor, commit or publish SDK files (jars, headers, frameworks, binaries).</li>
+  <li>Expose hidden, non-SDK or private APIs as supported.</li>
+  <li>Keep Clang AST dumps or Swift symbol graphs outside temporary directories.</li>
+</ul>
+<p><code>native-api-bindgen audit-license</code> checks a project for SDK artifacts, copied headers and documentation, foreign licenses and generated SDK-derived files, and fails on blocking findings.</p>
+<h2>Open items</h2>
+<p>Redistribution of generated Android or Apple bindings (for example publishing them as packages) has not been reviewed by counsel and is not enabled by default.</p>
+<h2>License and trademarks</h2>
+<p>The project is licensed under the Apache License 2.0. It is independent and not affiliated with or endorsed by Google, Apple, Meta or the Dart/Flutter teams; product names are trademarks of their owners.</p>

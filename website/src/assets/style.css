@@ -1,0 +1,26 @@
+:root{--fg:#1b1f24;--muted:#57606a;--bg:#fff;--alt:#f6f8fa;--line:#d0d7de;--accent:#1f4e79;--warn:#9a6700;--max:62rem}
+@media (prefers-color-scheme:dark){:root{--fg:#e6edf3;--muted:#9da7b3;--bg:#0d1117;--alt:#161b22;--line:#30363d;--accent:#79b8ff;--warn:#d29922}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--fg);background:var(--bg)}
+.wrap{max-width:var(--max);margin:0 auto;padding:0 1rem}
+a{color:var(--accent)}
+.skip{position:absolute;left:-999px}.skip:focus{left:1rem;top:1rem;background:var(--bg);padding:.5rem;z-index:1}
+header.site{border-bottom:1px solid var(--line);background:var(--alt)}
+header.site .wrap{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem 1rem;padding-top:.75rem;padding-bottom:.75rem}
+.brand{font-weight:700;text-decoration:none;color:var(--fg)}
+.badge{font-size:.75rem;border:1px solid var(--warn);color:var(--warn);border-radius:1rem;padding:0 .5rem}
+nav{display:flex;flex-wrap:wrap;gap:.25rem .9rem;margin-left:auto}
+nav a{text-decoration:none;color:var(--muted)}nav a[aria-current=page],nav a:hover{color:var(--accent)}
+main{padding-top:1.5rem;padding-bottom:2rem}
+h1{font-size:2rem;line-height:1.25;margin:.5rem 0 1rem}h2{margin-top:2rem;border-bottom:1px solid var(--line);padding-bottom:.25rem}
+.lead{font-size:1.15rem;color:var(--muted)}
+code,pre{font:.9em ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+code{background:var(--alt);padding:.1em .3em;border-radius:4px}
+pre{background:var(--alt);border:1px solid var(--line);border-radius:6px;padding:.75rem 1rem;overflow:auto}pre code{background:none;padding:0}
+table{border-collapse:collapse;width:100%;margin:1rem 0;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:.4rem .6rem;text-align:left;vertical-align:top}th{background:var(--alt)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:1rem;margin:1.5rem 0}
+.card{border:1px solid var(--line);border-radius:8px;padding:1rem;background:var(--alt)}.card h3{margin-top:0}
+.note{border-left:4px solid var(--warn);background:var(--alt);padding:.5rem 1rem;margin:1rem 0}
+footer.site{border-top:1px solid var(--line);color:var(--muted);font-size:.85rem;padding:1rem 0}

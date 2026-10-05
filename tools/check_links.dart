@@ -1,4 +1,4 @@
-// Validates external links in Markdown documentation. Network access is
+// Validates external links in Markdown documentation and website pages. Network access is
 // explicit (this script only runs when invoked; generation never needs it).
 //
 // Usage: dart run tools/check_links.dart [files or directories...]
@@ -16,7 +16,7 @@ Future<void> main(List<String> args) async {
         ? Directory(r)
               .listSync(recursive: true)
               .whereType<File>()
-              .where((f) => f.path.endsWith('.md'))
+              .where((f) => f.path.endsWith('.md') || f.path.endsWith('.html'))
         : [File(r)];
     for (final f in files) {
       for (final m in _link.allMatches(f.readAsStringSync())) {

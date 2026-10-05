@@ -1,0 +1,31 @@
+<!--
+title: Flutter
+description: Generated Dart bindings for Flutter: Android APIs over package:jni and iOS APIs over package:objective_c, with guards, callbacks and lifetimes.
+-->
+<h1>Flutter</h1>
+<p class="lead">Bindings are plain Dart files in your project. They have no registry and do no work at startup, so the AOT compiler removes everything you do not call.</p>
+
+<h2>Android (<code>generate flutter</code>)</h2>
+<ul>
+  <li>Each Java class or interface becomes a Dart extension type over <code>JObject</code>. Constructors are named by their parameters when overloaded (<code>Intent.new$String$Uri</code>), methods keep the Java name for the primary overload.</li>
+  <li>Strings: <code>JString</code> by default (<code>strict-native</code>), or Dart <code>String</code> where lossless (<code>ergonomic-dart</code>).</li>
+  <li>Java interfaces can be implemented in Dart (<code>Runnable.implement(...)</code>). Callbacks from any Java thread work; a throwing <code>void</code> callback is reported, not rethrown into Java.</li>
+  <li>APIs newer than <code>minApi</code> are guarded and throw <code>NativeApiUnavailableException</code> on older devices before touching JNI.</li>
+  <li>Java exceptions surface as <code>NativeJavaException</code> with class name, message and stack trace.</li>
+  <li>Kotlin <code>suspend</code> functions in library jars become <code>Future</code>s.</li>
+  <li>Objects hold JNI references: call <code>release()</code> for deterministic cleanup (otherwise finalizers clean up).</li>
+</ul>
+
+<h2>iOS (<code>generate ios</code>)</h2>
+<ul>
+  <li>Each Objective-C class or protocol becomes a Dart extension type over <code>ObjCObject</code>; Foundation types already provided by <code>package:objective_c</code> (<code>NSString</code>, <code>NSArray</code>, …) are reused.</li>
+  <li>Selectors map to named parameters: <code>addItem(item, atIndex: 2)</code>. Properties are getters and setters.</li>
+  <li>Structs such as <code>CGRect</code> are passed and returned by value. <code>NSError **</code> becomes a thrown <code>NativeObjCError</code>.</li>
+  <li>Swift-only APIs are reachable through generated <code>@objc</code> adapters for the Objective-C-representable subset (<a href="ios.html">iOS</a>).</li>
+</ul>
+
+<h2>Size</h2>
+<p>Release APK of the example with one Android API: {{size.flutter.one_api_slice_apk}} bytes, both when bindings were generated for that API only and for the entire SDK ({{size.flutter.one_api_fullsdk_apk}} bytes); the app without bindings: {{size.flutter.baseline_apk}} bytes (+{{size.flutter.one_api_delta}} bytes, mostly <code>package:jni</code>'s native helper).</p>
+
+<h2>Cost per call</h2>
+<p>Measured on an Android emulator in profile mode: about {{perf.flutter_android.jni_call_us}} µs per generated JNI call versus about {{perf.flutter_android.methodchannel_us}} µs for a hand-written MethodChannel round trip. On the iOS simulator (debug mode only): about {{perf.flutter_ios.msgsend_ns}} ns per <code>objc_msgSend</code> getter versus {{perf.flutter_ios.methodchannel_us}} µs per MethodChannel round trip. Emulator and simulator figures are not device figures.</p>

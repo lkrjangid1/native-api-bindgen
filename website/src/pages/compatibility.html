@@ -1,0 +1,36 @@
+<!--
+title: Compatibility
+description: Exactly which SDKs, toolchains, devices and frameworks native-api-bindgen has been tested with, and the measured size and performance results.
+-->
+<h1>Compatibility</h1>
+<p class="lead">Only versions that were actually exercised are listed. Tests ran on 2026-10-05 on one Apple-silicon Mac; continuous integration workflows exist but have not run publicly yet.</p>
+<table>
+  <tr><th>Component</th><th>Tested</th><th>How</th></tr>
+  <tr><td>Dart / Flutter</td><td>3.11.5 / 3.41.9</td><td>package tests; example apps</td></tr>
+  <tr><td>Android platform</td><td>36 (full jar), 37.2 (parsed)</td><td>whole-SDK generation analyzes cleanly</td></tr>
+  <tr><td>Android emulator</td><td>API 37, arm64</td><td>Flutter: 14 integration tests; React Native: 12 self-tests</td></tr>
+  <tr><td>Xcode / iOS SDK</td><td>27.0 / 27.0</td><td>Foundation + UIKit full generation</td></tr>
+  <tr><td>iOS simulator</td><td>iPhone 17, iOS 26.4</td><td>Flutter: 15 integration tests; React Native: 12 self-tests</td></tr>
+  <tr><td>React Native</td><td>0.87.1 (New Architecture, Hermes)</td><td>release builds on both platforms</td></tr>
+  <tr><td>Kotlin</td><td>2.4.20, kotlinx-coroutines 1.10.2</td><td>suspend functions on a host JVM and the emulator</td></tr>
+  <tr><td><code>package:jni</code> / <code>package:objective_c</code></td><td>1.0.3 / 9.5.0</td><td>generated code compiles and runs</td></tr>
+</table>
+<h2>Size (release APKs, Android API 36)</h2>
+<table>
+  <tr><th>App</th><th>Bytes</th></tr>
+  <tr><td>Flutter example without bindings</td><td>{{size.flutter.baseline_apk}}</td></tr>
+  <tr><td>Flutter, one API; bindings generated for that API</td><td>{{size.flutter.one_api_slice_apk}}</td></tr>
+  <tr><td>Flutter, one API; bindings generated for the whole SDK</td><td>{{size.flutter.one_api_fullsdk_apk}}</td></tr>
+  <tr><td>React Native example without bindings</td><td>{{size.rn.baseline_apk}}</td></tr>
+  <tr><td>React Native, bindings for the slice</td><td>{{size.rn.one_api_slice_apk}}</td></tr>
+  <tr><td>React Native, bindings for the whole SDK</td><td>{{size.rn.one_api_fullsdk_apk}}</td></tr>
+</table>
+<h2>Cost per call (emulator/simulator)</h2>
+<table>
+  <tr><th>Path</th><th>Generated binding</th><th>MethodChannel</th></tr>
+  <tr><td>Flutter, Android (profile)</td><td>{{perf.flutter_android.jni_call_us}} µs</td><td>{{perf.flutter_android.methodchannel_us}} µs</td></tr>
+  <tr><td>Flutter, iOS (debug)</td><td>{{perf.flutter_ios.msgsend_ns}} ns</td><td>{{perf.flutter_ios.methodchannel_us}} µs</td></tr>
+  <tr><td>React Native, Android (release)</td><td>{{perf.rn_android.jsi_jni_us}} µs</td><td>not measured</td></tr>
+  <tr><td>React Native, iOS (release, JS thread)</td><td>{{perf.rn_ios.jsi_objc_us}} µs</td><td>not measured</td></tr>
+</table>
+<p>Medians of three runs; methods and raw data are in the repository under <code>docs/benchmarks</code>. Physical devices have not been measured.</p>

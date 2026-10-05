@@ -1,0 +1,35 @@
+<!--
+title: Architecture
+description: How native-api-bindgen turns platform SDKs into a canonical IR and generates Dart and TypeScript bindings with small, data-driven runtimes.
+-->
+<h1>Architecture</h1>
+<pre><code>android.jar + api-versions.xml + annotations.zip ─┐
+Xcode SDK headers (libclang) ─────────────────────┼─▶ Native IR ─▶ planner ─▶ emitters ─▶ Dart / TypeScript
+Swift symbol graphs (swift-symbolgraph-extract) ──┘   (JSON,          (per target:     + small runtimes
+                                                       stable IDs)     what is possible)</code></pre>
+
+<h2>Native IR</h2>
+<p>A platform-neutral, deterministic model: types, members, generics, nullability, per-platform availability, threading and provenance, with stable symbol IDs such as <code>android.content.Intent#setData(android.net.Uri)</code> or <code>UIKit.UIView#-initWithFrame:</code>. Every symbol carries a support status and, when it is not generated, a reason code.</p>
+
+<h2>Parsers</h2>
+<ul>
+  <li><strong>Android</strong>: pure-Dart readers for zip, class files and generic signatures; availability from <code>api-versions.xml</code>; annotations from <code>annotations.zip</code>; library jars and AARs; Kotlin <code>suspend</code> detected from the compiled signature.</li>
+  <li><strong>Apple</strong>: the Xcode toolchain's libclang via <code>dart:ffi</code>; Swift-only APIs from symbol graphs.</li>
+</ul>
+
+<h2>Emitters and runtimes</h2>
+<table>
+  <tr><th>Target</th><th>Generated</th><th>Runtime</th></tr>
+  <tr><td>Flutter / Android</td><td>Dart extension types, cached JNI method IDs</td><td><code>package:jni</code> + a small Dart runtime</td></tr>
+  <tr><td>Flutter / iOS</td><td>Dart extension types, typed <code>objc_msgSend</code> trampolines</td><td><code>package:objective_c</code></td></tr>
+  <tr><td>React Native / Android</td><td>TypeScript classes + member tables</td><td>C++ JSI runtime (JNI)</td></tr>
+  <tr><td>React Native / iOS</td><td>TypeScript classes + member tables</td><td>Objective-C++ JSI runtime (<code>NSInvocation</code>)</td></tr>
+</table>
+<p>For React Native the generated C++ is data (sorted tables), so one runtime serves every API. Method signatures on iOS come from the Objective-C runtime itself; the generator only says how each value maps to JavaScript.</p>
+
+<h2>Determinism and safety</h2>
+<ul>
+  <li>Output is byte-stable for the same SDK and configuration (<code>verify-reproducible</code>).</li>
+  <li>Output paths are guarded against escapes and symlinks; stale files are removed only if this tool generated them.</li>
+  <li><code>audit-license</code> blocks SDK binaries, copied headers, AST dumps and symbol graphs from being committed.</li>
+</ul>

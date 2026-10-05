@@ -1,0 +1,29 @@
+<!--
+title: Android
+description: What native-api-bindgen reads from the Android SDK, which Java and Kotlin API shapes it supports, and how hidden and non-SDK APIs are excluded.
+-->
+<h1>Android</h1>
+<h2>Inputs</h2>
+<table>
+  <tr><th>Input</th><th>Used for</th></tr>
+  <tr><td><code>platforms/android-N/android.jar</code></td><td>classes, members, descriptors, generic signatures, constants, parameter names</td></tr>
+  <tr><td><code>data/api-versions.xml</code></td><td>introduced/deprecated levels (including minor levels such as 36.1); hidden-API detection</td></tr>
+  <tr><td><code>data/annotations.zip</code></td><td>nullability, threading, permissions, <code>IntDef</code> metadata</td></tr>
+  <tr><td><code>platform.android.libraries</code> / <code>--jar</code></td><td>your own or third-party <code>.jar</code>/<code>.aar</code> files, e.g. Kotlin libraries</td></tr>
+</table>
+<h2>Supported</h2>
+<ul>
+  <li>Classes, interfaces, enums, nested types; constructors, static and instance methods, overloads, varargs, fields and exact constants.</li>
+  <li>Nullability from platform and AndroidX annotations; availability guards for APIs newer than <code>minApi</code>.</li>
+  <li>Implementing Java interfaces (Flutter and React Native); Kotlin <code>suspend</code> functions as Dart <code>Future</code>s.</li>
+</ul>
+<h2>Not yet (reported with reason codes)</h2>
+<table>
+  <tr><th>Construct</th><th>Code</th></tr>
+  <tr><td>Protected members, constructors of abstract classes</td><td>E002</td></tr>
+  <tr><td>Generic type parameters on generated types (erased to bounds)</td><td>E003</td></tr>
+  <tr><td>Types outside the selected closure (exposed as plain objects)</td><td>E016</td></tr>
+  <tr><td>Kotlin <code>Flow</code>, default arguments, property syntax; suspend on React Native</td><td>— / E004</td></tr>
+</table>
+<h2>Hidden and non-SDK APIs</h2>
+<p>A class absent from <code>api-versions.xml</code> is classified as hidden or non-SDK (<code>E006</code>) and never generated, nor are its members. Library jars are not classified this way: their APIs are your library's APIs.</p>

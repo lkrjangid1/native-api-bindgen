@@ -1,0 +1,43 @@
+<!--
+title: Getting started
+description: Install the native-api-bindgen CLI, select the Android or iOS APIs you need, and generate Flutter or React Native bindings from your local SDKs.
+-->
+<h1>Getting started</h1>
+<p class="lead">You need the platform SDKs you already use for app development: the Android SDK (with a platform such as <code>android-36</code>) and/or Xcode on macOS. The tool never downloads SDK components.</p>
+
+<h2>1. Install</h2>
+<p>From a checkout of the repository (packages are not published yet):</p>
+<pre><code>dart pub global activate --source path packages/native_api_cli
+native-api-bindgen doctor</code></pre>
+<p><code>doctor</code> reports the Android SDK, platforms, JDK, Flutter, Xcode, iOS SDK and libclang it finds.</p>
+
+<h2>2. Configure</h2>
+<pre><code>native-api-bindgen init   # writes native_api_bindgen.yaml with safe defaults</code></pre>
+<pre><code>platform:
+  android:
+    platform: "36"
+    minApi: 24                  # newer APIs get runtime guards
+    entries: [android.content.Intent, android.net.Uri]
+    depth: 0
+  ios:
+    minVersion: "15.0"
+    frameworks: [Foundation, UIKit]
+    classes: [UIDevice, UIView]
+output:
+  dir: lib/src/generated
+distribution:
+  generatedArtifacts: local-only</code></pre>
+<p>Generating a whole SDK is never implicit: select entry types, classes, packages or frameworks.</p>
+
+<h2>3. Generate</h2>
+<table>
+  <tr><th>Command</th><th>Output</th></tr>
+  <tr><td><code>generate flutter</code></td><td>Dart over <code>package:jni</code> (Android)</td></tr>
+  <tr><td><code>generate ios</code></td><td>Dart over <code>package:objective_c</code> (+ Swift adapters if configured)</td></tr>
+  <tr><td><code>generate react-native</code></td><td>TypeScript + C++/Objective-C++ runtime library for every configured platform</td></tr>
+  <tr><td><code>coverage</code>, <code>why-skipped</code>, <code>explain</code></td><td>what was generated, what was not, and why</td></tr>
+</table>
+
+<h2>4. Use</h2>
+<p>Add the runtime dependencies (<code>jni</code>/<code>jni_flutter</code> for Android, <code>objective_c</code> and <code>ffi</code> for iOS) and import the generated library. Complete, tested apps live in <code>examples/</code>: <code>flutter/android_slice</code>, <code>flutter/ios_slice</code> and <code>react-native/slice</code>.</p>
+<p>Next: <a href="architecture.html">how it works</a>, <a href="flutter.html">Flutter</a>, <a href="react-native.html">React Native</a>.</p>

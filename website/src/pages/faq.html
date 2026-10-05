@@ -1,0 +1,17 @@
+<!--
+title: FAQ
+description: Answers to common questions about native-api-bindgen: platform channels, plugins, app size, unsupported APIs, private APIs and publishing generated code.
+-->
+<h1>Frequently asked questions</h1>
+<h2>How is this different from writing a plugin or a platform channel?</h2>
+<p>Instead of writing native code per API, you select APIs and get typed bindings that call them directly through JNI, <code>objc_msgSend</code> or JSI — no message serialization. Measured per-call costs are on the <a href="compatibility.html">Compatibility</a> page.</p>
+<h2>Does generating the whole SDK make my app bigger?</h2>
+<p>For Flutter, no: unused bindings are tree-shaken, and a release APK using one API is the same size whether one API or the whole SDK was generated. For React Native, yes: Metro bundles everything, so generate only what you use.</p>
+<h2>What happens with APIs the tool cannot express yet?</h2>
+<p>They are skipped with a reason code (for example <code>E003</code> generics, <code>E004</code> callbacks or blocks) that <code>why-skipped</code> and <code>coverage</code> report. Nothing is silently dropped.</p>
+<h2>Can I call private or hidden APIs?</h2>
+<p>No. Hidden and non-SDK Android APIs and private Objective-C selectors are never generated.</p>
+<h2>Can I publish the generated bindings?</h2>
+<p>The default policy keeps them in your project. Redistribution has not had legal review; see <a href="legal.html">Legal</a>.</p>
+<h2>Is it production-ready?</h2>
+<p>Not yet. It is experimental: the vertical slices are tested on an emulator and a simulator, not on physical devices, and generated APIs may change.</p>
