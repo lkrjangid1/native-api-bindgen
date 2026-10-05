@@ -66,23 +66,26 @@ void main() {
     );
   });
 
-  test('iOS: nothing selected is a usage error; diff ios is E015', () async {
-    final r = await cli(['--json', 'generate', 'ios'], cwd: project.path);
-    // Without Xcode the SDK lookup fails first (E001); with Xcode the empty
-    // selection is rejected (E018). Generating everything is never implicit.
-    expect(r.code, anyOf(ExitCodes.usage, ExitCodes.failure));
-    expect(
-      (await cli([
-        'diff',
-        'ios',
-        '--from',
-        '1',
-        '--to',
-        '2',
-      ], cwd: project.path)).code,
-      ExitCodes.notImplemented,
-    );
-  });
+  test(
+    'iOS: nothing selected is a usage error; diff ios needs snapshots',
+    () async {
+      final r = await cli(['--json', 'generate', 'ios'], cwd: project.path);
+      // Without Xcode the SDK lookup fails first (E001); with Xcode the empty
+      // selection is rejected (E018). Generating everything is never implicit.
+      expect(r.code, anyOf(ExitCodes.usage, ExitCodes.failure));
+      expect(
+        (await cli([
+          'diff',
+          'ios',
+          '--from',
+          '1',
+          '--to',
+          '2',
+        ], cwd: project.path)).code,
+        ExitCodes.failure,
+      );
+    },
+  );
 
   group('with Xcode', () {
     final xcode =
@@ -232,6 +235,89 @@ void main() {
       skip: xcode ? false : 'Xcode not available',
     );
 
+    test(
+      'iOS state: coverage, explain, why-skipped, diff ios',
+      () async {
+        File(p.join(project.path, 'native_api_bindgen.yaml')).writeAsStringSync(
+          'platform:\n  ios:\n    frameworks: [Foundation, UIKit]\n'
+          '    classes: [UIDevice]\n    depth: 0\n',
+        );
+        expect(
+          (await cli(['generate', 'ios'], cwd: project.path)).code,
+          ExitCodes.ok,
+        );
+        final cov = await cli([
+          '--json',
+          'coverage',
+          '--target',
+          'ios',
+        ], cwd: project.path);
+        expect(cov.code, ExitCodes.ok, reason: cov.err);
+        expect(((jsonDecode(cov.out) as Map)['states'] as Map).keys, ['ios']);
+
+        final explain = await cli([
+          '--json',
+          'explain',
+          'UIDevice#systemName',
+        ], cwd: project.path);
+        expect(explain.code, ExitCodes.ok, reason: explain.err);
+        final ex = jsonDecode(explain.out) as Map;
+        expect(ex['state'], 'ios');
+        expect((ex['node'] as Map)['id'], 'UIKit.UIDevice#-systemName');
+        expect(ex['binding'], isNotNull);
+
+        final state = Directory(p.join(project.path, '.native_api_bindgen'));
+        final ir =
+            jsonDecode(
+                  File(p.join(state.path, 'ios', 'ir.json')).readAsStringSync(),
+                )
+                as Map<String, Object?>;
+        final skipped = [
+          for (final t in ir['types']! as List)
+            for (final m in ((t as Map)['methods'] as List?) ?? const [])
+              if ((m as Map)['support'] == 'unsupported') m['id'] as String,
+        ];
+        expect(skipped, isNotEmpty);
+        final why = await cli([
+          'why-skipped',
+          skipped.first,
+        ], cwd: project.path);
+        expect(why.code, ExitCodes.ok, reason: why.err);
+        expect(why.out, contains('Why skipped:'));
+
+        final snapshot = state.listSync().whereType<File>().firstWhere(
+          (f) => p.basename(f.path).startsWith('ir-ios-'),
+        );
+        // A modified copy: one method removed.
+        final modified =
+            jsonDecode(snapshot.readAsStringSync()) as Map<String, Object?>;
+        final device = (modified['types']! as List)
+            .cast<Map<String, Object?>>()
+            .firstWhere((t) => t['id'] == 'UIKit.UIDevice');
+        (device['methods']! as List).removeWhere(
+          (m) => (m as Map)['id'] == 'UIKit.UIDevice#-systemName',
+        );
+        final other = File(p.join(project.path, 'older.json'))
+          ..writeAsStringSync(jsonEncode(modified));
+        final diff = await cli([
+          '--json',
+          'diff',
+          'ios',
+          '--from',
+          other.path,
+          '--to',
+          snapshot.path,
+        ], cwd: project.path);
+        expect(diff.code, ExitCodes.ok, reason: diff.err);
+        final changes = (jsonDecode(diff.out) as Map)['changes'] as List;
+        expect(
+          changes.map((c) => (c as Map)['symbolId']),
+          contains('UIKit.UIDevice#-systemName'),
+        );
+      },
+      skip: xcode ? false : 'Xcode not available',
+    );
+
     test('unknown iOS class is E001', () async {
       final r = await cli([
         '--json',
@@ -359,7 +445,9 @@ void main() {
 
         final cov = await cli(['--json', 'coverage'], cwd: project.path);
         expect(
-          ((jsonDecode(cov.out) as Map)['generated'] as Map)['classes'],
+          ((((jsonDecode(cov.out) as Map)['states'] as Map)['android']
+                  as Map)['generated']
+              as Map)['classes'],
           greaterThan(0),
         );
 

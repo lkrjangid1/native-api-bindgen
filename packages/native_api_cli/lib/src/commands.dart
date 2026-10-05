@@ -8,10 +8,10 @@ import 'package:native_api_generator/native_api_generator.dart';
 import 'package:native_api_ios/native_api_ios.dart';
 import 'package:native_api_ir/native_api_ir.dart';
 import 'package:native_api_react_native_android/native_api_react_native_android.dart';
-import 'package:native_api_react_native_ios/native_api_react_native_ios.dart';
 import 'package:path/path.dart' as p;
 
 import 'context.dart';
+import 'ios_generation.dart';
 import 'toolchain.dart';
 
 /// Base command with access to the shared context.
@@ -72,18 +72,6 @@ abstract class BindgenCommand extends Command<int> {
       entries: _multi('entry'),
       depth: _intOpt('depth'),
     );
-  }
-
-  int _notImplemented(String what) {
-    final d = Diagnostic(
-      DiagnosticCode.notImplemented,
-      '$what is not implemented in ${ProjectInfo.name} ${ProjectInfo.generatorVersion}. '
-      'Tracked in docs/roadmap.md.',
-      severity: Severity.error,
-    );
-    _log.diagnostic(d);
-    _log.result('', {'status': 'not-implemented', 'diagnostic': d.toJson()});
-    return ExitCodes.notImplemented;
   }
 }
 
@@ -309,6 +297,15 @@ final class InspectCommand extends BindgenCommand {
     }
     final what = args.single;
     if (what == 'ios') return _inspectIos();
+    if (what != 'android') {
+      for (final state in ctx.allStates()) {
+        final id = _normalizeSymbol(state.module, what);
+        final node = id == null ? null : state.module.nodeById(id);
+        if (node == null || state.label == 'android') continue;
+        _log.result(canonicalJson(node.toJson()).trimRight(), node.toJson());
+        return ExitCodes.ok;
+      }
+    }
     final platform = ctx.androidPlatform(ctx.androidSdk(), _opt('platform'));
     final ex = ctx.openExtractor(platform);
     if (what == 'android') {
@@ -361,6 +358,33 @@ extension on InspectCommand {
     );
     return ExitCodes.ok;
   }
+}
+
+/// Resolves a user-typed symbol (`Type#member`, Apple names without the
+/// module) to an IR id in [m], or null.
+String? _normalizeSymbol(ApiModule m, String symbol) {
+  if (m.nodeById(symbol) != null) return symbol;
+  final hash = symbol.indexOf('#');
+  final typePart = hash < 0 ? symbol : symbol.substring(0, hash);
+  var candidate = typePart;
+  if (m.platform == ApiPlatform.apple && !typePart.contains('.')) {
+    final byName = m.types.where((t) => t.name == typePart).toList();
+    if (byName.length != 1) return null;
+    candidate = byName.single.id;
+  }
+  while (m.typeById(candidate) == null) {
+    final i = candidate.lastIndexOf('.');
+    if (i < 0) return null;
+    candidate = '${candidate.substring(0, i)}\$${candidate.substring(i + 1)}';
+  }
+  if (hash < 0) return candidate;
+  final member = symbol.substring(hash + 1);
+  final t = m.typeById(candidate)!;
+  final matches = [
+    for (final n in [...t.methods, ...t.fields])
+      if (n.id == '$candidate#$member' || n.name == member) n.id,
+  ];
+  return matches.length == 1 ? matches.single : null;
 }
 
 ApiNode _findSymbol(AndroidApiExtractor ex, String symbol) {
@@ -502,78 +526,13 @@ final class GenerateCommand extends BindgenCommand {
     }
   }
 
-  int _ios() {
-    final sdk = ctx.appleSdk();
-    final request = ctx.iosRequest(
-      frameworks: _multi('framework'),
-      classes: _multi('class'),
-      entries: _multi('entry'),
-      depth: _intOpt('depth'),
-    );
-    final temp = Directory.systemTemp.createTempSync('nab_swift_');
-    late final ApiModule module;
-    late final List<ApiModule> swiftModules;
-    try {
-      final adapters = ctx.swiftAdapters(sdk, temp);
-      swiftModules = adapters.swift;
-      module = ctx.extractIos(
-        sdk,
-        request,
-        headerFiles: adapters.headers,
-        extraClasses: adapters.classes,
-      );
-    } finally {
-      temp.deleteSync(recursive: true);
-    }
-    for (final s in swiftModules) {
-      ctx.writeState(
-        s,
-        const [],
-        const {},
-        subdir:
-            'ios-swift/${s.types.isEmpty ? 'empty' : s.types.first.namespace}',
-      );
-      final cov = CoverageReport.of(s);
-      _log.info(
-        'Swift ${s.types.isEmpty ? '' : s.types.first.namespace}: ${s.types.where((t) => t.isGeneratable).length} of ${s.types.length} types adapted; skipped members by reason: ${cov.excludedByReason}',
-        event: 'swift-adapters',
-      );
-    }
-    final out = ctx.generateFlutterIos(module);
-    final outDir = p.normalize(
-      p.join(ctx.projectDir, _opt('output') ?? ctx.config.outputDir),
-    );
-    final written = writeGeneration(
-      OutputGuard(outDir),
-      out,
-      manifestName: '.native_api_bindgen_manifest_ios',
-    );
-    ctx.writeState(out.module, out.bindings, const {}, subdir: 'ios');
-    final cov = CoverageReport.of(out.module);
-    final summary = StringBuffer()
-      ..writeln(
-        'Generated Flutter bindings for iOS (${sdk.name} ${sdk.version})',
-      )
-      ..writeln(
-        '  output: ${p.relative(outDir, from: ctx.projectDir)} (${written.length} files)',
-      )
-      ..writeln(
-        '  types: ${out.module.types.where((t) => t.isGeneratable).length} generated of ${out.module.types.length} parsed',
-      )
-      ..writeln('  members bound: ${out.bindings.length}');
-    if (cov.excludedByReason.isNotEmpty) {
-      summary.writeln('  skipped (by reason):');
-      cov.excludedByReason.forEach((k, v) => summary.writeln('    $k: $v'));
-    }
-    _log.result(summary.toString().trimRight(), {
-      'sdk': sdk.toJson(),
-      'output': p.relative(outDir, from: ctx.projectDir),
-      'files': written,
-      'bindings': out.bindings.length,
-      'coverage': cov.toJson(),
-    });
-    return ExitCodes.ok;
-  }
+  int _ios() => IosGeneration(ctx).generateIos(
+    frameworks: _multi('framework'),
+    classes: _multi('class'),
+    entries: _multi('entry'),
+    depth: _intOpt('depth'),
+    output: _opt('output'),
+  );
 
   bool get _iosSelected {
     final ios = ctx.config.ios;
@@ -617,61 +576,14 @@ final class GenerateCommand extends BindgenCommand {
     _ => ctx.config.typescriptMode,
   };
 
-  int _reactNativeIos() {
-    final sdk = ctx.appleSdk();
-    final module = ctx.extractIos(
-      sdk,
-      ctx.iosRequest(
-        frameworks: _multi('framework'),
-        classes: _multi('class'),
-        entries: _multi('entry'),
-        depth: _intOpt('depth'),
-      ),
-    );
-    final mode = _tsMode;
-    final out = RnObjCEmitter(
-      module,
-      options: RnObjCOptions(
-        minIos: ApiVersion.parse(ctx.config.ios.minVersion),
-        mode: mode,
-        linkFrameworks: {
-          ...ctx.config.ios.frameworks,
-          ...ctx.config.ios.include,
-          ..._multi('framework'),
-        }.toList()..sort(),
-      ),
-    ).emit();
-    final outDir = p.normalize(
-      p.join(ctx.projectDir, _opt('output') ?? ctx.config.reactNativeDir),
-    );
-    final written = writeGeneration(
-      OutputGuard(outDir),
-      out,
-      manifestName: '.native_api_bindgen_manifest_ios',
-    );
-    ctx.writeState(out.module, out.bindings, const {}, subdir: 'ios-rn');
-    final cov = CoverageReport.of(out.module);
-    final summary = StringBuffer()
-      ..writeln(
-        'Generated React Native bindings for iOS (${sdk.name} ${sdk.version}, ${mode.key})',
-      )
-      ..writeln(
-        '  output: ${p.relative(outDir, from: ctx.projectDir)} (${written.length} files; import from \'<library>/ios\')',
-      )
-      ..writeln('  members bound: ${out.bindings.length}');
-    if (cov.excludedByReason.isNotEmpty) {
-      summary.writeln('  skipped (by reason):');
-      cov.excludedByReason.forEach((k, v) => summary.writeln('    $k: $v'));
-    }
-    _log.result(summary.toString().trimRight(), {
-      'sdk': sdk.toJson(),
-      'output': p.relative(outDir, from: ctx.projectDir),
-      'files': written,
-      'bindings': out.bindings.length,
-      'coverage': cov.toJson(),
-    });
-    return ExitCodes.ok;
-  }
+  int _reactNativeIos() => IosGeneration(ctx).generateReactNativeIos(
+    frameworks: _multi('framework'),
+    classes: _multi('class'),
+    entries: _multi('entry'),
+    depth: _intOpt('depth'),
+    output: _opt('output'),
+    mode: _tsMode,
+  );
 
   int _reactNative() {
     final platform = ctx.androidPlatform(ctx.androidSdk(), _opt('platform'));
@@ -772,71 +684,120 @@ final class UpdateCommand extends BindgenCommand {
 
   @override
   Future<int> run() async {
-    final sdk = ctx.androidSdk();
-    final platform = ctx.androidPlatform(sdk);
-    final b = StringBuffer()
-      ..writeln(
-        'Detected Android API ${platform.apiLevel} (${platform.dirName})',
-      );
+    final a = ctx.config.android;
+    final ios = ctx.config.ios;
+    final iosSelected =
+        [...ios.include, ...ios.classes, ...ios.entries].isNotEmpty ||
+        ios.swiftModules.isNotEmpty;
+    final androidSelected =
+        [...a.include, ...a.classes, ...a.entries].isNotEmpty || !iosSelected;
+    final b = StringBuffer();
+    final json = <String, Object?>{};
     final tc = detectToolchain(ctx);
     if (tc.iosSdkVersion != null) {
+      b.writeln('Detected iOS SDK ${tc.iosSdkVersion}');
+    }
+
+    if (androidSelected) {
+      final sdk = ctx.androidSdk();
+      final platform = ctx.androidPlatform(sdk);
       b.writeln(
-        'Detected iOS SDK ${tc.iosSdkVersion} (generation not yet implemented)',
+        'Detected Android API ${platform.apiLevel} (${platform.dirName})',
       );
-    }
-    final previous = ctx.readState()?.module;
-    b
-      ..writeln()
-      ..writeln('Generating Flutter (Android)...');
-    final res = ctx.generateFlutter(platform, ctx.request());
-    final outDir = p.join(ctx.projectDir, ctx.config.outputDir);
-    writeGeneration(OutputGuard(outDir), res.output);
-    ctx.writeState(
-      res.output.module,
-      res.output.bindings,
-      res.extraction.closureDepth,
-    );
-    if (argResults!['all'] as bool) {
-      for (final pl in sdk.platforms.where(
-        (x) => x.hasAndroidJar && x.isStable,
-      )) {
-        final m = ctx.openExtractor(pl).extract(ctx.request()).module;
-        OutputGuard(
-          ctx.stateDir,
-        ).writeString('ir-android-${pl.apiLevel}.json', m.toCanonicalJson());
+      final previous = ctx.readState()?.module;
+      b
+        ..writeln()
+        ..writeln('Generating Flutter (Android)...');
+      final res = ctx.generateFlutter(platform, ctx.request());
+      final outDir = p.join(ctx.projectDir, ctx.config.outputDir);
+      writeGeneration(OutputGuard(outDir), res.output);
+      ctx.writeState(
+        res.output.module,
+        res.output.bindings,
+        res.extraction.closureDepth,
+      );
+      if (argResults!['all'] as bool) {
+        for (final pl in sdk.platforms.where(
+          (x) => x.hasAndroidJar && x.isStable,
+        )) {
+          final m = ctx.openExtractor(pl).extract(ctx.request()).module;
+          OutputGuard(ctx.stateDir).writeStreaming(
+            'ir-android-${pl.apiLevel}.json',
+            m.writeCanonicalJson,
+          );
+        }
+        b.writeln('IR snapshots written for all installed stable platforms');
       }
-      b.writeln('IR snapshots written for all installed stable platforms');
+      final cov = CoverageReport.of(res.output.module);
+      b
+        ..writeln()
+        ..writeln('Generated (Android):')
+        ..writeln('  classes: ${cov.generated['classes'] ?? 0}')
+        ..writeln('  interfaces/callbacks: ${cov.generated['callbacks'] ?? 0}')
+        ..writeln('  constructors: ${cov.generated['constructors'] ?? 0}')
+        ..writeln('  methods: ${cov.generated['methods'] ?? 0}')
+        ..writeln(
+          '  fields+constants: ${(cov.generated['fields'] ?? 0) + (cov.generated['constants'] ?? 0)}',
+        )
+        ..writeln('  annotations: ${cov.generated['annotations'] ?? 0}');
+      if (cov.excludedByReason.isNotEmpty) {
+        b.writeln('Skipped:');
+        cov.excludedByReason.forEach((k, v) => b.writeln('  $k: $v'));
+      }
+      if (previous != null) {
+        b.writeln(
+          'API changes since last update: ${diffModules(previous, res.output.module).length}',
+        );
+      }
+      json['platform'] = '${platform.apiLevel}';
+      json['coverage'] = cov.toJson();
     }
-    final cov = CoverageReport.of(res.output.module);
-    b
-      ..writeln()
-      ..writeln('Generated:')
-      ..writeln('  classes: ${cov.generated['classes'] ?? 0}')
-      ..writeln('  interfaces/callbacks: ${cov.generated['callbacks'] ?? 0}')
-      ..writeln('  constructors: ${cov.generated['constructors'] ?? 0}')
-      ..writeln('  methods: ${cov.generated['methods'] ?? 0}')
-      ..writeln(
-        '  fields+constants: ${(cov.generated['fields'] ?? 0) + (cov.generated['constants'] ?? 0)}',
-      )
-      ..writeln('  annotations: ${cov.generated['annotations'] ?? 0}');
-    if (cov.excludedByReason.isNotEmpty) {
-      b.writeln('Skipped:');
-      cov.excludedByReason.forEach((k, v) => b.writeln('  $k: $v'));
+
+    final iosRuns = <String>[];
+    if (iosSelected && !Platform.isMacOS) {
+      b.writeln('iOS: configured but skipped (requires macOS with Xcode)');
+    } else if (iosSelected) {
+      final previousIos = ctx.readState(subdir: 'ios')?.module;
+      final gen = IosGeneration(ctx);
+      b.writeln();
+      if (ctx.config.flutter) {
+        b.writeln('Generating Flutter (iOS)...');
+        gen.generateIos();
+        iosRuns.add('flutter-ios');
+      }
+      if (ctx.config.reactNative) {
+        b.writeln('Generating React Native (iOS)...');
+        gen.generateReactNativeIos(mode: ctx.config.typescriptMode);
+        iosRuns.add('react-native-ios');
+      }
+      final nowIos = ctx.readState(subdir: 'ios')?.module;
+      if (nowIos != null) {
+        final cov = CoverageReport.of(nowIos);
+        b
+          ..writeln('Generated (iOS):')
+          ..writeln(
+            '  types: ${nowIos.types.where((t) => t.isGeneratable).length} of ${nowIos.types.length}',
+          );
+        if (cov.excludedByReason.isNotEmpty) {
+          b.writeln('Skipped:');
+          cov.excludedByReason.forEach((k, v) => b.writeln('  $k: $v'));
+        }
+        json['iosCoverage'] = cov.toJson();
+        if (previousIos != null) {
+          b.writeln(
+            'iOS API changes since last update: ${diffModules(previousIos, nowIos).length}',
+          );
+        }
+      }
     }
-    if (previous != null) {
-      final d = diffModules(previous, res.output.module);
-      b.writeln('API changes since last update: ${d.length}');
-    }
+    json['ios'] = iosRuns;
     final audit = LicenseAuditor().audit(ctx.projectDir);
     b
       ..writeln()
       ..writeln('License audit: ${audit.status.label}')
       ..writeln('Tests: not run by update (run your app\'s test suite)');
-    _log.result(b.toString().trimRight(), {
-      'platform': '${platform.apiLevel}',
-      'coverage': cov.toJson(),
-      'licenseAudit': audit.status.label,
-    });
+    json['licenseAudit'] = audit.status.label;
+    _log.result(b.toString().trimRight(), json);
     return audit.status == AuditStatus.block ? ExitCodes.failure : ExitCodes.ok;
   }
 }
@@ -862,7 +823,7 @@ final class DiffCommand extends BindgenCommand {
   Future<int> run() async {
     final rest = argResults!.rest;
     final platformName = rest.isEmpty ? 'android' : rest.first;
-    if (platformName == 'ios') return _notImplemented('iOS diff');
+    if (platformName == 'ios') return _diffIos();
     if (platformName != 'android') {
       throw UsageException('Unknown platform "$platformName"', usage);
     }
@@ -890,6 +851,64 @@ final class DiffCommand extends BindgenCommand {
   }
 }
 
+extension on DiffCommand {
+  /// `diff ios --from A --to B`: A and B are IR snapshots (`ir-ios-<sdk>.json`
+  /// written by `generate ios`, or any IR JSON file) or `current` (the
+  /// configured selection extracted from the installed SDK now).
+  int _diffIos() {
+    final from = _opt('from'), to = _opt('to');
+    if (from == null || to == null) {
+      throw UsageException(
+        '--from and --to are required (IR snapshot paths or "current")',
+        usage,
+      );
+    }
+    ApiModule load(String spec) {
+      if (spec == 'current') {
+        return ctx.extractIos(ctx.appleSdk(), ctx.iosRequest());
+      }
+      final candidates = [
+        spec,
+        p.join(ctx.projectDir, spec),
+        p.join(ctx.stateDir, spec),
+        p.join(ctx.stateDir, 'ir-ios-$spec.json'),
+      ];
+      final f = candidates
+          .map(File.new)
+          .where((f) => f.existsSync())
+          .firstOrNull;
+      if (f == null) {
+        throw CliFailure(
+          Diagnostic(
+            DiagnosticCode.sdkNotFound,
+            'No iOS IR snapshot "$spec" (looked for ${candidates.join(', ')})',
+            severity: Severity.error,
+          ),
+        );
+      }
+      final decoded = decodeModule(f.readAsStringSync());
+      if (decoded.module == null) {
+        throw CliFailure(
+          Diagnostic(
+            DiagnosticCode.invalidAst,
+            'Cannot read ${f.path}: ${decoded.diagnostics.map((d) => d.message).join('; ')}',
+            severity: Severity.error,
+          ),
+        );
+      }
+      return decoded.module!;
+    }
+
+    final entries = diffModules(load(from), load(to));
+    _log.result(renderDiff(entries), {
+      'from': from,
+      'to': to,
+      'changes': [for (final e in entries) e.toJson()],
+    });
+    return ExitCodes.ok;
+  }
+}
+
 /// `coverage`.
 final class CoverageCommand extends BindgenCommand {
   /// Creates the command.
@@ -900,7 +919,13 @@ final class CoverageCommand extends BindgenCommand {
         help:
             'Compute target coverage over the entire selected platform (not just the last generation).',
       )
-      ..addOption('platform', help: 'Android platform for --sdk.');
+      ..addOption('platform', help: 'Android platform for --sdk.')
+      ..addOption(
+        'target',
+        allowed: ['all', 'android', 'ios', 'ios-rn', 'ios-swift'],
+        defaultsTo: 'all',
+        help: 'Which generation state to report (without --sdk).',
+      );
   }
 
   @override
@@ -924,15 +949,34 @@ final class CoverageCommand extends BindgenCommand {
       scope =
           'entire android.jar of ${platform.dirName} (Flutter/Dart JNI target)';
     } else {
-      final state = ctx.readState();
-      if (state == null) {
+      final target = _opt('target') ?? 'all';
+      final states = [
+        for (final s in ctx.allStates())
+          if (target == 'all' ||
+              s.label == target ||
+              s.label.startsWith('$target/'))
+            s,
+      ];
+      if (states.isEmpty) {
         _log.error(
-          'No generation state found; run "generate flutter" first or pass --sdk.',
+          'No generation state found; run "generate" first or pass --sdk.',
         );
         return ExitCodes.failure;
       }
-      module = state.module;
-      scope = 'last generation (${module.types.length} types in closure)';
+      final text = StringBuffer();
+      final json = <String, Object?>{};
+      for (final s in states) {
+        final r = CoverageReport.of(s.module);
+        text
+          ..writeln(
+            'Scope: ${s.label} — last generation (${s.module.types.length} types in closure)',
+          )
+          ..writeln(r.toText().trimRight())
+          ..writeln();
+        json[s.label] = r.toJson();
+      }
+      _log.result(text.toString().trimRight(), {'states': json});
+      return ExitCodes.ok;
     }
     final report = CoverageReport.of(module);
     _log.result('Scope: $scope\n${report.toText()}', {
@@ -1010,17 +1054,31 @@ final class ExplainCommand extends BindgenCommand {
     final rest = argResults!.rest;
     if (rest.length != 1) throw UsageException('Expected a symbol', usage);
     final symbol = rest.single;
-    final state = ctx.readState();
     ApiNode? node;
     Map<String, Object?>? binding;
-    if (state != null) {
-      final id = _normalize(state.module, symbol);
-      node = id == null ? null : state.module.nodeById(id);
-      binding = node == null
-          ? null
-          : state.bindings.where((b) => b['symbolId'] == node!.id).firstOrNull;
+    String? stateLabel;
+    for (final state in ctx.allStates()) {
+      final id = _normalizeSymbol(state.module, symbol);
+      final found = id == null ? null : state.module.nodeById(id);
+      if (found == null) continue;
+      node = found;
+      stateLabel = state.label;
+      binding = state.bindings
+          .where((b) => b['symbolId'] == found.id)
+          .firstOrNull;
+      if (binding != null || !found.isGeneratable) break;
     }
     var fromState = node != null;
+    if (node == null && _looksApple(symbol)) {
+      throw CliFailure(
+        Diagnostic(
+          DiagnosticCode.sdkNotFound,
+          '$symbol is not in any iOS generation state; select it in platform.ios and run "generate ios" or "generate react-native-ios" first',
+          severity: Severity.error,
+          symbolId: symbol,
+        ),
+      );
+    }
     if (node == null) {
       final ex = ctx.openExtractor(
         ctx.androidPlatform(ctx.androidSdk(), _opt('platform')),
@@ -1047,7 +1105,9 @@ final class ExplainCommand extends BindgenCommand {
       b.writeln(
         'Signature: ${n.isConstructor ? 'constructor' : n.returnType.display} ${n.name}(${n.parameters.map((x) => '${x.type.display} ${x.name}').join(', ')})',
       );
-      b.writeln('JNI descriptor: ${n.nativeDescriptor}');
+      b.writeln(
+        '${n.id.contains('#-') || n.id.contains('#+') ? 'Selector' : 'JNI descriptor'}: ${n.nativeDescriptor ?? n.name}',
+      );
     } else if (n is ApiField) {
       b.writeln(
         'Field: ${n.type.display} ${n.name}${n.constantValue == null ? '' : ' = ${n.constantValue!.literal}'}',
@@ -1058,7 +1118,9 @@ final class ExplainCommand extends BindgenCommand {
       ..writeln(
         'Availability: ${n.availability.introduced ?? '?'}+${n.availability.deprecated == null ? '' : ', deprecated in ${n.availability.deprecated}'}',
       )
-      ..writeln('Support (Flutter/Dart JNI): ${n.support.name}');
+      ..writeln(
+        'Support (${stateLabel ?? 'Flutter/Dart JNI'}): ${n.support.name}',
+      );
     if (prov != null) {
       b.writeln(
         'Provenance: ${prov.localArtifact} › ${prov.artifactEntry} (SDK ${prov.sdkVersion})',
@@ -1085,7 +1147,9 @@ final class ExplainCommand extends BindgenCommand {
         ..writeln('Generator: ${binding['generator']}')
         ..writeln('Runtime adapter: ${binding['runtimeAdapter']}')
         ..writeln(
-          'Parser: native_api_android (class file${n.annotations.any((a) => a.source == 'annotations.zip') ? ' + annotations.zip' : ''}${n.availability.introduced != null ? ' + api-versions.xml' : ''})',
+          stateLabel != null && stateLabel != 'android'
+              ? 'Parser: native_api_ios (${stateLabel.startsWith('ios-swift') ? 'Swift symbol graph' : 'libclang, Xcode SDK headers'})'
+              : 'Parser: native_api_android (class file${n.annotations.any((a) => a.source == 'annotations.zip') ? ' + annotations.zip' : ''}${n.availability.introduced != null ? ' + api-versions.xml' : ''})',
         );
     } else if (name == 'why-generated') {
       b.writeln(
@@ -1101,29 +1165,17 @@ final class ExplainCommand extends BindgenCommand {
       'node': n.toJson(),
       'binding': ?binding,
       'fromState': fromState,
+      'state': ?stateLabel,
     });
     return ExitCodes.ok;
   }
 
-  String? _normalize(ApiModule m, String symbol) {
-    if (m.nodeById(symbol) != null) return symbol;
-    final hash = symbol.indexOf('#');
-    final typePart = hash < 0 ? symbol : symbol.substring(0, hash);
-    var candidate = typePart;
-    while (m.typeById(candidate) == null) {
-      final i = candidate.lastIndexOf('.');
-      if (i < 0) return null;
-      candidate = '${candidate.substring(0, i)}\$${candidate.substring(i + 1)}';
-    }
-    if (hash < 0) return candidate;
-    final member = symbol.substring(hash + 1);
-    final t = m.typeById(candidate)!;
-    final matches = [
-      for (final n in [...t.methods, ...t.fields])
-        if (n.id == '$candidate#$member' || n.name == member) n.id,
-    ];
-    return matches.length == 1 ? matches.single : null;
-  }
+  static bool _looksApple(String symbol) =>
+      symbol.contains('#-') ||
+      symbol.contains('#+') ||
+      RegExp(
+        r'^(UIKit|Foundation|ObjectiveC|CoreFoundation|QuartzCore|NS|UI|CG)',
+      ).hasMatch(symbol);
 }
 
 /// `audit-license`.

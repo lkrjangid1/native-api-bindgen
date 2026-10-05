@@ -18,7 +18,7 @@ Codes are stable; never renumber. Each diagnostic carries `code`, `severity` (`i
 | E012 | AVAILABILITY_MISMATCH | API newer than the device / `minApi` | Guard throws `NativeApiUnavailableException` |
 | E013 | THREADING_CONSTRAINT | API annotated with a thread requirement (`@MainThread`, `@UiThread`, `@WorkerThread`) | Documented on the generated member |
 | E014 | DOCUMENTATION_UNAVAILABLE | No documentation reference could be derived | Informational |
-| E015 | NOT_IMPLEMENTED | Requested target/platform is not implemented in this version | Tracked limitation (see roadmap) |
+| E015 | NOT_IMPLEMENTED | Requested target/platform is not implemented in this version (no current command returns it; kept stable for future targets) | Tracked limitation (see roadmap) |
 | E016 | OUTSIDE_CLOSURE | Referenced type not in the generation closure; mapped to opaque `JObject` | Add it via `--entry`/`include` |
 | E017 | UNSAFE_PATH | Output path escapes the output directory | Generation aborted |
 | E018 | CONFIG_INVALID | Configuration file invalid | Fix configuration |

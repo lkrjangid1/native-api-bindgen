@@ -1,6 +1,6 @@
 # iOS / Apple (Flutter)
 
-Status: **experimental**. Flutter and React Native on iOS work end to end for Objective-C APIs from Foundation and UIKit (see below for what has been tested). React Native details: `docs/react-native/README.md`. `diff ios` still returns `E015 NOT_IMPLEMENTED` (exit code 2).
+Status: **experimental**. Flutter and React Native on iOS work end to end for Objective-C APIs from Foundation and UIKit (see below for what has been tested). React Native details: `docs/react-native/README.md`.
 
 ## How it works
 
@@ -34,6 +34,11 @@ native-api-bindgen generate ios                    # from configuration
 native-api-bindgen generate ios --class UIKit.UIDevice --depth 0
 native-api-bindgen generate ios --framework UIKit  # a whole framework
 native-api-bindgen inspect ios                     # SDK version + frameworks with public headers
+native-api-bindgen inspect UIDevice#systemName     # IR of a generated symbol
+native-api-bindgen coverage --target ios           # android | ios | ios-rn | ios-swift | all
+native-api-bindgen why-skipped UIKit.UIView#-…     # reason codes for a skipped member
+native-api-bindgen diff ios --from ir-ios-26.4.json --to current  # snapshots are written by generate ios
+native-api-bindgen update                          # regenerates every configured Android and iOS target
 ```
 
 The app needs `objective_c` (^9.5) and `ffi` (^2.1) as dependencies. Android and iOS output can share `output.dir`: each target keeps its own manifest (`.native_api_bindgen_manifest`, `.native_api_bindgen_manifest_ios`), so neither run deletes the other's files.

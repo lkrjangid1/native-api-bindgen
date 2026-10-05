@@ -476,10 +476,34 @@ final class CliContext {
     guard.writeString('closure.json', canonicalJson({'closure': closure}));
   }
 
-  /// Loads persisted state, or null.
-  ({ApiModule module, List<Map<String, Object?>> bindings})? readState() {
-    final ir = File(p.join(stateDir, 'ir.json'));
-    final map = File(p.join(stateDir, 'binding_map.json'));
+  /// Every persisted generation state: `android` (the root state), `ios`,
+  /// `ios-rn` and `ios-swift/<Module>`.
+  List<({String label, ApiModule module, List<Map<String, Object?>> bindings})>
+  allStates() {
+    final labels = <String>[
+      'android',
+      'ios',
+      'ios-rn',
+      if (Directory(p.join(stateDir, 'ios-swift')).existsSync())
+        for (final d in Directory(
+          p.join(stateDir, 'ios-swift'),
+        ).listSync()..sort((a, b) => a.path.compareTo(b.path)))
+          if (d is Directory) 'ios-swift/${p.basename(d.path)}',
+    ];
+    return [
+      for (final l in labels)
+        if (readState(subdir: l == 'android' ? null : l) case final s?)
+          (label: l, module: s.module, bindings: s.bindings),
+    ];
+  }
+
+  /// Loads persisted state (the root, or [subdir] such as `ios`), or null.
+  ({ApiModule module, List<Map<String, Object?>> bindings})? readState({
+    String? subdir,
+  }) {
+    final dir = subdir == null ? stateDir : p.join(stateDir, subdir);
+    final ir = File(p.join(dir, 'ir.json'));
+    final map = File(p.join(dir, 'binding_map.json'));
     if (!ir.existsSync() || !map.existsSync()) return null;
     final decoded = decodeModule(ir.readAsStringSync());
     if (decoded.module == null) return null;

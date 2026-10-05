@@ -26,6 +26,7 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 - IR schema 2: Apple module-qualified IDs, per-platform availability, unsigned primitives, pointer and block type references (schema 1 still reads).
 
 ### Changed
+- iOS parity in the CLI: `diff ios` (IR snapshots `ir-ios-<sdk>.json` or `current`), `update` regenerates configured iOS targets (and works without an Android selection), `coverage --target`, and `explain` / `why-*` / `inspect <symbol>` read the iOS, React Native iOS and Swift states. No command returns `E015` any more.
 - Tooling: `tools/ci_local.sh` runs the CI steps locally; the Kotlin fixture has a checksum-verified Gradle wrapper; the React Native Android C++ check finds a JDK without `JAVA_HOME`; `release-check.yml` also runs iOS, React Native, website, size and package validation.
 - State files (`ir.json`, `binding_map.json`) are written as streams: whole-SDK generation peak memory 1.08 GB → 416 MB (same bytes).
 - `generate react-native` generates every configured platform; configured iOS generation is skipped with a warning off macOS.
