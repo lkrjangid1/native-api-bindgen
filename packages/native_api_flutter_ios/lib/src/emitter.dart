@@ -62,6 +62,7 @@ final class DartObjCEmitter {
   final _bindings = <BindingMapEntry>[];
   final _diagnostics = <Diagnostic>[];
   final _trampolines = SplayTreeMap<String, String>();
+  final _blocks = SplayTreeMap<String, String>();
   late final _resolver = ObjCMemberResolver(
     _all,
     escape: Identifiers.dartMember,
@@ -96,6 +97,7 @@ final class DartObjCEmitter {
       files.add(GeneratedFile(libraryPath(e.key), _library(e.key, e.value)));
     }
     files.add(GeneratedFile('apple/_msgsend.dart', _msgSendLibrary()));
+    files.add(GeneratedFile('apple/_blocks.dart', _blocksLibrary()));
     files.add(GeneratedFile('apple/_runtime.dart', _runtimeLibrary()));
     final umbrella = StringBuffer(generatedHeader(module))
       ..writeln()
@@ -168,10 +170,12 @@ final class DartObjCEmitter {
       ..writeln('/// Bindings for the `$ns` module.')
       ..writeln('library;')
       ..writeln()
+      ..writeln("import 'dart:async' as async;")
       ..writeln("import 'dart:ffi' as ffi;")
       ..writeln()
       ..writeln("import 'package:objective_c/objective_c.dart' as objc;")
       ..writeln()
+      ..writeln("import '_blocks.dart' as bk;")
       ..writeln("import '_msgsend.dart' as ms;")
       ..writeln("import '_runtime.dart' as rt;");
     for (final other in _usedNs.toList()..sort()) {
@@ -510,6 +514,10 @@ final class DartObjCEmitter {
 
   /// Dart API type of a parameter / return.
   String _apiType(TypeRef t) {
+    if (t is BlockTypeRef) {
+      final fn = _blockFnType(t);
+      return t.nullability == Nullability.nonnull ? fn : '$fn?';
+    }
     if (_isObject(t)) {
       final name = (t as DeclaredTypeRef).name;
       final base = name == 'objc.id' ? 'objc.ObjCObject' : _ref(name);
@@ -519,6 +527,12 @@ final class DartObjCEmitter {
   }
 
   String _argExpr(String v, TypeRef t) {
+    if (t is BlockTypeRef) {
+      // [v] is the block variable created before the call.
+      return t.nullability == Nullability.nonnull
+          ? '$v.ref.pointer.cast<objc.ObjCObjectImpl>()'
+          : '$v?.ref.pointer.cast<objc.ObjCObjectImpl>() ?? ffi.nullptr';
+    }
     if (!_isObject(t)) return v;
     return t.nullability == Nullability.nonnull
         ? '$v.ref.pointer'
@@ -536,6 +550,168 @@ final class DartObjCEmitter {
         family('copy') ||
         family('mutableCopy') ||
         family('init');
+  }
+
+  // ------------------------------------------------------------- blocks
+
+  /// Dart API function type of a block: `void Function(bool, NSString?)`.
+  String _blockFnType(BlockTypeRef b) {
+    final ret = _isVoid(b.returnType) ? 'void' : _blockApiType(b.returnType);
+    return '$ret Function(${b.parameters.map(_blockApiType).join(', ')})';
+  }
+
+  /// Block argument/result types: objects are nullable unless declared
+  /// non-null.
+  String _blockApiType(TypeRef t) {
+    if (_isObject(t)) {
+      final name = (t as DeclaredTypeRef).name;
+      final base = name == 'objc.id' ? 'objc.ObjCObject' : _ref(name);
+      return t.nullability == Nullability.nonnull ? base : '$base?';
+    }
+    return _native(t).dart;
+  }
+
+  static bool _isVoid(TypeRef t) =>
+      t is PrimitiveTypeRef && t.kind == PrimitiveKind.void_;
+
+  static String _exceptional(String ffiType) => switch (ffiType) {
+    'ffi.Bool' => 'false',
+    'ffi.Float' || 'ffi.Double' => '0.0',
+    final x when x.startsWith('ffi.Int') || x.startsWith('ffi.Uint') => '0',
+    _ => '',
+  };
+
+  /// Registers the block factory for [b] in `_blocks.dart` and returns its
+  /// name (`bk.sync_<hash>` / `bk.listener_<hash>`).
+  String _blockFactory(BlockTypeRef b, BlockMode mode) {
+    final ret = _native(b.returnType, tramp: true);
+    final ps = [for (final p in b.parameters) _native(p, tramp: true)];
+    final ffiSig =
+        '${ret.ffi} Function(${['ffi.Pointer<objc.ObjCBlockImpl>', ...ps.map((p) => p.ffi)].join(', ')})';
+    final h = _hash('$ffiSig/${mode.name}');
+    final dartParams = [
+      for (var i = 0; i < ps.length; i++) '${ps[i].dart} a$i',
+    ].join(', ');
+    final dartTypes = ps.map((p) => p.dart).join(', ');
+    final args = [for (var i = 0; i < ps.length; i++) 'a$i'].join(', ');
+    final display = b.display.replaceAll('*/', '* /');
+    if (mode == BlockMode.sync) {
+      final exc = _exceptional(ret.ffi);
+      _blocks.putIfAbsent(
+        'sync_$h',
+        () =>
+            '${ret.dart} _sync_$h(ffi.Pointer<objc.ObjCBlockImpl> block${dartParams.isEmpty ? '' : ', $dartParams'}) =>\n'
+            '    (objc.getBlockClosure(block) as ${ret.dart} Function($dartTypes))($args);\n'
+            'final _sync_${h}_callable = ffi.Pointer.fromFunction<$ffiSig>(_sync_$h${exc.isEmpty ? '' : ', $exc'}).cast<ffi.Void>();\n'
+            '\n'
+            '/// Synchronous block `$display`: must be invoked on the creating isolate\'s thread.\n'
+            'objc.ObjCBlockBase sync_$h(${ret.dart} Function($dartTypes) fn) => objc.ObjCBlockBase(\n'
+            '  objc.newClosureBlock(_sync_${h}_callable, fn, true),\n'
+            '  retain: false,\n'
+            '  release: true,\n'
+            ');\n',
+      );
+      return 'bk.sync_$h';
+    }
+    _blocks.putIfAbsent(
+      'listener_$h',
+      () =>
+          '/// Listener block `$display`: callable from any thread; [fn] runs\n'
+          '/// asynchronously on the creating isolate. With [once] (completion\n'
+          '/// handlers) the callable is closed after the first call.\n'
+          'objc.ObjCBlockBase listener_$h(void Function($dartTypes) fn, {bool once = false}) {\n'
+          '  late final ffi.NativeCallable<$ffiSig> cb;\n'
+          '  cb = ffi.NativeCallable<$ffiSig>.listener((ffi.Pointer<objc.ObjCBlockImpl> block${dartParams.isEmpty ? '' : ', $dartParams'}) {\n'
+          '    if (once) cb.close();\n'
+          '    fn($args);\n'
+          '  });\n'
+          '  if (!once) cb.keepIsolateAlive = false;\n'
+          '  return objc.ObjCBlockBase(\n'
+          '    objc.newPointerBlock(cb.nativeFunction.cast(), ffi.nullptr),\n'
+          '    retain: false,\n'
+          '    release: true,\n'
+          '  );\n'
+          '}\n',
+    );
+    return 'bk.listener_$h';
+  }
+
+  /// `final $v = bk.…((native args) => fn(converted));` for block parameter
+  /// [pn] of type [b].
+  String _blockVar(
+    String v,
+    String pn,
+    BlockTypeRef b,
+    BlockMode mode, {
+    required bool once,
+  }) {
+    final factory = _blockFactory(b, mode);
+    final ps = [for (final p in b.parameters) _native(p, tramp: true)];
+    final nativeParams = [
+      for (var i = 0; i < ps.length; i++) '${ps[i].dart} a$i',
+    ].join(', ');
+    String convertArg(int i) {
+      final t = b.parameters[i];
+      if (!_isObject(t)) return 'a$i';
+      final name = (t as DeclaredTypeRef).name;
+      final ref = name == 'objc.id' ? 'objc.ObjCObject' : _ref(name);
+      final ctor = ref == 'objc.ObjCObject'
+          ? 'objc.ObjCObject'
+          : '$ref.fromPointer';
+      final make = '$ctor(a$i, retain: true, release: true)';
+      return t.nullability == Nullability.nonnull
+          ? make
+          : '(a$i.address == 0 ? null : $make)';
+    }
+
+    final call =
+        '$pn(${[for (var i = 0; i < ps.length; i++) convertArg(i)].join(', ')})';
+    final String body;
+    if (_isVoid(b.returnType)) {
+      body = '{ $call; }';
+    } else if (_isObject(b.returnType)) {
+      body = b.returnType.nullability == Nullability.nonnull
+          ? '=> $call.ref.retainAndAutorelease()'
+          : '=> $call?.ref.retainAndAutorelease() ?? ffi.nullptr';
+    } else {
+      body = '=> $call';
+    }
+    final make =
+        '$factory(($nativeParams) $body${mode == BlockMode.listener ? ', once: $once' : ''})';
+    return b.nullability == Nullability.nonnull
+        ? '    final $v = $make;\n'
+        : '    final $v = $pn == null ? null : $make;\n';
+  }
+
+  String _blocksLibrary() {
+    final b = StringBuffer(generatedHeader(module))
+      ..writeln()
+      ..writeln('// ignore_for_file: ${_ignores.join(', ')}')
+      ..writeln()
+      ..writeln(
+        '/// Objective-C block factories shared by the generated libraries: one',
+      )
+      ..writeln(
+        '/// per distinct native block signature and creation mode (names are',
+      )
+      ..writeln('/// signature hashes).')
+      ..writeln('library;')
+      ..writeln()
+      ..writeln("import 'dart:ffi' as ffi;")
+      ..writeln()
+      ..writeln("import 'package:objective_c/objective_c.dart' as objc;");
+    final structs = <String>{};
+    for (final body in _blocks.values) {
+      for (final m in RegExp(r'apple_(\w+)\.').allMatches(body)) {
+        structs.add(m[1]!);
+      }
+    }
+    for (final s in structs.toList()..sort()) {
+      b.writeln("import '$s.dart' as apple_$s;");
+    }
+    b.writeln();
+    _blocks.forEach((_, v) => b.writeln(v));
+    return b.toString();
   }
 
   String _wrapReturn(String raw, TypeRef t, String selector) {
@@ -713,6 +889,9 @@ final class DartObjCEmitter {
     final named = <String>[];
     final args = <(String, TypeRef)>[];
     final used = <String>{};
+    final blockVars = StringBuffer();
+    // How each Dart parameter is passed on (for the `…Async` convenience).
+    final callArgs = <String>[];
     // Cocoa `NSError **` out-parameter (last): hidden and turned into a
     // thrown `NativeObjCError`.
     final errorOut =
@@ -723,11 +902,29 @@ final class DartObjCEmitter {
         args.add((r'$err', p.type));
         continue;
       }
+      String argVar(String pn) {
+        final bt = p.type;
+        if (bt is! BlockTypeRef) return pn;
+        final mode = blockMode(m, p, _all)!;
+        final last = i == m.parameters.length - 1;
+        blockVars.write(
+          _blockVar(
+            '\$b$i',
+            pn,
+            bt,
+            mode,
+            once: last && _isCompletionName(p.name),
+          ),
+        );
+        return '\$b$i';
+      }
+
       if (i == 0) {
         final pn = Identifiers.dartMember(p.name.isEmpty ? 'arg0' : p.name);
         used.add(pn);
         params.add('${_apiType(p.type)} $pn');
-        args.add((pn, p.type));
+        args.add((argVar(pn), p.type));
+        callArgs.add(pn);
       } else {
         var pn = Identifiers.dartMember(
           i < keywords.length ? keywords[i] : 'arg$i',
@@ -736,9 +933,11 @@ final class DartObjCEmitter {
           pn = '$pn\$';
         }
         final nullable =
-            _isObject(p.type) && p.type.nullability != Nullability.nonnull;
+            (_isObject(p.type) || p.type is BlockTypeRef) &&
+            p.type.nullability != Nullability.nonnull;
         named.add('${nullable ? '' : 'required '}${_apiType(p.type)} $pn');
-        args.add((pn, p.type));
+        args.add((argVar(pn), p.type));
+        callArgs.add('$pn: $pn');
       }
     }
     final sigParams = [
@@ -765,6 +964,7 @@ final class DartObjCEmitter {
     b.writeln('  ${m.isStatic ? 'static ' : ''}$ret $name($sigParams) {');
     b.write(_guard(m, '${t.name}.${m.name}'));
     b.write(_mainThreadCheck(m, objcSig));
+    b.write(blockVars);
     final call = _call(m.returnType, target, m.name, args);
     if (errorOut) {
       final failed = isVoid
@@ -805,6 +1005,90 @@ final class DartObjCEmitter {
         'objc_msgSend (package:objective_c)',
       );
     }
+    _emitCompletionFuture(b, t, m, name, params, named, callArgs);
+  }
+
+  static bool _isCompletionName(String n) =>
+      RegExp('(completion|handler|reply)', caseSensitive: false).hasMatch(n);
+
+  /// `Future` convenience for a `void` method whose last parameter is a
+  /// completion block: `fooAsync(...)` completes with the block's
+  /// argument(s); a trailing `NSError` argument fails the future with
+  /// [NativeObjCError] when non-null.
+  void _emitCompletionFuture(
+    StringBuffer b,
+    ApiType t,
+    ApiMethod m,
+    String name,
+    List<String> params,
+    List<String> named,
+    List<String> callArgs,
+  ) {
+    if (m.parameters.isEmpty || !_isVoid(m.returnType) || m.isConstructor) {
+      return;
+    }
+    final last = m.parameters.last;
+    final bt = last.type;
+    if (bt is! BlockTypeRef ||
+        !_isVoid(bt.returnType) ||
+        !_isCompletionName(last.name)) {
+      return;
+    }
+    final asyncName = '${name}Async';
+    final taken = {
+      for (final (_, n) in _resolver.names(t).declared) n,
+      ..._resolver.names(t).conflicts.keys,
+    };
+    if (taken.contains(asyncName)) return;
+    final values = bt.parameters;
+    final hasError =
+        values.isNotEmpty &&
+        values.last is DeclaredTypeRef &&
+        (values.last as DeclaredTypeRef).name == 'Foundation.NSError';
+    final results = hasError ? values.sublist(0, values.length - 1) : values;
+    final types = [for (final v in results) _blockApiType(v)];
+    final T = switch (types.length) {
+      0 => 'void',
+      1 => types.single,
+      _ => '(${types.join(', ')})',
+    };
+    final vars = [for (var i = 0; i < values.length; i++) 'v$i'];
+    final value = switch (results.length) {
+      0 => '',
+      1 => 'v0',
+      _ => '(${[for (var i = 0; i < results.length; i++) 'v$i'].join(', ')})',
+    };
+    // Drop the block parameter (always last) from the Dart signature.
+    final isPositional = m.parameters.length == 1;
+    final ps = [...params];
+    final ns = [...named];
+    final cs = [...callArgs];
+    final blockArgName = cs.removeLast();
+    if (isPositional) {
+      ps.removeLast();
+    } else {
+      ns.removeLast();
+    }
+    final sig = [...ps, if (ns.isNotEmpty) '{${ns.join(', ')}}'].join(', ');
+    final complete = hasError
+        ? '{ final e = v${values.length - 1}; if (e != null) { c.completeError(rt.NativeObjCError.fromNSError(e)); } else { c.complete($value); } }'
+        : '{ c.complete($value); }';
+    final pass = isPositional
+        ? '(${vars.join(', ')}) $complete'
+        : '${blockArgName.substring(0, blockArgName.indexOf(':'))}: (${vars.join(', ')}) $complete';
+    b.writeln();
+    b.writeln(
+      '  /// `Future` form of [$name]: completes when `${last.name}` is called.',
+    );
+    b.writeln(
+      '  ${m.isStatic ? 'static ' : ''}async.Future<$T> $asyncName($sig) {',
+    );
+    b.writeln('    final c = async.Completer<$T>();');
+    // Qualified: a parameter may be named like the method.
+    final target = m.isStatic ? _typeName(t) : 'this';
+    b.writeln('    $target.$name(${[...cs, pass].join(', ')});');
+    b.writeln('    return c.future;');
+    b.writeln('  }');
   }
 
   void _emitProperty(

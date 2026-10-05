@@ -66,6 +66,14 @@ The extractor reads Swift concurrency annotations from the headers, the way Swif
 - React Native: main-actor members (and `+alloc`/`+new` of main-actor classes) are invoked on the main thread; everything else runs on the calling JS thread. This replaces the earlier rule "all of UIKit on the main thread" (`RnObjCOptions.mainThreadModules` remains as an override).
 - Measured (iOS 27.0 SDK, Foundation + UIKit): 559 of 1,527 types and 6,708 of 12,886 methods are main-actor isolated, 39 methods are nonisolated; React Native dispatches 6,789 of 12,706 member rows to the main thread.
 
+## Blocks
+
+Block parameters are generated as JavaScript/Dart functions; `NS_NOESCAPE` is read from the headers.
+
+- **Flutter** (pure Dart, no native code): `NS_NOESCAPE` blocks are synchronous closure blocks (any argument and result types; they run while Dart is inside the call). Escaping blocks that return `void` and take only primitives are `NativeCallable.listener` blocks: callable from any thread, delivered asynchronously to the isolate (a completion handler's callable is closed after its first call). Escaping blocks with object arguments or a result would need a native trampoline (they may run later or on another thread) and stay `E004`. Note: escaping blocks that UIKit calls *during* the call (e.g. `animations:`) are delivered after the call returns. A `void` method whose last parameter is a completion block also gets `fooAsync(...)` returning a `Future` (a trailing `NSError` argument fails it with `NativeObjCError`).
+- **React Native**: the generated `cpp/generated/NabBlocksObjC.mm` has one block factory per native signature (`B<key>;` conversion codes). A block invoked on the JS thread calls the function synchronously; elsewhere a `void` block posts the call to the JS thread with its arguments retained, so object arguments are supported. Blocks returning a value are bound only when they are `NS_NOESCAPE` on members that run on the JS thread (no Promise variant). After regenerating, run `pod install` when files were added (`tools/run_rn_ios_tests.sh` does this).
+- Measured (iOS 27.0 SDK, Foundation + UIKit): Flutter binds 141 block parameters (11 synchronous and 5 listener signatures), `E004` exclusions 584 → 394, generated methods 10,900 → 11,092; React Native binds 270 block parameters (16 signatures), bindings 15,401 → 15,653. Both full outputs analyze / type-check and compile cleanly.
+
 ## Swift-only APIs (Layer 2: generated `@objc` adapters)
 
 Swift APIs that are not visible to Objective-C are discovered with the official toolchain and wrapped:

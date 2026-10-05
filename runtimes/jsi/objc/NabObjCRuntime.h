@@ -48,7 +48,9 @@ enum MemberFlags : uint8_t {
 /// `v` void, `z` boolean, `n` number, `j` 64-bit integer (bigint or number
 /// depending on the TypeScript mode), `s` NSString <-> string, `o` object
 /// handle, `S<Name>;` struct <-> plain object (the name resolves anonymous
-/// structs, encoded as `{?=...}`). Setters use `v` + the value code.
+/// structs, encoded as `{?=...}`), `B<key>;` JS function -> Objective-C block
+/// (generated factory [key], see NabObjCBlocks.h). Setters use `v` + the
+/// value code.
 struct MemberSpec {
   const char* jsName;   // stable key used from TypeScript (`-sel`, `P-name=`)
   const char* selector; // Objective-C selector
@@ -75,11 +77,14 @@ struct StructSpec {
   std::size_t fieldCount;
 };
 
+struct BlockFactory; // NabObjCBlocks.h (Objective-C++)
+
 /// Generated tables.
 struct Tables {
   const ClassSpec* (*lookupClass)(const std::string& key);
   const StructSpec* (*lookupStruct)(const std::string& name);
   bool longAsBigInt;
+  const BlockFactory* (*lookupBlock)(const std::string& key);
 };
 
 /// Installs `global.__nab` into [rt]. Must be called on the JS thread.

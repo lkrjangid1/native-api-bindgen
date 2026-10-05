@@ -8,6 +8,7 @@
 namespace nab_generated_objc {
 const nab::objc::ClassSpec* lookupClass(const std::string& key);
 const nab::objc::StructSpec* lookupStruct(const std::string& name);
+const nab::objc::BlockFactory* lookupBlock(const std::string& key);
 extern const bool kLongAsBigInt;
 } // namespace nab_generated_objc
 #else
@@ -33,7 +34,8 @@ bool NativeApiBindgen::install(jsi::Runtime& rt) {
       nab::objc::Tables{
           &nab_generated_objc::lookupClass,
           &nab_generated_objc::lookupStruct,
-          nab_generated_objc::kLongAsBigInt});
+          nab_generated_objc::kLongAsBigInt,
+          &nab_generated_objc::lookupBlock});
 #else
   nab::install(rt, jsInvoker_, &nab_generated::lookupClass, nab_generated::kLongAsBigInt);
 #endif

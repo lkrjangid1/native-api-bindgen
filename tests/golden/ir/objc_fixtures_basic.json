@@ -5,6 +5,365 @@
   "sdkVersion": "fixture",
   "types": [
     {
+      "id": "NABFixtures.NABBlocks",
+      "kind": "classType",
+      "methods": [
+        {
+          "id": "NABFixtures.NABBlocks#-enumerate:with:",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "enumerate:with:",
+          "nativeDescriptor": "enumerate:with:",
+          "parameters": [
+            {
+              "name": "count",
+              "nameSource": "header",
+              "type": {
+                "kind": "primitive",
+                "name": "uint64"
+              }
+            },
+            {
+              "annotations": [
+                {
+                  "classification": "semantic",
+                  "source": "headers",
+                  "type": "objc.noescape"
+                }
+              ],
+              "name": "body",
+              "nameSource": "header",
+              "type": {
+                "kind": "block",
+                "nullability": "nonnull",
+                "parameters": [
+                  {
+                    "kind": "primitive",
+                    "name": "uint64"
+                  },
+                  {
+                    "kind": "pointer",
+                    "nullability": "nonnull",
+                    "pointee": {
+                      "kind": "primitive",
+                      "name": "boolean"
+                    }
+                  }
+                ],
+                "returnType": {
+                  "kind": "primitive",
+                  "name": "void"
+                }
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "id": "NABFixtures.NABBlocks#-loadWithCompletion:",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "loadWithCompletion:",
+          "nativeDescriptor": "loadWithCompletion:",
+          "parameters": [
+            {
+              "name": "completion",
+              "nameSource": "header",
+              "type": {
+                "kind": "block",
+                "nullability": "nonnull",
+                "parameters": [
+                  {
+                    "kind": "declared",
+                    "name": "Foundation.NSString",
+                    "nullability": "nullable"
+                  },
+                  {
+                    "kind": "declared",
+                    "name": "Foundation.NSError",
+                    "nullability": "nullable"
+                  }
+                ],
+                "returnType": {
+                  "kind": "primitive",
+                  "name": "void"
+                }
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "id": "NABFixtures.NABBlocks#-runAfter:completion:",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "runAfter:completion:",
+          "nativeDescriptor": "runAfter:completion:",
+          "parameters": [
+            {
+              "name": "seconds",
+              "nameSource": "header",
+              "type": {
+                "kind": "primitive",
+                "name": "double"
+              }
+            },
+            {
+              "name": "completion",
+              "nameSource": "header",
+              "type": {
+                "kind": "block",
+                "nullability": "nonnull",
+                "parameters": [
+                  {
+                    "kind": "primitive",
+                    "name": "boolean"
+                  },
+                  {
+                    "kind": "primitive",
+                    "name": "long"
+                  }
+                ],
+                "returnType": {
+                  "kind": "primitive",
+                  "name": "void"
+                }
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "diagnostics": [
+            {
+              "code": "E013",
+              "label": "THREADING_CONSTRAINT",
+              "message": "Main actor (NS_SWIFT_UI_ACTOR): call on the main thread",
+              "severity": "info",
+              "symbolId": "NABFixtures.NABBlocks#-runOnMainAfter:completion:"
+            }
+          ],
+          "id": "NABFixtures.NABBlocks#-runOnMainAfter:completion:",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "runOnMainAfter:completion:",
+          "nativeDescriptor": "runOnMainAfter:completion:",
+          "parameters": [
+            {
+              "name": "seconds",
+              "nameSource": "header",
+              "type": {
+                "kind": "primitive",
+                "name": "double"
+              }
+            },
+            {
+              "name": "completion",
+              "nameSource": "header",
+              "type": {
+                "kind": "block",
+                "nullability": "nonnull",
+                "parameters": [
+                  {
+                    "kind": "declared",
+                    "name": "Foundation.NSString",
+                    "nullability": "nonnull"
+                  },
+                  {
+                    "kind": "declared",
+                    "name": "Foundation.NSError",
+                    "nullability": "nullable"
+                  }
+                ],
+                "returnType": {
+                  "kind": "primitive",
+                  "name": "void"
+                }
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "threading": "mainThread",
+          "visibility": "public"
+        },
+        {
+          "id": "NABFixtures.NABBlocks#-stopWithCompletion:",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "stopWithCompletion:",
+          "nativeDescriptor": "stopWithCompletion:",
+          "parameters": [
+            {
+              "name": "completion",
+              "nameSource": "header",
+              "type": {
+                "kind": "block",
+                "nullability": "nullable",
+                "returnType": {
+                  "kind": "primitive",
+                  "name": "void"
+                }
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "void"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "id": "NABFixtures.NABBlocks#-sumWith:",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "sumWith:",
+          "nativeDescriptor": "sumWith:",
+          "parameters": [
+            {
+              "annotations": [
+                {
+                  "classification": "semantic",
+                  "source": "headers",
+                  "type": "objc.noescape"
+                }
+              ],
+              "name": "op",
+              "nameSource": "header",
+              "type": {
+                "kind": "block",
+                "nullability": "nonnull",
+                "parameters": [
+                  {
+                    "kind": "primitive",
+                    "name": "long"
+                  },
+                  {
+                    "kind": "primitive",
+                    "name": "long"
+                  }
+                ],
+                "returnType": {
+                  "kind": "primitive",
+                  "name": "long"
+                }
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "primitive",
+            "name": "long"
+          },
+          "support": "supported",
+          "visibility": "public"
+        },
+        {
+          "id": "NABFixtures.NABBlocks#-transform:using:",
+          "kind": "method",
+          "modifiers": [
+            "public"
+          ],
+          "name": "transform:using:",
+          "nativeDescriptor": "transform:using:",
+          "parameters": [
+            {
+              "name": "input",
+              "nameSource": "header",
+              "type": {
+                "kind": "declared",
+                "name": "Foundation.NSString",
+                "nullability": "nonnull"
+              }
+            },
+            {
+              "annotations": [
+                {
+                  "classification": "semantic",
+                  "source": "headers",
+                  "type": "objc.noescape"
+                }
+              ],
+              "name": "fn",
+              "nameSource": "header",
+              "type": {
+                "kind": "block",
+                "nullability": "nonnull",
+                "parameters": [
+                  {
+                    "kind": "declared",
+                    "name": "Foundation.NSString",
+                    "nullability": "nonnull"
+                  }
+                ],
+                "returnType": {
+                  "kind": "declared",
+                  "name": "Foundation.NSString",
+                  "nullability": "nonnull"
+                }
+              }
+            }
+          ],
+          "returnType": {
+            "kind": "declared",
+            "name": "Foundation.NSString",
+            "nullability": "nonnull"
+          },
+          "support": "supported",
+          "visibility": "public"
+        }
+      ],
+      "modifiers": [
+        "public"
+      ],
+      "name": "NABBlocks",
+      "namespace": "NABFixtures",
+      "provenance": {
+        "artifactEntry": "NABFixtures.h",
+        "localArtifact": "fixture headers",
+        "platform": "apple",
+        "sdkVersion": "fixture",
+        "sourceKind": "fixture"
+      },
+      "superClass": {
+        "kind": "declared",
+        "name": "ObjectiveC.NSObject",
+        "nullability": "unknown"
+      },
+      "support": "supported",
+      "visibility": "public"
+    },
+    {
       "fields": [
         {
           "constantValue": {

@@ -98,6 +98,13 @@ final class RnObjCEmitter {
   // C++ tables: class id -> member rows.
   final _tables = SplayTreeMap<String, List<String>>();
 
+  // Block factories: key -> (JS codes, C result type, C parameter types).
+  final _blockFactories =
+      SplayTreeMap<
+        String,
+        ({String codes, String ret, List<String> params, String display})
+      >();
+
   bool get _bigint => options.mode == TypescriptMode.strict;
 
   /// Library path of a module's TypeScript file.
@@ -132,6 +139,7 @@ final class RnObjCEmitter {
         ),
       )
       ..add(GeneratedFile('cpp/generated/NabBindingsObjC.cpp', _tablesCpp()))
+      ..add(GeneratedFile('cpp/generated/NabBlocksObjC.mm', _blocksMm()))
       ..add(GeneratedFile('NativeApiBindings.podspec', _podspec()));
     runtimeSources.forEach(
       (path, text) => files.add(GeneratedFile(path, text)),
@@ -192,6 +200,7 @@ final class RnObjCEmitter {
 
   /// JS conversion code of a value (see `NabObjCRuntime.h`).
   String _conv(TypeRef t) {
+    if (t is BlockTypeRef) return 'B${_blockKey(t)};';
     final k = _primitive(t);
     if (k != null) {
       return switch (k) {
@@ -217,9 +226,68 @@ final class RnObjCEmitter {
 
   bool _nullable(TypeRef t) => t.nullability != Nullability.nonnull;
 
+  /// C type of a block value (enums resolve to their base type).
+  String _cType(TypeRef t) {
+    final k = _primitive(t);
+    if (k == null) return 'id';
+    return switch (k) {
+      PrimitiveKind.void_ => 'void',
+      PrimitiveKind.boolean => 'BOOL',
+      PrimitiveKind.byte => 'int8_t',
+      PrimitiveKind.short => 'int16_t',
+      PrimitiveKind.int_ => 'int32_t',
+      PrimitiveKind.long => 'int64_t',
+      PrimitiveKind.char => 'uint16_t',
+      PrimitiveKind.uint8 => 'uint8_t',
+      PrimitiveKind.uint16 => 'uint16_t',
+      PrimitiveKind.uint32 => 'uint32_t',
+      PrimitiveKind.uint64 => 'uint64_t',
+      PrimitiveKind.float => 'float',
+      PrimitiveKind.double_ => 'double',
+    };
+  }
+
+  /// Registers the block factory for [b] and returns its key (a hash of the
+  /// C signature).
+  String _blockKey(BlockTypeRef b) {
+    final ret = _cType(b.returnType);
+    final params = [for (final p in b.parameters) _cType(p)];
+    final sig = '$ret(${params.join(',')})';
+    var h = 0xcbf29ce484222325;
+    for (final c in utf8.encode(sig)) {
+      h ^= c;
+      h = (h * 0x100000001b3) & 0xFFFFFFFFFFFFFFFF;
+    }
+    final key = (h & 0x7FFFFFFFFFFFFFFF).toRadixString(36);
+    _blockFactories.putIfAbsent(
+      key,
+      () => (
+        codes: [
+          _conv(b.returnType),
+          for (final p in b.parameters) _conv(p),
+        ].join(),
+        ret: ret,
+        params: params,
+        display: sig,
+      ),
+    );
+    return key;
+  }
+
   /// TypeScript type of a value; [param] uses brand (`$Like`) types so any
   /// subclass instance is accepted.
   String _tsType(TypeRef t, {bool param = false}) {
+    if (t is BlockTypeRef) {
+      final ret = _primitive(t.returnType) == PrimitiveKind.void_
+          ? 'void'
+          : _tsType(t.returnType, param: true);
+      final args = [
+        for (var i = 0; i < t.parameters.length; i++)
+          'a$i: ${_tsType(t.parameters[i])}',
+      ];
+      final fn = '(${args.join(', ')}) => $ret';
+      return _nullable(t) ? '($fn) | null' : fn;
+    }
     final k = _primitive(t);
     if (k != null) return _numberType(k);
     if (_isString(t)) return _nullable(t) ? 'string | null' : 'string';
@@ -538,9 +606,44 @@ final class RnObjCEmitter {
         pn = '$pn\$';
       }
       decl.add('$pn: ${_tsType(p.type, param: true)}');
+      final bt = p.type;
+      if (bt is BlockTypeRef) {
+        args.add(_blockAdapter(pn, bt, m.id));
+        continue;
+      }
       args.add(_isObject(p.type) && !_isString(p.type) ? '\$rt.h($pn)' : pn);
     }
     return (decl: decl.join(', '), args: args.join(', '));
+  }
+
+  /// The JS function passed to the runtime for block parameter [pn]: wraps
+  /// object arguments in their classes and unwraps an object result.
+  String _blockAdapter(String pn, BlockTypeRef b, String symbol) {
+    final params = [
+      for (var i = 0; i < b.parameters.length; i++) 'a$i: unknown',
+    ];
+    String arg(int i) {
+      final t = b.parameters[i];
+      if (_primitive(t) != null) {
+        return 'a$i as ${_numberType(_primitive(t)!)}';
+      }
+      if (_isString(t)) {
+        return 'a$i as ${_nullable(t) ? 'string | null' : 'string'}';
+      }
+      final cls = t is DeclaredTypeRef && _types.containsKey(t.name)
+          ? _ref(t.name)
+          : 'ObjCObject';
+      return _nullable(t)
+          ? '\$rt.wrap($cls, a$i)'
+          : "\$rt.wrapNonNull($cls, a$i, '$symbol block argument')";
+    }
+
+    final call =
+        '$pn(${[for (var i = 0; i < b.parameters.length; i++) arg(i)].join(', ')})';
+    final r = b.returnType;
+    final body = _isObject(r) && !_isString(r) ? '\$rt.h($call)' : call;
+    final fn = '(${params.join(', ')}) => $body';
+    return _nullable(b) ? '$pn === null ? null : $fn' : fn;
   }
 
   String _retType(ApiMethod m) {
@@ -623,7 +726,15 @@ final class RnObjCEmitter {
       );
     }
     b.writeln('  }');
-    if (!_isInitOrAlloc(m)) {
+    // A block returning a value cannot answer from the background queue a
+    // Promise variant runs on.
+    final valueBlocks = m.parameters.any(
+      (p) =>
+          p.type is BlockTypeRef &&
+          _primitive((p.type as BlockTypeRef).returnType) !=
+              PrimitiveKind.void_,
+    );
+    if (!_isInitOrAlloc(m) && !valueBlocks) {
       b.writeln(
         '  /** Promise variant of `${m.name}`: runs on ${m.threading == Threading.mainThread || options.mainThreadModules.contains(t.namespace) ? 'the main queue' : 'a background queue'}. */',
       );
@@ -843,6 +954,91 @@ final class RnObjCEmitter {
     return b.toString();
   }
 
+  String _blocksMm() {
+    final b = StringBuffer(generatedHeader(module))
+      ..writeln(
+        '// Objective-C block factories: one per native block signature. Each block',
+      )
+      ..writeln(
+        '// boxes its arguments and forwards to the JavaScript function (see',
+      )
+      ..writeln('// NabObjCBlocks.h). Compiled with ARC.')
+      ..writeln('#import "NabObjCBlocks.h"')
+      ..writeln()
+      ..writeln('#include <cstring>')
+      ..writeln('#include <iterator>')
+      ..writeln()
+      ..writeln('namespace nab_generated_objc {')
+      ..writeln()
+      ..writeln('using nab::objc::BlockFactory;')
+      ..writeln('using nab::objc::BlockTarget;')
+      ..writeln()
+      ..writeln('namespace {')
+      ..writeln();
+    String box(String c, String v) => c == 'id' ? v : '@($v)';
+    String unbox(String c, String r) => switch (c) {
+      'void' => '',
+      'id' => r,
+      'BOOL' => '[$r boolValue]',
+      'float' || 'double' => '($c)[$r doubleValue]',
+      'uint64_t' => '[$r unsignedLongLongValue]',
+      _ => '($c)[$r longLongValue]',
+    };
+    _blockFactories.forEach((key, f) {
+      final params = [
+        for (var i = 0; i < f.params.length; i++) '${f.params[i]} a$i',
+      ].join(', ');
+      b
+        ..writeln('// ${f.display}')
+        ..writeln('id make_$key(std::shared_ptr<BlockTarget> t) {')
+        ..writeln('  return [^${f.ret}($params) {')
+        ..writeln('    std::vector<id> args;')
+        ..writeln('    args.reserve(${f.params.length});');
+      for (var i = 0; i < f.params.length; i++) {
+        b.writeln('    args.push_back(${box(f.params[i], 'a$i')});');
+      }
+      if (f.ret == 'void') {
+        b.writeln('    nab::objc::callBlock(t, std::move(args));');
+      } else {
+        b
+          ..writeln('    id r = nab::objc::callBlock(t, std::move(args));')
+          ..writeln('    return ${unbox(f.ret, 'r')};');
+      }
+      b
+        ..writeln('  } copy];')
+        ..writeln('}')
+        ..writeln();
+    });
+    b.writeln('const BlockFactory kBlocks[] = {');
+    _blockFactories.forEach((key, f) {
+      b.writeln('    {"$key", "${f.codes}", &make_$key},');
+    });
+    if (_blockFactories.isEmpty) b.writeln('    {"", "", nullptr},');
+    b
+      ..writeln('};')
+      ..writeln()
+      ..writeln('} // namespace')
+      ..writeln()
+      ..writeln('const BlockFactory* lookupBlock(const std::string& key) {')
+      ..writeln('  std::size_t lo = 0;')
+      ..writeln('  std::size_t hi = ${_blockFactories.length};')
+      ..writeln('  while (lo < hi) {')
+      ..writeln('    const std::size_t mid = (lo + hi) / 2;')
+      ..writeln('    const int c = std::strcmp(kBlocks[mid].key, key.c_str());')
+      ..writeln('    if (c == 0) return &kBlocks[mid];')
+      ..writeln('    if (c < 0) {')
+      ..writeln('      lo = mid + 1;')
+      ..writeln('    } else {')
+      ..writeln('      hi = mid;')
+      ..writeln('    }')
+      ..writeln('  }')
+      ..writeln('  return nullptr;')
+      ..writeln('}')
+      ..writeln()
+      ..writeln('} // namespace nab_generated_objc');
+    return b.toString();
+  }
+
   String _podspec() {
     final frameworks = [for (final f in options.linkFrameworks) "'$f'"];
     final header = generatedHeader(module, comment: '#');
@@ -865,6 +1061,7 @@ Pod::Spec.new do |s|
     'cpp/runtime/NativeApiBindgen.{h,cpp}',
     'cpp/runtime-objc/*.{h,mm}',
     'cpp/generated/NabBindingsObjC.cpp',
+    'cpp/generated/NabBlocksObjC.mm',
   ]
   s.frameworks = [${frameworks.join(', ')}]
   s.pod_target_xcconfig = {

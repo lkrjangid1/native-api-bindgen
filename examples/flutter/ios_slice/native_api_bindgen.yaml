@@ -11,6 +11,7 @@ platform:
       - UIColor
       - NSProcessInfo
       - NSFileManager
+      - NSOperationQueue
     depth: 0
     swift:                 # Swift-only APIs get generated @objc adapters (Layer 2)
       adaptersDir: ios/NativeApiSwiftAdapters

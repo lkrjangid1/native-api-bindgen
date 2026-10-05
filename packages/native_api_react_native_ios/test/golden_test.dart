@@ -82,6 +82,7 @@ void main() {
       'cpp/runtime-objc/NabObjCRuntime.h': 'runtimes/jsi/objc/NabObjCRuntime.h',
       'cpp/runtime-objc/NabObjCRuntime.mm':
           'runtimes/jsi/objc/NabObjCRuntime.mm',
+      'cpp/runtime-objc/NabObjCBlocks.h': 'runtimes/jsi/objc/NabObjCBlocks.h',
       'cpp/runtime-objc/NabModuleProvider.h':
           'runtimes/jsi/objc/NabModuleProvider.h',
       'cpp/runtime-objc/NabModuleProvider.mm':
@@ -148,7 +149,14 @@ void main() {
       cpp,
       contains('const char* const k_s_NABRect[] = {"NABPoint", "NABPoint"};'),
     );
-    expect(cpp, isNot(contains('runWithCompletion')), reason: 'blocks: E004');
+    // Blocks: `B<factory>;` codes; value-returning escaping blocks are E004.
+    expect(cpp, contains('"runWithCompletion:", "vB'));
+    expect(cpp, contains('"transform:using:", "ssB'));
+    final mm = gen().files
+        .firstWhere((f) => f.path == 'cpp/generated/NabBlocksObjC.mm')
+        .contents;
+    expect(mm, contains('return [^void(BOOL a0)'));
+    expect(mm, contains('const BlockFactory* lookupBlock('));
     expect(cpp, isNot(contains('_privateHelper')));
   });
 
@@ -187,6 +195,7 @@ void main() {
       for (final f in [
         'cpp/runtime-objc/NabObjCRuntime.mm',
         'cpp/generated/NabBindingsObjC.cpp',
+        'cpp/generated/NabBlocksObjC.mm',
       ]) {
         final r = await Process.run('xcrun', [
           '--sdk',

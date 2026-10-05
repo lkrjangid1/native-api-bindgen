@@ -90,10 +90,21 @@ void main() {
       List<DiagnosticCode> codes(String id) => [
         for (final d in node(id).diagnostics) d.code,
       ];
-      expect(node('NABThing#-runWithCompletion:').isGeneratable, isFalse);
+      // Escaping void block with primitive arguments: listener block.
+      expect(node('NABThing#-runWithCompletion:').isGeneratable, isTrue);
+      // Escaping block with object arguments off the main actor: E004.
+      expect(node('NABBlocks#-loadWithCompletion:').isGeneratable, isFalse);
       expect(
-        codes('NABThing#-runWithCompletion:'),
+        codes('NABBlocks#-loadWithCompletion:'),
         contains(DiagnosticCode.unsupportedCallback),
+      );
+      // NS_NOESCAPE blocks: synchronous closure blocks.
+      expect(node('NABBlocks#-transform:using:').isGeneratable, isTrue);
+      // Escaping object arguments are E004 even on the main actor (the
+      // block runs later from the run loop).
+      expect(
+        node('NABBlocks#-runOnMainAfter:completion:').isGeneratable,
+        isFalse,
       );
       expect(
         node('NABThing#-saveToPath:error:').support,

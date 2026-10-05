@@ -39,8 +39,58 @@ bool isErrorOutParameter(TypeRef t) =>
     t.pointee is DeclaredTypeRef &&
     (t.pointee as DeclaredTypeRef).name == 'Foundation.NSError';
 
+/// How a block parameter is created from a Dart function.
+enum BlockMode {
+  /// A closure block for `NS_NOESCAPE` parameters: invoked synchronously
+  /// while Dart is inside the call (an FFI callback is only valid then; a
+  /// block called later from the run loop would need native code to enter
+  /// the isolate). Any argument and result types.
+  sync,
+
+  /// A `NativeCallable.listener` block: callable from any thread, delivered
+  /// asynchronously. Only `void` blocks whose arguments are all primitives
+  /// (objects could be freed before Dart reads them).
+  listener,
+}
+
+bool _blockValueSupported(TypeRef t, Map<String, ApiType> types) => switch (t) {
+  PrimitiveTypeRef() => true,
+  DeclaredTypeRef(:final name) =>
+    name != 'objc.unsupported' &&
+        name != 'objc.Class' &&
+        name != 'objc.SEL' &&
+        types[name]?.kind != TypeKind.struct,
+  PointerTypeRef(:final pointee) => pointee is PrimitiveTypeRef,
+  _ => false,
+};
+
+bool _blockPrimitive(TypeRef t, Map<String, ApiType> types) => switch (t) {
+  PrimitiveTypeRef() => true,
+  DeclaredTypeRef(:final name) => types[name]?.kind == TypeKind.enumType,
+  _ => false,
+};
+
+/// The creation mode for block parameter [p] of [m], or null when the
+/// block cannot be created from Dart without a native trampoline.
+BlockMode? blockMode(ApiMethod m, ApiParameter p, Map<String, ApiType> types) {
+  final b = p.type;
+  if (b is! BlockTypeRef) return null;
+  final values = [b.returnType, ...b.parameters];
+  if (!values.every((t) => _blockValueSupported(t, types))) return null;
+  final noescape = p.annotations.any((a) => a.type == 'objc.noescape');
+  if (noescape) return BlockMode.sync;
+  final isVoid =
+      b.returnType is PrimitiveTypeRef &&
+      (b.returnType as PrimitiveTypeRef).kind == PrimitiveKind.void_;
+  if (isVoid && b.parameters.every((t) => _blockPrimitive(t, types))) {
+    return BlockMode.listener;
+  }
+  return null;
+}
+
 /// Target-capability analysis for Dart over `package:objective_c`.
 ApiModule planDartObjC(ApiModule module) {
+  final byId = {for (final t in module.types) t.id: t};
   final generated = {
     for (final t in module.types)
       if (t.isGeneratable) t.id,
@@ -91,7 +141,21 @@ ApiModule planDartObjC(ApiModule module) {
       }
       final extra = <Diagnostic>[];
       Diagnostic? blocked;
-      for (final ty in [m.returnType, for (final p in m.parameters) p.type]) {
+      for (final p in m.parameters) {
+        if (p.type is! BlockTypeRef) continue;
+        if (blockMode(m, p, byId) == null) {
+          blocked ??= d(
+            DiagnosticCode.unsupportedCallback,
+            m.id,
+            'Block parameter `${p.name}` (${p.type.display}) is escaping and takes objects or returns a value: it may be invoked later or off the isolate thread, which needs a native trampoline',
+          );
+        }
+      }
+      for (final ty in [
+        m.returnType,
+        for (final p in m.parameters)
+          if (p.type is! BlockTypeRef) p.type,
+      ]) {
         final r = unsupportedReason(ty);
         if (r == 'E004') {
           blocked ??= d(

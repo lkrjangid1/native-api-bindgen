@@ -32,6 +32,7 @@ platform:
       - NSProcessInfo
       - NSFileManager
       - NSArray
+      - NSOperationQueue
     depth: 0
 
 targets:

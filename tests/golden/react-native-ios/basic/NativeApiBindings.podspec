@@ -21,6 +21,7 @@ Pod::Spec.new do |s|
     'cpp/runtime/NativeApiBindgen.{h,cpp}',
     'cpp/runtime-objc/*.{h,mm}',
     'cpp/generated/NabBindingsObjC.cpp',
+    'cpp/generated/NabBlocksObjC.mm',
   ]
   s.frameworks = []
   s.pod_target_xcconfig = {

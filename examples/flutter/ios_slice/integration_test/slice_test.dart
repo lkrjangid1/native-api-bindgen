@@ -43,6 +43,49 @@ void main() {
     },
   );
 
+  group('Objective-C blocks', () {
+    test('NS_NOESCAPE block runs synchronously', () {
+      var ran = false;
+      ios.UIView.performWithoutAnimation(() => ran = true);
+      expect(ran, isTrue);
+    });
+
+    test('escaping completion block (listener) and its Future form', () async {
+      final view = ios.UIView.new$();
+      var animationsRan = false;
+      // Escaping blocks are listener blocks: delivered asynchronously, so
+      // UIKit's `animations` block runs after the call returns.
+      final finished =
+          await ios.UIView.animateWithDuration$animations$completionAsync(
+            0.01,
+            animations: () {
+              animationsRan = true;
+              view.alpha = 0.5;
+            },
+          );
+      expect(finished, isA<bool>());
+      for (var tries = 0; !animationsRan && tries < 100; tries++) {
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+      }
+      expect(animationsRan, isTrue);
+      expect(view.alpha, 0.5);
+    });
+
+    test('escaping block on a background queue (listener)', () async {
+      final queue = ios.NSOperationQueue.new$();
+      final done = <int>[];
+      for (var i = 0; i < 5; i++) {
+        queue.addOperationWithBlock(() => done.add(i));
+      }
+      queue.waitUntilAllOperationsAreFinished();
+      // Listener blocks are delivered asynchronously to this isolate.
+      for (var tries = 0; done.length < 5 && tries < 100; tries++) {
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+      }
+      expect(done.toSet(), {0, 1, 2, 3, 4});
+    });
+  });
+
   test('NSProcessInfo: struct returned and passed by value', () {
     final info = ios.NSProcessInfo.processInfo;
     final v = info.operatingSystemVersion;

@@ -9,13 +9,16 @@
 /// Bindings for the `NABFixtures` module.
 library;
 
+import 'dart:async' as async;
 import 'dart:ffi' as ffi;
 
 import 'package:objective_c/objective_c.dart' as objc;
 
+import '_blocks.dart' as bk;
 import '_msgsend.dart' as ms;
 import '_runtime.dart' as rt;
 
+final _class_NABBlocks = objc.getClass('NABBlocks');
 final _class_NABMainActorView = objc.getClass('NABMainActorView');
 final _class_NABThing = objc.getClass('NABThing');
 final _sel_addItem_ = objc.registerName('addItem:');
@@ -27,6 +30,7 @@ final _sel_conformsToProtocol_ = objc.registerName('conformsToProtocol:');
 final _sel_count = objc.registerName('count');
 final _sel_counts = objc.registerName('counts');
 final _sel_describe = objc.registerName('describe');
+final _sel_enumerate_with_ = objc.registerName('enumerate:with:');
 final _sel_frame = objc.registerName('frame');
 final _sel_identifier = objc.registerName('identifier');
 final _sel_init = objc.registerName('init');
@@ -42,6 +46,8 @@ final _sel_new = objc.registerName('new');
 final _sel_objectForKeyedSubscript_ = objc.registerName('objectForKeyedSubscript:');
 final _sel_redraw = objc.registerName('redraw');
 final _sel_refreshUI = objc.registerName('refreshUI');
+final _sel_runAfter_completion_ = objc.registerName('runAfter:completion:');
+final _sel_runWithCompletion_ = objc.registerName('runWithCompletion:');
 final _sel_saveToPath_error_ = objc.registerName('saveToPath:error:');
 final _sel_setAlpha_ = objc.registerName('setAlpha:');
 final _sel_setFrame_ = objc.registerName('setFrame:');
@@ -49,8 +55,76 @@ final _sel_setListener_ = objc.registerName('setListener:');
 final _sel_setMode_ = objc.registerName('setMode:');
 final _sel_setName_ = objc.registerName('setName:');
 final _sel_shouldStop = objc.registerName('shouldStop');
+final _sel_stopWithCompletion_ = objc.registerName('stopWithCompletion:');
+final _sel_sumWith_ = objc.registerName('sumWith:');
 final _sel_thing_didChangeValue_ = objc.registerName('thing:didChangeValue:');
 final _sel_thingWithValue_ = objc.registerName('thingWithValue:');
+final _sel_transform_using_ = objc.registerName('transform:using:');
+
+/// Objective-C: `@interface NABBlocks`
+extension type NABBlocks._(objc.ObjCObject object$) implements objc.ObjCObject {
+  /// Views [other] as `NABBlocks` (unchecked; see [isA]).
+  NABBlocks.as(objc.ObjCObject other) : object$ = other;
+
+  /// Wraps a raw object pointer.
+  NABBlocks.fromPointer(ffi.Pointer<objc.ObjCObjectImpl> other, {bool retain = false, bool release = false})
+    : object$ = objc.ObjCObject(other, retain: retain, release: release);
+
+  /// Whether [obj] is an instance of `NABBlocks` (or a subclass).
+  static bool isA(objc.ObjCObject? obj) =>
+      obj == null ? false : ms.msgSend_xn3eu2m4e7c4(obj.ref.pointer, _sel_isKindOfClass_, _class_NABBlocks);
+
+  /// `+alloc` (owned).
+  static NABBlocks alloc() => NABBlocks.fromPointer(ms.msgSend_nwlodbzk5001(_class_NABBlocks, _sel_alloc), retain: false, release: true);
+
+  /// `+new` (owned).
+  static NABBlocks new$() => NABBlocks.fromPointer(ms.msgSend_nwlodbzk5001(_class_NABBlocks, _sel_new), retain: false, release: true);
+
+  /// Objective-C: `-[NABBlocks enumerate:with:]`
+  void enumerate(int count, {required void Function(int, ffi.Pointer<ffi.Bool>) with$}) {
+    final $b1 = bk.sync_wyw89bm4fawo((int a0, ffi.Pointer<ffi.Bool> a1) { with$(a0, a1); });
+    ms.msgSend_1g7mnr4uasgrf(object$.ref.pointer, _sel_enumerate_with_, count, $b1.ref.pointer.cast<objc.ObjCObjectImpl>());
+  }
+
+  /// Objective-C: `-[NABBlocks runAfter:completion:]`
+  void runAfter(double seconds, {required void Function(bool, int) completion}) {
+    final $b1 = bk.listener_1jxrv3498gv8s((bool a0, int a1) { completion(a0, a1); }, once: true);
+    ms.msgSend_glgo9uc0wazo(object$.ref.pointer, _sel_runAfter_completion_, seconds, $b1.ref.pointer.cast<objc.ObjCObjectImpl>());
+  }
+
+  /// `Future` form of [runAfter]: completes when `completion` is called.
+  async.Future<(bool, int)> runAfterAsync(double seconds) {
+    final c = async.Completer<(bool, int)>();
+    this.runAfter(seconds, completion: (v0, v1) { c.complete((v0, v1)); });
+    return c.future;
+  }
+
+  /// Objective-C: `-[NABBlocks stopWithCompletion:]`
+  void stopWithCompletion(void Function()? completion) {
+    final $b0 = completion == null ? null : bk.listener_s185jcjjbqd(() { completion(); }, once: true);
+    ms.msgSend_18nt33llhc07u(object$.ref.pointer, _sel_stopWithCompletion_, $b0?.ref.pointer.cast<objc.ObjCObjectImpl>() ?? ffi.nullptr);
+  }
+
+  /// `Future` form of [stopWithCompletion]: completes when `completion` is called.
+  async.Future<void> stopWithCompletionAsync() {
+    final c = async.Completer<void>();
+    this.stopWithCompletion(() { c.complete(); });
+    return c.future;
+  }
+
+  /// Objective-C: `-[NABBlocks sumWith:]`
+  int sumWith(int Function(int, int) op) {
+    final $b0 = bk.sync_1g5gri0bovfu1((int a0, int a1) => op(a0, a1));
+    return ms.msgSend_knciohuav7c3(object$.ref.pointer, _sel_sumWith_, $b0.ref.pointer.cast<objc.ObjCObjectImpl>());
+  }
+
+  /// Objective-C: `-[NABBlocks transform:using:]`
+  objc.NSString transform(objc.NSString input, {required objc.NSString Function(objc.NSString) using}) {
+    final $b1 = bk.sync_mqz3yl480vdr((ffi.Pointer<objc.ObjCObjectImpl> a0) => using(objc.NSString.fromPointer(a0, retain: true, release: true)).ref.retainAndAutorelease());
+    final $ret = ms.msgSend_9jksk4ebvvjv(object$.ref.pointer, _sel_transform_using_, input.ref.pointer, $b1.ref.pointer.cast<objc.ObjCObjectImpl>());
+    return objc.NSString.fromPointer($ret, retain: true, release: true);
+  }
+}
 
 /// Native API: `NABFixtures.NABFlags`
 abstract final class NABFlags {
@@ -310,6 +384,21 @@ extension type NABThing._(objc.ObjCObject object$) implements objc.ObjCObject {
   void refreshUI() {
     assert(rt.checkMainThread("-[NABThing refreshUI]"));
     ms.msgSend_1ivg14d6tnza3(object$.ref.pointer, _sel_refreshUI);
+  }
+
+  /// Objective-C: `-[NABThing runWithCompletion:]`
+  /// - iOS 16+ (guarded at runtime)
+  void runWithCompletion(void Function(bool) completion) {
+    objc.checkOsVersionInternal("NABThing.runWithCompletion:", iOS: (false, (16, 0, 0)));
+    final $b0 = bk.listener_olxutvjws7l6((bool a0) { completion(a0); }, once: true);
+    ms.msgSend_18nt33llhc07u(object$.ref.pointer, _sel_runWithCompletion_, $b0.ref.pointer.cast<objc.ObjCObjectImpl>());
+  }
+
+  /// `Future` form of [runWithCompletion]: completes when `completion` is called.
+  async.Future<bool> runWithCompletionAsync() {
+    final c = async.Completer<bool>();
+    this.runWithCompletion((v0) { c.complete(v0); });
+    return c.future;
   }
 
   /// Objective-C: `-[NABThing saveToPath:error:]`

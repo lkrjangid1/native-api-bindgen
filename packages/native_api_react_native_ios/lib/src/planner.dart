@@ -7,6 +7,42 @@ bool isErrorOut(TypeRef t) =>
     t.pointee is DeclaredTypeRef &&
     (t.pointee as DeclaredTypeRef).name == 'Foundation.NSError';
 
+/// Whether a block value type converts to and from JavaScript: primitives,
+/// enums and objects (no structs, pointers, selectors or classes).
+bool _blockValueOk(TypeRef t, Map<String, ApiType> byId) => switch (t) {
+  PrimitiveTypeRef() => true,
+  DeclaredTypeRef(:final name) =>
+    name != 'objc.unsupported' &&
+        name != 'objc.Class' &&
+        name != 'objc.SEL' &&
+        byId[name]?.kind != TypeKind.struct,
+  _ => false,
+};
+
+/// Why block parameter [p] of [m] cannot be bound from JavaScript, or null.
+/// `void` blocks are always delivered (synchronously on the JS thread,
+/// otherwise posted to it, arguments retained); blocks returning a value
+/// need a synchronous JS-thread call: `NS_NOESCAPE` on a member that is not
+/// dispatched to the main thread.
+String? blockUnsupported(
+  ApiMethod m,
+  ApiParameter p,
+  Map<String, ApiType> byId,
+) {
+  final b = p.type;
+  if (b is! BlockTypeRef) return null;
+  if (![b.returnType, ...b.parameters].every((t) => _blockValueOk(t, byId))) {
+    return 'Block `${p.name}` (${b.display}) has values that cannot be converted to JavaScript';
+  }
+  final isVoid =
+      b.returnType is PrimitiveTypeRef &&
+      (b.returnType as PrimitiveTypeRef).kind == PrimitiveKind.void_;
+  if (isVoid) return null;
+  final noescape = p.annotations.any((a) => a.type == 'objc.noescape');
+  if (noescape && m.threading != Threading.mainThread) return null;
+  return 'Block `${p.name}` (${b.display}) returns a value but may be invoked off the JS thread';
+}
+
 /// Target-capability analysis for TypeScript over the JSI/Objective-C
 /// runtime: values must be convertible to JS (no raw pointers, blocks,
 /// selectors or classes; structs only with numeric/boolean/struct fields).
@@ -110,7 +146,16 @@ ApiModule planTsObjC(ApiModule module) {
               isErrorOut(m.parameters[i].type)))
             m.parameters[i].type,
       ];
-      for (final ty in [m.returnType, ...params]) {
+      for (final p in m.parameters) {
+        final why = blockUnsupported(m, p, byId);
+        if (why != null) {
+          blocked ??= d(DiagnosticCode.unsupportedCallback, m.id, why);
+        }
+      }
+      for (final ty in [
+        m.returnType,
+        ...params.where((t) => t is! BlockTypeRef),
+      ]) {
         final r = unsupported(ty);
         if (r != null) blocked ??= d(r.$1, m.id, r.$2);
         for (final n in ty.referencedTypes) {

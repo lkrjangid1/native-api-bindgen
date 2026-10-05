@@ -534,6 +534,23 @@ final class ObjCExtractor {
   /// thread, `NS_SWIFT_NONISOLATED` / `swift_attr("nonisolated")` -> any
   /// thread, otherwise null (inherit). libclang does not expose `swift_attr`,
   /// so the attribute's expansion site in the header is read.
+  /// Whether one of [c]'s attributes is spelled with one of [prefixes] at
+  /// its expansion site (for attributes libclang does not expose by kind).
+  bool _hasAttributeText(CXCursor c, List<String> prefixes) {
+    for (final a in _clang.children(c)) {
+      final k = _clang.getCursorKind(a);
+      if (k < 400 || k > 499) continue;
+      final loc = _clang.fileOffsetOf(a);
+      if (loc == null) continue;
+      final bytes = _sources[loc.file] ??= File(loc.file).readAsBytesSync();
+      if (loc.offset >= bytes.length) continue;
+      final end = (loc.offset + 32).clamp(0, bytes.length);
+      final text = String.fromCharCodes(bytes, loc.offset, end);
+      if (prefixes.any(text.startsWith)) return true;
+    }
+    return false;
+  }
+
   Threading? _isolation(CXCursor c) {
     // Implicit attributes inherited from the container may precede the
     // member's own; an explicit `nonisolated` wins.
@@ -676,6 +693,18 @@ final class ObjCExtractor {
           _clang.str(_clang.getCursorSpelling(a)),
           _type(_clang.getCursorType(a)),
           nameSource: 'header',
+          annotations: [
+            if (_hasAttributeText(a, const [
+              'NS_NOESCAPE',
+              '__attribute__((noescape))',
+              'noescape',
+            ]))
+              const ApiAnnotation(
+                'objc.noescape',
+                classification: AnnotationClassification.semantic,
+                source: 'headers',
+              ),
+          ],
         ),
       );
     }

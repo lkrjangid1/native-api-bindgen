@@ -8,6 +8,74 @@
 import * as $rt from '../../runtime-objc';
 import {ObjCObject} from '../../runtime-objc';
 
+/** Any object that is a `NABBlocks`. */
+export type NABBlocks$Like = ObjCObject & {readonly __brand_NABFixtures_NABBlocks: true};
+
+/** Objective-C: `@interface NABBlocks` */
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
+export interface NABBlocks {
+  readonly __brand_NABFixtures_NABBlocks: true;
+}
+export class NABBlocks extends ObjCObject {
+  static readonly objcName: string = 'NABBlocks';
+  /** @internal */ static readonly $t = $rt.classTable('NABFixtures.NABBlocks');
+  /** `+alloc` (call an `init…` method next). */
+  static alloc(): NABBlocks {
+    return $rt.wrapNonNull(NABBlocks, NABBlocks.$t()['+alloc'](false), 'NABFixtures.NABBlocks#+alloc');
+  }
+  /** `+new` (`[[NABBlocks alloc] init]`). */
+  static new$(): NABBlocks {
+    return $rt.wrapNonNull(NABBlocks, NABBlocks.$t()['+new'](false), 'NABFixtures.NABBlocks#+new');
+  }
+  /** Whether [o] is an instance of `NABBlocks` (or a subclass). */
+  static isA(o: ObjCObject | null | undefined): o is NABBlocks {
+    return o !== null && o !== undefined && $rt.objc().isKindOfClass(o.$h, 'NABBlocks');
+  }
+  /** Objective-C: `-[NABBlocks loadWithCompletion:]` */
+  loadWithCompletion(completion: (a0: string | null, a1: ObjCObject | null) => void): void {
+    NABBlocks.$t()['-loadWithCompletion:'](false, this.$h, (a0: unknown, a1: unknown) => completion(a0 as string | null, $rt.wrap(ObjCObject, a1)));
+  }
+  /** Promise variant of `loadWithCompletion:`: runs on a background queue. */
+  loadWithCompletionAsync(completion: (a0: string | null, a1: ObjCObject | null) => void): Promise<void> {
+    return (NABBlocks.$t()['-loadWithCompletion:'](true, this.$h, (a0: unknown, a1: unknown) => completion(a0 as string | null, $rt.wrap(ObjCObject, a1))) as Promise<unknown>).then(() => undefined);
+  }
+  /** Objective-C: `-[NABBlocks runAfter:completion:]` */
+  runAfter(seconds: number, completion: (a0: boolean, a1: number) => void): void {
+    NABBlocks.$t()['-runAfter:completion:'](false, this.$h, seconds, (a0: unknown, a1: unknown) => completion(a0 as boolean, a1 as number));
+  }
+  /** Promise variant of `runAfter:completion:`: runs on a background queue. */
+  runAfterAsync(seconds: number, completion: (a0: boolean, a1: number) => void): Promise<void> {
+    return (NABBlocks.$t()['-runAfter:completion:'](true, this.$h, seconds, (a0: unknown, a1: unknown) => completion(a0 as boolean, a1 as number)) as Promise<unknown>).then(() => undefined);
+  }
+  /**
+   * Objective-C: `-[NABBlocks runOnMainAfter:completion:]`
+   * - Note E013 THREADING_CONSTRAINT: Main actor (NS_SWIFT_UI_ACTOR): call on the main thread
+   */
+  runOnMainAfter(seconds: number, completion: (a0: string, a1: ObjCObject | null) => void): void {
+    NABBlocks.$t()['-runOnMainAfter:completion:'](false, this.$h, seconds, (a0: unknown, a1: unknown) => completion(a0 as string, $rt.wrap(ObjCObject, a1)));
+  }
+  /** Promise variant of `runOnMainAfter:completion:`: runs on the main queue. */
+  runOnMainAfterAsync(seconds: number, completion: (a0: string, a1: ObjCObject | null) => void): Promise<void> {
+    return (NABBlocks.$t()['-runOnMainAfter:completion:'](true, this.$h, seconds, (a0: unknown, a1: unknown) => completion(a0 as string, $rt.wrap(ObjCObject, a1))) as Promise<unknown>).then(() => undefined);
+  }
+  /** Objective-C: `-[NABBlocks stopWithCompletion:]` */
+  stopWithCompletion(completion: (() => void) | null): void {
+    NABBlocks.$t()['-stopWithCompletion:'](false, this.$h, completion === null ? null : () => completion());
+  }
+  /** Promise variant of `stopWithCompletion:`: runs on a background queue. */
+  stopWithCompletionAsync(completion: (() => void) | null): Promise<void> {
+    return (NABBlocks.$t()['-stopWithCompletion:'](true, this.$h, completion === null ? null : () => completion()) as Promise<unknown>).then(() => undefined);
+  }
+  /** Objective-C: `-[NABBlocks sumWith:]` */
+  sumWith(op: (a0: number, a1: number) => number): number {
+    return NABBlocks.$t()['-sumWith:'](false, this.$h, (a0: unknown, a1: unknown) => op(a0 as number, a1 as number)) as number;
+  }
+  /** Objective-C: `-[NABBlocks transform:using:]` */
+  transform(input: string, fn: (a0: string) => string): string {
+    return $rt.nonNullString(NABBlocks.$t()['-transform:using:'](false, this.$h, input, (a0: unknown) => fn(a0 as string)), 'NABFixtures.NABBlocks#-transform:using:');
+  }
+}
+
 /** Native API: `NABFixtures.NABFlags` */
 export const NABFlags = {
   NABFlagsNone: 0,
@@ -313,6 +381,19 @@ export class NABThing extends ObjCObject {
   /** Promise variant of `refreshUI`: runs on the main queue. */
   refreshUIAsync(): Promise<void> {
     return (NABThing.$t()['-refreshUI'](true, this.$h) as Promise<unknown>).then(() => undefined);
+  }
+  /**
+   * Objective-C: `-[NABThing runWithCompletion:]`
+   * - iOS 16+ (guarded at runtime)
+   */
+  runWithCompletion(completion: (a0: boolean) => void): void {
+    $rt.IosApi.require(16, 0, 0, 'NABFixtures.NABThing#-runWithCompletion:');
+    NABThing.$t()['-runWithCompletion:'](false, this.$h, (a0: unknown) => completion(a0 as boolean));
+  }
+  /** Promise variant of `runWithCompletion:`: runs on a background queue. */
+  runWithCompletionAsync(completion: (a0: boolean) => void): Promise<void> {
+    $rt.IosApi.require(16, 0, 0, 'NABFixtures.NABThing#-runWithCompletion:');
+    return (NABThing.$t()['-runWithCompletion:'](true, this.$h, (a0: unknown) => completion(a0 as boolean)) as Promise<unknown>).then(() => undefined);
   }
   /**
    * Objective-C: `-[NABThing saveToPath:error:]`

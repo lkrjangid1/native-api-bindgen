@@ -2,12 +2,14 @@
 // Licensed under the Apache License, Version 2.0 (project source).
 // Compiled with ARC (-fobjc-arc).
 #import "NabObjCRuntime.h"
+#import "NabObjCBlocks.h"
 
 #import <Foundation/Foundation.h>
 #import <objc/runtime.h>
 
 #include <cstring>
 #include <string>
+#include <thread>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -23,6 +25,8 @@ using facebook::react::CallInvoker;
 
 Tables gTables{};
 std::shared_ptr<CallInvoker> gInvoker;
+std::thread::id gJsThread;
+jsi::Runtime* gRuntime = nullptr;
 
 // ------------------------------------------------------------------ errors
 
@@ -290,7 +294,7 @@ std::vector<Code> parseConv(const char* conv) {
   std::vector<Code> out;
   for (const char* p = conv; *p != '\0'; p++) {
     Code c{*p, {}};
-    if (*p == 'S') {
+    if (*p == 'S' || *p == 'B') {
       const char* end = std::strchr(p + 1, ';');
       if (end == nullptr) end = p + 1 + std::strlen(p + 1);
       c.structName.assign(p + 1, static_cast<std::size_t>(end - p - 1));
@@ -385,6 +389,115 @@ bool isStatic(MemberKind k) {
   return k == MemberKind::ClassMethod || k == MemberKind::ClassGetter || k == MemberKind::ClassSetter;
 }
 
+// ------------------------------------------------------------------ blocks
+
+} // namespace
+
+struct BlockTarget {
+  std::shared_ptr<jsi::Value> fn; // the JS function; touched on the JS thread only
+  std::string codes;              // result code, then one code per argument
+
+  ~BlockTarget() {
+    // Blocks may be deallocated on any thread; JS values die on the JS thread.
+    auto f = std::move(fn);
+    if (f && gInvoker) gInvoker->invokeAsync([f](jsi::Runtime&) mutable { f.reset(); });
+  }
+};
+
+namespace {
+
+jsi::Value boxedToJs(jsi::Runtime& rt, char code, id v) {
+  switch (code) {
+    case 'z': return jsi::Value(v != nil && [(NSNumber*)v boolValue]);
+    case 'n': return jsi::Value(v == nil ? 0.0 : [(NSNumber*)v doubleValue]);
+    case 'j': {
+      const long long x = v == nil ? 0 : [(NSNumber*)v longLongValue];
+      return gTables.longAsBigInt ? jsi::Value(jsi::BigInt::fromInt64(rt, x))
+                                  : jsi::Value(static_cast<double>(x));
+    }
+    case 's':
+      if (v == nil) return jsi::Value::null();
+      if (![v isKindOfClass:[NSString class]]) return wrap(rt, v);
+      return toJsString(rt, (NSString*)v);
+    default: return wrap(rt, v);
+  }
+}
+
+id jsToBoxed(jsi::Runtime& rt, char code, const jsi::Value& v) {
+  switch (code) {
+    case 'v': return nil;
+    case 'z': return @(v.isBool() ? v.getBool() : toInt64(rt, v) != 0);
+    case 'n': return @(toDouble(rt, v));
+    case 'j': return @(toInt64(rt, v));
+    case 's': return v.isString() ? toNSString(rt, v) : objectArg(rt, v, "block result");
+    default: return objectArg(rt, v, "block result");
+  }
+}
+
+/// Runs the JS function of [t] on the JS thread with boxed [args].
+id runBlock(jsi::Runtime& rt, const BlockTarget& t, const std::vector<id>& args) {
+  std::vector<jsi::Value> jsArgs;
+  jsArgs.reserve(args.size());
+  for (std::size_t i = 0; i < args.size() && i + 1 < t.codes.size(); i++) {
+    jsArgs.push_back(boxedToJs(rt, t.codes[i + 1], args[i]));
+  }
+  auto fn = t.fn->asObject(rt).asFunction(rt);
+  auto r = fn.call(rt, static_cast<const jsi::Value*>(jsArgs.data()), jsArgs.size());
+  return jsToBoxed(rt, t.codes.empty() ? 'v' : t.codes[0], r);
+}
+
+void logBlockError(const std::string& message) {
+  NSLog(@"native-api-bindgen: error in a JavaScript block: %s", message.c_str());
+}
+
+/// Wraps JS function [v] (or null) as a block of generated factory [key].
+id makeBlock(jsi::Runtime& rt, const jsi::Value& v, const std::string& key, const char* selector) {
+  if (v.isNull() || v.isUndefined()) return nil;
+  if (!v.isObject() || !v.getObject(rt).isFunction(rt)) {
+    typeError(rt, std::string("expected a function for a block argument of ") + selector);
+  }
+  const BlockFactory* f = gTables.lookupBlock == nullptr ? nullptr : gTables.lookupBlock(key);
+  if (f == nullptr) typeError(rt, std::string("unknown block signature ") + key);
+  auto target = std::make_shared<BlockTarget>();
+  target->fn = std::make_shared<jsi::Value>(rt, v);
+  target->codes = f->codes;
+  return f->make(std::move(target));
+}
+
+} // namespace
+
+id callBlock(const std::shared_ptr<BlockTarget>& target, std::vector<id> args) {
+  if (std::this_thread::get_id() == gJsThread && gRuntime != nullptr) {
+    // Synchronous (e.g. an NS_NOESCAPE block during a call from JS). JS
+    // exceptions must not unwind through Objective-C frames.
+    try {
+      return runBlock(*gRuntime, *target, args);
+    } catch (const jsi::JSError& e) {
+      logBlockError(e.getMessage());
+    } catch (const std::exception& e) {
+      logBlockError(e.what());
+    }
+    return nil;
+  }
+  if (!target->codes.empty() && target->codes[0] != 'v') {
+    NSLog(@"native-api-bindgen: a block returning a value was invoked off the JS thread; returning nil/0");
+    return nil;
+  }
+  if (!gInvoker) return nil;
+  gInvoker->invokeAsync([target, args = std::move(args)](jsi::Runtime& rt) {
+    try {
+      runBlock(rt, *target, args);
+    } catch (const jsi::JSError& e) {
+      logBlockError(e.getMessage());
+    } catch (const std::exception& e) {
+      logBlockError(e.what());
+    }
+  });
+  return nil;
+}
+
+namespace {
+
 /// Host-function body shared by every generated member.
 /// JS calling convention: (async: boolean, [self], ...args).
 jsi::Value callMember(jsi::Runtime& rt, const ClassSpec* cls, const MemberSpec* m, const jsi::Value* args, std::size_t count) {
@@ -447,6 +560,12 @@ jsi::Value callMember(jsi::Runtime& rt, const ClassSpec* cls, const MemberSpec* 
         id s = v.isString() ? toNSString(rt, v) : objectArg(rt, v, m->selector);
         keep.push_back(s);
         [inv setArgument:&s atIndex:index];
+        break;
+      }
+      case 'B': {
+        id blk = makeBlock(rt, v, code.structName, m->selector);
+        keep.push_back(blk);
+        [inv setArgument:&blk atIndex:index];
         break;
       }
       default: {
@@ -664,6 +783,8 @@ class Root : public jsi::HostObject {
 void install(jsi::Runtime& rt, std::shared_ptr<CallInvoker> invoker, const Tables& tables) {
   gTables = tables;
   gInvoker = std::move(invoker);
+  gJsThread = std::this_thread::get_id();
+  gRuntime = &rt;
   rt.global().setProperty(rt, "__nab", jsi::Object::createFromHostObject(rt, std::make_shared<Root>()));
 }
 

@@ -64,6 +64,18 @@ API_AVAILABLE(ios(13.0))
 - (NSString *)describe;
 @end
 
+/// Blocks: synchronous (NS_NOESCAPE), escaping with primitive arguments,
+/// object arguments and return values.
+@interface NABBlocks : NSObject
+- (void)enumerate:(NSUInteger)count with:(void (NS_NOESCAPE ^)(NSUInteger index, BOOL *stop))body;
+- (NSString *)transform:(NSString *)input using:(NSString * (NS_NOESCAPE ^)(NSString *value))fn;
+- (NSInteger)sumWith:(NSInteger (NS_NOESCAPE ^)(NSInteger a, NSInteger b))op;
+- (void)runAfter:(double)seconds completion:(void (^)(BOOL finished, NSInteger code))completion;
+- (void)runOnMainAfter:(double)seconds completion:(void (^)(NSString *message, NSError * _Nullable error))completion NS_SWIFT_UI_ACTOR;
+- (void)loadWithCompletion:(void (^)(NSString * _Nullable result, NSError * _Nullable error))completion;
+- (void)stopWithCompletion:(void (^ _Nullable)(void))completion;
+@end
+
 /// Main-actor isolated class (as UIKit declares its UI classes).
 NS_SWIFT_UI_ACTOR
 @interface NABMainActorView : NSObject

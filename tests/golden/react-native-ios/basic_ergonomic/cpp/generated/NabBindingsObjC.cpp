@@ -24,6 +24,17 @@ const bool kLongAsBigInt = false;
 
 namespace {
 
+const MemberSpec k_NABFixtures_NABBlocks[] = {
+    {"+alloc", "alloc", "o", MemberKind::ClassMethod, 1},
+    {"+new", "new", "o", MemberKind::ClassMethod, 1},
+    {"-loadWithCompletion:", "loadWithCompletion:", "vBw8t8yxqwiws0;", MemberKind::InstanceMethod, 0},
+    {"-runAfter:completion:", "runAfter:completion:", "vnB1kqo5ouvbb0uc;", MemberKind::InstanceMethod, 0},
+    {"-runOnMainAfter:completion:", "runOnMainAfter:completion:", "vnBw8t8yxqwiws0;", MemberKind::InstanceMethod, 4},
+    {"-stopWithCompletion:", "stopWithCompletion:", "vB11m75p65ixkb8;", MemberKind::InstanceMethod, 0},
+    {"-sumWith:", "sumWith:", "jB1owbugcj2tzue;", MemberKind::InstanceMethod, 0},
+    {"-transform:using:", "transform:using:", "ssBp95hc2onhg84;", MemberKind::InstanceMethod, 0},
+};
+
 const MemberSpec k_NABFixtures_NABListener[] = {
     {"-shouldStop", "shouldStop", "z", MemberKind::InstanceMethod, 0},
     {"-thing:didChangeValue:", "thing:didChangeValue:", "voj", MemberKind::InstanceMethod, 0},
@@ -53,6 +64,7 @@ const MemberSpec k_NABFixtures_NABThing[] = {
     {"-legacy", "legacy", "v", MemberKind::InstanceMethod, 0},
     {"-objectForKeyedSubscript:", "objectForKeyedSubscript:", "os", MemberKind::InstanceMethod, 0},
     {"-refreshUI", "refreshUI", "v", MemberKind::InstanceMethod, 4},
+    {"-runWithCompletion:", "runWithCompletion:", "vB1xq0hy9xdbjho;", MemberKind::InstanceMethod, 0},
     {"-saveToPath:error:", "saveToPath:error:", "zs", MemberKind::InstanceMethod, 8},
     {"P+instances", "instances", "j", MemberKind::ClassGetter, 0},
     {"P-count", "count", "j", MemberKind::InstanceGetter, 0},
@@ -67,6 +79,7 @@ const MemberSpec k_NABFixtures_NABThing[] = {
 };
 
 const ClassSpec kClasses[] = {
+    {"NABFixtures.NABBlocks", "NABBlocks", false, k_NABFixtures_NABBlocks, std::size(k_NABFixtures_NABBlocks)},
     {"NABFixtures.NABListener", "NABListener", true, k_NABFixtures_NABListener, std::size(k_NABFixtures_NABListener)},
     {"NABFixtures.NABMainActorView", "NABMainActorView", false, k_NABFixtures_NABMainActorView, std::size(k_NABFixtures_NABMainActorView)},
     {"NABFixtures.NABThing", "NABThing", false, k_NABFixtures_NABThing, std::size(k_NABFixtures_NABThing)},

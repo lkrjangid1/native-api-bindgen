@@ -7,6 +7,7 @@ import {
   IosApi,
   NSArray,
   NSFileManager,
+  NSOperationQueue,
   NSProcessInfo,
   NativeApiUnavailableError,
   UIColor,
@@ -141,6 +142,53 @@ const tests: Array<[string, () => void | Promise<void>]> = [
       );
       child.removeFromSuperview();
       expectEqual(child.superview, null, 'removed');
+    },
+  ],
+
+  [
+    'Objective-C blocks: sync comparator, main-queue and background callbacks',
+    async () => {
+      // NS_NOESCAPE block returning a value: runs synchronously on the JS
+      // thread during the call.
+      const parent = UIView.new$();
+      for (const tag of [2n, 3n, 1n]) {
+        const v = UIView.new$();
+        v.tag = tag;
+        parent.addSubview(v);
+      }
+      const sorted = parent.subviews.sortedArrayUsingComparator((a, b) => {
+        const x = a!.as(UIView).tag;
+        const y = b!.as(UIView).tag;
+        return x < y ? -1n : x > y ? 1n : 0n;
+      });
+      expectEqual(
+        [0n, 1n, 2n].map(i => sorted.objectAtIndex(i).as(UIView).tag).join(),
+        '1,2,3',
+        'sorted tags',
+      );
+      // Block invoked on the main thread (UIKit member): posted to JS.
+      let ran = false;
+      UIView.performWithoutAnimation(() => {
+        ran = true;
+      });
+      const finished = await new Promise<boolean>(resolve =>
+        UIView.animateWithDuration$animations$completion(
+          0.01,
+          () => {},
+          f => resolve(f),
+        ),
+      );
+      expectEqual(typeof finished, 'boolean', 'completion argument');
+      expectEqual(ran, true, 'main-thread block delivered');
+      // Escaping blocks on background threads: posted to JS.
+      const queue = NSOperationQueue.new$();
+      const done = new Set<number>();
+      for (let i = 0; i < 5; i++) queue.addOperationWithBlock(() => done.add(i));
+      queue.waitUntilAllOperationsAreFinished();
+      for (let tries = 0; done.size < 5 && tries < 100; tries++) {
+        await new Promise<void>(r => setTimeout(() => r(), 10));
+      }
+      expectEqual(done.size, 5, 'background blocks delivered');
     },
   ],
 

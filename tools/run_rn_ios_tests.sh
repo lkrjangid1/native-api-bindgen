@@ -24,7 +24,10 @@ dart run native_api_bindgen --quiet --project examples/react-native/slice genera
 cd "$APP"
 [ -d node_modules ] || npm install
 npx tsc --noEmit
-[ -d ios/Pods ] || (cd ios && pod install)
+# Re-run CocoaPods when the generated podspec changed (e.g. new source files).
+if [ ! -d ios/Pods ] || [ native-api-bindings/NativeApiBindings.podspec -nt ios/Pods/Manifest.lock ]; then
+  (cd ios && pod install)
+fi
 xcodebuild -workspace ios/NabRnSlice.xcworkspace -scheme NabRnSlice -configuration Release \
   -sdk iphonesimulator -destination "id=$UDID" -derivedDataPath ios/build \
   CODE_SIGNING_ALLOWED=NO -quiet
