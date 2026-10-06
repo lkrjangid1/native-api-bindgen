@@ -3,6 +3,7 @@ title: Architecture
 description: How native-api-bindgen turns platform SDKs into a canonical IR and generates Dart and TypeScript bindings with small, data-driven runtimes.
 -->
 <h1>Architecture</h1>
+<figure><img src="images/architecture-diagram.png" alt="Pipeline: Android and Apple SDK inputs are parsed into the Native IR, planned per target and emitted as Dart and TypeScript bindings with small runtimes." width="1672" height="941"></figure>
 <pre><code>android.jar + api-versions.xml + annotations.zip ─┐
 Xcode SDK headers (libclang) ─────────────────────┼─▶ Native IR ─▶ planner ─▶ emitters ─▶ Dart / TypeScript
 Swift symbol graphs (swift-symbolgraph-extract) ──┘   (JSON,          (per target:     + small runtimes
@@ -25,6 +26,7 @@ Swift symbol graphs (swift-symbolgraph-extract) ──┘   (JSON,          (per
   <tr><td>React Native / Android</td><td>TypeScript classes + member tables</td><td>C++ JSI runtime (JNI)</td></tr>
   <tr><td>React Native / iOS</td><td>TypeScript classes + member tables</td><td>Objective-C++ JSI runtime (<code>NSInvocation</code>)</td></tr>
 </table>
+<figure><img src="images/runtime-flow.png" alt="What happens on a call: app code calls the generated binding, the runtime dispatches to JNI or the Objective-C runtime, and the result is converted back." width="1774" height="887" loading="lazy"></figure>
 <p>For React Native the generated C++ is data (sorted tables), so one runtime serves every API. Method signatures on iOS come from the Objective-C runtime itself; the generator only says how each value maps to JavaScript.</p>
 
 <h2>Determinism and safety</h2>

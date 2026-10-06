@@ -2,78 +2,143 @@
 title: native-api-bindgen — bindings for Android and iOS APIs
 description: Generate typed Flutter and React Native bindings for public Android and iOS SDK APIs from the SDKs on your machine. Experimental, Apache-2.0.
 -->
-<h1>Use Native APIs Directly.</h1>
-<p class="hero-sub">Generate the Binding. Not the Boilerplate.</p>
-<p class="lead">Automatically generate typed Android and iOS native API bindings for Flutter and React Native. native-api-bindgen reads the Android SDK (<code>android.jar</code>) and the Xcode SDK headers on your machine and writes Dart (Flutter) and TypeScript (React Native) bindings — no hand-written plugin per API, no copied SDK files.</p>
-<div class="actions">
-  <a class="button primary" href="getting-started.html">Get Started</a>
-  <!--repo--><a class="button" href="{{repo}}">View on GitHub</a><!--/repo-->
-  <a class="button" href="docs.html">Read Documentation</a>
-</div>
+<section class="hero">
+  <div class="wrap">
+    <p class="meta"><i></i>Flutter · React Native &nbsp;·&nbsp; Android · iOS &nbsp;·&nbsp; Apache-2.0</p>
+    <h1>Use native APIs directly. <em>Skip the boilerplate.</em></h1>
+    <p class="lead">native-api-bindgen reads the Android SDK and the Xcode SDK already on your machine and generates typed Dart and TypeScript bindings for the APIs you choose. No MethodChannel, no hand-written plugin per API, no copied SDK files.</p>
+    <div class="ctas">
+      <a class="btn btn-primary" href="getting-started.html">Get started<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3 8h9M8.5 4.5L12 8l-3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+      <a class="btn" href="docs.html">Read the docs</a>
+      <!--repo--><a class="btn" href="{{repo}}">View on GitHub</a><!--/repo-->
+    </div>
+    <p class="fine">Experimental. Tested end to end on an Android emulator and an iOS simulator; not yet on physical devices.</p>
+  </div>
+  <div class="showcase" aria-label="Example: configuration, Dart and TypeScript">
+    <div class="code-window side">
+      <div class="titlebar"><i></i><i></i><i></i><b>native_api_bindgen.yaml</b></div>
+<pre><code><span class="tk-t">platform</span>:
+  <span class="tk-t">android</span>:
+    <span class="tk-t">platform</span>: <span class="tk-s">"36"</span>
+    <span class="tk-t">minApi</span>: <span class="tk-n">24</span>
+    <span class="tk-t">entries</span>:
+      - android.content.Intent
+      - android.net.Uri
+  <span class="tk-t">ios</span>:
+    <span class="tk-t">frameworks</span>: [Foundation, UIKit]
+    <span class="tk-t">classes</span>: [UIDevice, UIView]</code></pre>
+    </div>
+    <div class="code-window main">
+      <div class="titlebar"><i></i><i></i><i></i><b>lib/main.dart</b></div>
+<pre><code><span class="tk-c">// Android, over package:jni</span>
+<span class="tk-k">final</span> uri = Uri.parse(<span class="tk-s">'https://x.dev'</span>.toJString())!;
+print(uri.scheme);  <span class="tk-c">// getScheme()</span>
 
-<div class="note"><strong>Experimental.</strong> All four combinations (Flutter and React Native, on Android and iOS) work end to end and are tested on an Android emulator and an iOS simulator — not yet on physical devices. Generated APIs, configuration and output may still change. See <a href="compatibility.html">what has been tested</a>.</div>
+<span class="tk-k">final</span> intent = Intent()
+  ..setFlags(Intent$Flag.FLAG_ACTIVITY_NEW_TASK);
 
-<h2>The problem</h2>
-<p>Using a platform API that the framework does not expose usually means writing and maintaining glue code by hand:</p>
-<ul>
-  <li>MethodChannel handlers and their Dart counterparts, one per API,</li>
-  <li>JNI boilerplate and Objective-C wrappers,</li>
-  <li>TurboModule specs and native implementations for React Native,</li>
-  <li>thread hopping between the UI thread and the framework's thread,</li>
-  <li>and keeping all of it in step with new Android and iOS versions.</li>
-</ul>
+<span class="tk-c">// Kotlin suspend → Future</span>
+<span class="tk-k">final</span> greeting = <span class="tk-k">await</span> greeter.greetLater(<span class="tk-n">20</span>);
 
-<h2>The solution</h2>
-<pre><code>SDK → parser → IR → generator → native binding
+<span class="tk-c">// iOS, over package:objective_c</span>
+<span class="tk-k">final</span> device = ios.UIDevice.currentDevice;
+print(device.systemName.toDartString());</code></pre>
+    </div>
+    <div class="code-window side">
+      <div class="titlebar"><i></i><i></i><i></i><b>App.tsx</b></div>
+<pre><code><span class="tk-c">// React Native, over JSI</span>
+<span class="tk-k">const</span> intent =
+  Intent.new$String$Uri(
+    Intent.ACTION_VIEW,
+    Uri.parse(<span class="tk-s">'https://x.dev'</span>));
 
-Android SDK → class-file parser → IR → Dart over package:jni
-                                     ↓
-                                     TypeScript over JSI + C++ (JNI)
+<span class="tk-c">// Kotlin suspend → Promise</span>
+<span class="tk-k">const</span> name = <span class="tk-k">await</span>
+  greeter.greetLater(<span class="tk-n">20n</span>);</code></pre>
+    </div>
+  </div>
+  <div class="trust">
+    <div class="wrap">
+      <div class="item"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 2l8 3v6c0 5-3.4 9.4-8 11-4.6-1.6-8-6-8-11V5l8-3z"/></svg><div><strong>Your SDKs, your machine</strong><span>Reads installed SDKs. Nothing is downloaded or copied.</span></div></div>
+      <div class="item"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"/></svg><div><strong>Direct calls</strong><span>JNI, <code>objc_msgSend</code> and JSI. No message serialization.</span></div></div>
+      <div class="item"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M4 4h16v4H4zm0 6h10v4H4zm0 6h16v4H4z"/></svg><div><strong>Every skip explained</strong><span>Unsupported APIs get a reason code, never silence.</span></div></div>
+      <div class="item"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M8.6 16.6L4 12l4.6-4.6L10 8.8 6.8 12l3.2 3.2-1.4 1.4zm6.8 0L14 15.2l3.2-3.2L14 8.8l1.4-1.4L20 12l-4.6 4.6z"/></svg><div><strong>Open source</strong><span>Apache-2.0. Read every generated line.</span></div></div>
+    </div>
+  </div>
+</section>
 
-Apple SDK → libclang + Swift symbol graph → IR → Dart over package:objective_c
-                                               ↓
-                                               TypeScript over JSI + Objective-C++</code></pre>
-<p>Bindings are generated from the official SDKs installed on your machine, typed with nullability, availability and threading from the SDK metadata. Calls go straight to the platform (JNI, <code>objc_msgSend</code> / <code>NSInvocation</code>) — no serialization. See the <a href="architecture.html">architecture</a>.</p>
+<section class="section">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow"><span class="num">01</span>The problem</p>
+      <h2>Native APIs shouldn't need a plugin each.</h2>
+      <p>Calling a platform API that your framework does not expose usually means MethodChannel handlers, JNI and Objective-C wrappers, TurboModule specs and thread hopping — then keeping all of it in step with every new Android and iOS release.</p>
+    </div>
+    <div class="figure-card"><img src="images/before-after.png" alt="Before: a stack of MethodChannel handlers, glue code, JNI and Objective-C wrappers, TurboModule specs and thread hopping. After: one generated, typed call such as intent.getData()." width="1896" height="830" loading="lazy"></div>
+  </div>
+</section>
 
-<div class="cards">
-  <div class="card"><h3>Flutter on Android</h3><p>Dart extension types over <code>package:jni</code>; generics, bean properties, typed <code>@IntDef</code> constants; Java interfaces implemented in Dart; Kotlin <code>suspend</code> as <code>Future</code> and <code>Flow</code> as <code>Stream</code>. <a href="flutter.html">Details</a></p></div>
-  <div class="card"><h3>Flutter on iOS</h3><p>Dart over <code>package:objective_c</code>; structs, <code>NSError **</code>, availability and main-actor checks, blocks; Swift-only APIs through generated <code>@objc</code> adapters. <a href="ios.html">Details</a></p></div>
-  <div class="card"><h3>React Native</h3><p>New Architecture: TypeScript over one pure C++ Turbo Module and JSI, backed by JNI or Objective-C++; Promises for suspend functions, blocks and protocols implemented in JavaScript. <a href="react-native.html">Details</a></p></div>
-</div>
+<section class="section">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow"><span class="num">02</span>How it works</p>
+      <h2>From SDK to typed binding in three steps.</h2>
+      <p>One pipeline for both platforms: parse the official SDK, build a platform-neutral IR, then emit code for each target with a small runtime.</p>
+    </div>
+    <div class="grid grid-3 steps">
+      <div class="feature step"><p class="tag">Parse</p><h3>Read the SDK you have.</h3><p>A class-file reader for <code>android.jar</code>, AndroidX and Kotlin; libclang and Swift symbol graphs for Xcode SDKs.</p></div>
+      <div class="feature step"><p class="tag">Model</p><h3>One Native IR.</h3><p>Types, generics, nullability, availability, threading and provenance, with stable symbol IDs and a reason for every skip.</p></div>
+      <div class="feature step"><p class="tag">Generate</p><h3>Bindings, not boilerplate.</h3><p>Dart over <code>package:jni</code> or <code>package:objective_c</code>; TypeScript over one C++ Turbo Module and JSI.</p></div>
+    </div>
+    <div class="figure-card"><img src="images/architecture-diagram.png" alt="Pipeline: Android and Apple SDK inputs are parsed into the Native IR, planned per target and emitted as Dart and TypeScript bindings with small runtimes." width="1672" height="941" loading="lazy"></div>
+  </div>
+</section>
 
-<h2>Example</h2>
-<pre><code>// Dart (Flutter, Android)
-final intent = Intent.new$String$Uri(Intent.ACTION_VIEW.toJString(), Uri.parse('https://example.com'.toJString()));
+<section class="section">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow"><span class="num">03</span>Four targets</p>
+      <h2>Flutter and React Native, Android and iOS.</h2>
+      <p>All four combinations work end to end and run on-device test suites.</p>
+    </div>
+    <div class="grid grid-2">
+      <div class="feature"><p class="tag">Flutter · Android</p><h3>Dart over package:jni.</h3><p>Extension types, generics, bean properties, typed <code>@IntDef</code> constants, Java interfaces implemented in Dart, Kotlin <code>suspend</code> as <code>Future</code> and <code>Flow</code> as <code>Stream</code>.</p><a class="more" href="flutter.html">Flutter details →</a></div>
+      <div class="feature"><p class="tag">Flutter · iOS</p><h3>Dart over package:objective_c.</h3><p>Structs, <code>NSError **</code> as exceptions, availability and main-actor checks, blocks; Swift-only APIs through generated <code>@objc</code> adapters.</p><a class="more" href="ios.html">iOS details →</a></div>
+      <div class="feature"><p class="tag">React Native · Android</p><h3>TypeScript over JSI and JNI.</h3><p>New Architecture: one pure C++ Turbo Module, data-driven member tables, Promises for Kotlin <code>suspend</code>, <code>byte[]</code> as <code>Uint8Array</code>.</p><a class="more" href="react-native.html">React Native details →</a></div>
+      <div class="feature"><p class="tag">React Native · iOS</p><h3>TypeScript over JSI and Objective-C++.</h3><p>Signatures from the Objective-C runtime, blocks and protocols implemented in JavaScript, main-thread APIs dispatched for you.</p><a class="more" href="compatibility.html">What has been tested →</a></div>
+    </div>
+  </div>
+</section>
 
-// Dart (Flutter, iOS)
-final name = ios.UIDevice.currentDevice.systemName.toDartString(); // 'iOS'
+<section class="section">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow"><span class="num">04</span>Measured, not promised</p>
+      <h2>Real numbers from real builds.</h2>
+      <p>Every figure on this site is read from <code>docs/benchmarks</code> at build time. Conditions are on the <a href="compatibility.html">Compatibility</a> page.</p>
+    </div>
+    <div class="grid grid-4">
+      <div class="stat"><b>{{coverage.android.methods_pct}}<small>%</small></b><span>of android-36 methods generated ({{coverage.android.methods_generated}} of {{coverage.android.methods_discovered}}), Flutter target.</span></div>
+      <div class="stat"><b>{{coverage.ios.methods_pct}}<small>%</small></b><span>of Foundation + UIKit methods generated ({{coverage.ios.methods_generated}} of {{coverage.ios.methods_discovered}}).</span></div>
+      <div class="stat"><b>{{perf.flutter_android.jni_call_us}}<small>µs</small></b><span>per generated JNI call from Dart, vs about {{perf.flutter_android.methodchannel_us}} µs for a MethodChannel round trip (emulator).</span></div>
+      <div class="stat"><b>{{bytes.flutter_android.jni_1mb_ms}}<small>ms</small></b><span>to send 1 MB to Java and back, vs {{bytes.flutter_android.channel_1mb_ms}} ms through a MethodChannel (emulator).</span></div>
+    </div>
+    <div class="grid grid-2" style="margin-top:1.25rem">
+      <div class="feature"><p class="tag">App size</p><h3>Generate the whole SDK, pay for one API.</h3><p>A Flutter release APK that uses one Android API is {{size.flutter.one_api_slice_apk}} bytes whether bindings were generated for that API or for all of <code>android.jar</code> — unused bindings are tree-shaken.</p></div>
+      <div class="feature"><p class="tag">Keeping up</p><h3>New SDK? Run update.</h3><p><code>native-api-bindgen update</code> regenerates configured targets and <code>diff</code> shows added, removed and deprecated APIs between SDK versions.</p><a class="more" href="versioning.html">Versioning →</a></div>
+    </div>
+  </div>
+</section>
 
-// TypeScript (React Native)
-const view = UIView.alloc().initWithFrame({origin: {x: 0, y: 0}, size: {width: 10, height: 10}});</code></pre>
-<p>More in <a href="examples.html">Examples</a>. Keeping up with new SDKs: <code>native-api-bindgen update</code> regenerates configured targets and <code>diff</code> shows API changes between SDK versions (<a href="versioning.html">Versioning</a>).</p>
-
-<h2>Coverage (real generated statistics)</h2>
-<table>
-  <tr><th>Scope</th><th>Methods generated</th><th>Classes generated</th></tr>
-  <tr><td>Entire <code>android.jar</code> of android-36, Flutter target</td><td>{{coverage.android.methods_generated}} of {{coverage.android.methods_discovered}} ({{coverage.android.methods_pct}}%)</td><td>{{coverage.android.classes_generated}} of {{coverage.android.classes_discovered}}</td></tr>
-  <tr><td>Foundation + UIKit (iOS 27.0 SDK), Flutter target</td><td>{{coverage.ios.methods_generated}} of {{coverage.ios.methods_discovered}} ({{coverage.ios.methods_pct}}%)</td><td>{{coverage.ios.classes_generated}} of {{coverage.ios.classes_discovered}}</td></tr>
-</table>
-<p>Every member that is not generated has a reason code (<code>native-api-bindgen why-skipped</code>). Data: <code>docs/benchmarks/coverage-*.json</code>.</p>
-
-<h2>Performance and size (measured, not promised)</h2>
-<ul>
-  <li>One Android API used in a Flutter release APK: {{size.flutter.one_api_slice_apk}} bytes, identical whether bindings were generated for one API or the whole SDK (unused bindings are tree-shaken). Baseline app: {{size.flutter.baseline_apk}} bytes. On iOS, bindings for all of Foundation + UIKit add {{size.ios.one_api_delta}} bytes to a release app that uses one API.</li>
-  <li>A generated JNI call from Dart: about {{perf.flutter_android.jni_call_us}} µs on an Android emulator (profile mode), versus about {{perf.flutter_android.methodchannel_us}} µs for an equivalent hand-written MethodChannel round trip.</li>
-  <li>1 MB of bytes to Java and back: {{bytes.flutter_android.jni_1mb_ms}} ms with the generated binding, {{bytes.flutter_android.channel_1mb_ms}} ms through a MethodChannel (emulator).</li>
-  <li>All numbers and conditions: <a href="compatibility.html">Compatibility</a> and <code>docs/benchmarks</code>.</li>
-</ul>
-
-<h2>Legal and source policy</h2>
-<p>Official sources first; no private or hidden APIs (non-SDK Android APIs and private Objective-C selectors are never generated); no SDK files are copied, downloaded or published; generated bindings stay in your project by default. See <a href="legal.html">Legal</a>.</p>
-
-<h2>Roadmap (future work, not available yet)</h2>
-<ul>
-  <li>Flutter iOS: escaping blocks with object arguments and protocol implementations (they need generated native trampolines).</li>
-  <li>React Native: Kotlin <code>Flow</code>.</li>
-  <li>Measurements on physical devices; published packages.</li>
-</ul>
+<section class="section">
+  <div class="wrap">
+    <div class="cta-band">
+      <h2>Call your first native API in minutes.</h2>
+      <p>Install the CLI, pick the APIs you need, generate. Every member that is not generated comes with a reason.</p>
+      <div class="ctas">
+        <a class="btn btn-primary" href="getting-started.html">Get started</a>
+        <a class="btn" href="examples.html">See examples</a>
+      </div>
+    </div>
+  </div>
+</section>
