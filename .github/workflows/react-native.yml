@@ -27,8 +27,14 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+          flutter-version: 3.41.9
           cache: true
+      - run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36"
       - run: dart pub get
+      - name: Build the Kotlin fixture library
+        run: fixtures/kotlin/basic/gradlew -p fixtures/kotlin/basic jar
+      - name: Generate the example's bindings
+        run: dart run native_api_bindgen --project examples/react-native/slice generate react-native
       - working-directory: examples/react-native/slice
         run: npm ci
       - name: RN goldens + tsc + clang++ syntax check
@@ -42,6 +48,11 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: android-actions/setup-android@v3
       - uses: actions/setup-node@v5
         with:
           node-version: "22"
@@ -50,8 +61,14 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+          flutter-version: 3.41.9
           cache: true
+      - run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36"
       - run: dart pub get
+      - name: Build the Kotlin fixture library
+        run: fixtures/kotlin/basic/gradlew -p fixtures/kotlin/basic jar
+      - name: Generate the example's bindings
+        run: dart run native_api_bindgen --project examples/react-native/slice generate react-native
       - working-directory: examples/react-native/slice
         run: npm ci
       - name: RN iOS goldens + tsc + Objective-C++ syntax check
@@ -76,9 +93,12 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+          flutter-version: 3.41.9
           cache: true
       - run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36"
       - run: dart pub get
+      - name: Build the Kotlin fixture library
+        run: fixtures/kotlin/basic/gradlew -p fixtures/kotlin/basic jar
       - working-directory: examples/react-native/slice
         run: npm ci
       - name: Enable KVM

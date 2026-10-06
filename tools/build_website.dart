@@ -76,6 +76,7 @@ void main(List<String> args) {
   var siteUrl = siteUrlArg >= 0 && siteUrlArg + 1 < args.length
       ? args[siteUrlArg + 1]
       : Platform.environment['NAB_SITE_URL'];
+  if (siteUrl != null && siteUrl.isEmpty) siteUrl = null;
   if (siteUrl != null && siteUrl.endsWith('/')) {
     siteUrl = siteUrl.substring(0, siteUrl.length - 1);
   }
@@ -83,6 +84,7 @@ void main(List<String> args) {
   var repoUrl = repoArg >= 0 && repoArg + 1 < args.length
       ? args[repoArg + 1]
       : Platform.environment['NAB_REPO_URL'];
+  if (repoUrl != null && repoUrl.isEmpty) repoUrl = null;
   if (repoUrl != null && repoUrl.endsWith('/')) {
     repoUrl = repoUrl.substring(0, repoUrl.length - 1);
   }

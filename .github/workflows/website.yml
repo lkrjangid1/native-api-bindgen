@@ -27,6 +27,8 @@ jobs:
   build:
     name: Build and check the static site
     runs-on: ubuntu-latest
+    outputs:
+      pages: ${{ steps.pages.outcome }}
     steps:
       - uses: actions/checkout@v5
       # package:jni (used by native_api_runtime) requires the Flutter SDK, so
@@ -34,10 +36,14 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+          flutter-version: 3.41.9
           cache: true
       - run: dart pub get
       - id: pages
         if: github.event_name != 'pull_request'
+        # Fails until Settings → Pages → Source is set to "GitHub Actions";
+        # the site is still built and checked, just not deployed.
+        continue-on-error: true
         uses: actions/configure-pages@v5
       - name: Build (fails on broken internal links, duplicate titles, size budgets)
         run: dart run tools/build_website.dart
@@ -46,13 +52,13 @@ jobs:
           NAB_REPO_URL: ${{ github.server_url }}/${{ github.repository }}
       - name: External links
         run: dart run tools/check_links.dart website/build
-      - if: github.event_name != 'pull_request'
+      - if: steps.pages.outcome == 'success'
         uses: actions/upload-pages-artifact@v3
         with:
           path: website/build
 
   deploy:
-    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    if: needs.build.outputs.pages == 'success' && github.ref == 'refs/heads/main'
     needs: build
     runs-on: ubuntu-latest
     permissions:
