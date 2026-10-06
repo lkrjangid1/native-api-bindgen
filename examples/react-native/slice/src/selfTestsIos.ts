@@ -354,13 +354,17 @@ const tests: Array<[string, () => void | Promise<void>]> = [
   [
     'availability guard: API newer than the OS throws',
     () => {
-      if (IosApi.isAtLeast(27)) return; // guard not triggered on iOS 27+
-      const vc = UIViewController.new$();
+      // Generated members newer than the deployment target start with this
+      // call (e.g. UIViewController#registerSceneAccessory: on iOS 27). Which
+      // members exist depends on the Xcode SDK, so exercise the guard with a
+      // version one above the running OS instead of a specific API.
+      const major = Number(IosApi.version.split('.')[0]);
       expectThrows(
-        () => vc.registerSceneAccessory(UIView.new$()),
+        () => IosApi.require(major + 1, 0, 0, 'Test.newerThanRuntime'),
         e => e instanceof NativeApiUnavailableError,
-        'registerSceneAccessory on iOS < 27',
+        'API newer than the running OS',
       );
+      IosApi.require(major, 0, 0, 'Test.olderThanRuntime');
     },
   ],
 

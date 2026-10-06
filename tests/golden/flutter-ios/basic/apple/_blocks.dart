@@ -4,7 +4,7 @@
 // Derived from SDK metadata installed on the build machine; see
 // docs/legal/source-provenance.md before redistributing.
 
-// ignore_for_file: camel_case_types, comment_references, constant_identifier_names, deprecated_member_use_from_same_package, invalid_use_of_internal_member, library_prefixes, non_constant_identifier_names, no_leading_underscores_for_local_identifiers, public_member_api_docs, unused_element, unused_import, unused_field, lines_longer_than_80_chars, sort_constructors_first
+// ignore_for_file: camel_case_types, comment_references, constant_identifier_names, deprecated_member_use_from_same_package, invalid_use_of_internal_member, library_prefixes, non_constant_identifier_names, no_leading_underscores_for_local_identifiers, public_member_api_docs, unused_element, unused_import, unused_field, lines_longer_than_80_chars, sort_constructors_first, unnecessary_this
 
 /// Objective-C block factories shared by the generated libraries: one
 /// per distinct native block signature and creation mode (names are

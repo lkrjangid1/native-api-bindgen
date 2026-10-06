@@ -7,6 +7,10 @@ import 'dart:io';
 
 final _link = RegExp(r'https?://[^\s)<>`"\]]+');
 
+/// Code samples (HTML `<pre>` blocks and Markdown fences) contain
+/// illustrative URLs, not links.
+final _code = RegExp(r'<pre[\s\S]*?</pre>|^```[\s\S]*?^```', multiLine: true);
+
 Future<void> main(List<String> args) async {
   final roots = args.isEmpty ? ['README.md', 'docs'] : args;
   final links = <String, Set<String>>{};
@@ -19,7 +23,8 @@ Future<void> main(List<String> args) async {
               .where((f) => f.path.endsWith('.md') || f.path.endsWith('.html'))
         : [File(r)];
     for (final f in files) {
-      for (final m in _link.allMatches(f.readAsStringSync())) {
+      final text = f.readAsStringSync().replaceAll(_code, '');
+      for (final m in _link.allMatches(text)) {
         final url = m[0]!.replaceAll(RegExp(r'[.,;:]+$'), '');
         if (url.contains('<') || url.contains('example.com')) continue;
         (links[url] ??= {}).add(f.path);

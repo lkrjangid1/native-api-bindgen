@@ -211,16 +211,25 @@ void main() {
   });
 
   test('availability guard: API newer than the runtime throws', () {
+    // Generated members newer than the deployment target start with this
+    // call (e.g. UIViewController.registerSceneAccessory: on iOS 27). Which
+    // members exist depends on the Xcode SDK, so exercise the guard with a
+    // version one above the running OS instead of a specific API.
     final v = ios.NSProcessInfo.processInfo.operatingSystemVersion;
-    final vc = ios.UIViewController.new$();
-    if (v.majorVersion < 27) {
-      expect(
-        () => vc.registerSceneAccessory(ios.UIView.new$()),
-        throwsA(isA<objc.OsVersionError>()),
-      );
-    } else {
-      markTestSkipped('runtime is iOS ${v.majorVersion}: guard not triggered');
-    }
+    expect(
+      () => objc.checkOsVersionInternal(
+        'Test.newerThanRuntime',
+        iOS: (false, (v.majorVersion + 1, 0, 0)),
+      ),
+      throwsA(isA<objc.OsVersionError>()),
+    );
+    expect(
+      () => objc.checkOsVersionInternal(
+        'Test.olderThanRuntime',
+        iOS: (false, (v.majorVersion, 0, 0)),
+      ),
+      returnsNormally,
+    );
   });
 
   test('lifecycle: explicit release, use-after-release, many objects', () {

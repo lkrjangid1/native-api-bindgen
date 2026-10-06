@@ -23,6 +23,8 @@ const _ignores = [
   'unused_field',
   'lines_longer_than_80_chars',
   'sort_constructors_first',
+  // `this.m(...)` in Future wrappers: a parameter may be named like `m`.
+  'unnecessary_this',
 ];
 
 /// Options for [DartObjCEmitter].

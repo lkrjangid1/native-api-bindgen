@@ -53,6 +53,10 @@ jobs:
           distribution: temurin
           java-version: "21"
       - uses: android-actions/setup-android@v3
+        with:
+          # The default also installs the obsolete "tools" package, which
+          # sdkmanager no longer finds.
+          packages: platform-tools
       - uses: actions/setup-node@v5
         with:
           node-version: "22"
@@ -76,8 +80,29 @@ jobs:
       - name: Build for the simulator and run self-tests
         run: tools/run_rn_ios_tests.sh
 
+  ios-bindings:
+    # The example app imports its iOS bindings too, and those can only be
+    # generated on macOS. Generate them here for the Linux emulator job.
+    name: Generate the example's iOS bindings
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.41.9
+          cache: true
+      - run: dart pub get
+      - run: dart run native_api_bindgen --project examples/react-native/slice generate react-native-ios
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rn-ios-bindings
+          path: examples/react-native/slice/native-api-bindings
+          include-hidden-files: true
+
   device:
     name: RN example self-tests on an Android emulator
+    needs: ios-bindings
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -99,6 +124,10 @@ jobs:
       - run: dart pub get
       - name: Build the Kotlin fixture library
         run: fixtures/kotlin/basic/gradlew -p fixtures/kotlin/basic jar
+      - uses: actions/download-artifact@v5
+        with:
+          name: rn-ios-bindings
+          path: examples/react-native/slice/native-api-bindings
       - working-directory: examples/react-native/slice
         run: npm ci
       - name: Enable KVM
