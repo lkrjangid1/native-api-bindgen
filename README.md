@@ -28,7 +28,7 @@
 
 No MethodChannel, no hand-written plugin per API, no copied SDK files.
 
-> **Status: experimental (pre-alpha).**
+> **Status: beta (`0.1.0-beta.1` on pub.dev).**
 > - All four combinations work end to end: Flutter and React Native, each on Android and iOS.
 > - They are tested on an Android emulator and an iOS simulator, **not yet on physical devices**.
 > - Generated APIs, configuration and output may still change.
@@ -176,13 +176,14 @@ Details: [docs/android](docs/android/README.md), [docs/ios](docs/ios/README.md),
 
 ### Install the CLI
 
-Packages are not published yet. From a clone:
+From [pub.dev](https://pub.dev/packages/native_api_bindgen):
 
 ```bash
-dart pub get
-dart pub global activate --source path packages/native_api_cli
+dart pub global activate native_api_bindgen
 native-api-bindgen doctor        # shows the SDKs, JDK, Xcode and libclang it found
 ```
+
+From a clone: `dart pub get && dart pub global activate --source path packages/native_api_cli`.
 
 ### Configure and generate
 

@@ -16,7 +16,7 @@ cd native-api-bindgen && dart pub get
 dart pub global activate --source path packages/native_api_cli   # installs `native-api-bindgen`
 ```
 
-(Once published: `dart pub global activate native_api_bindgen`. Inside this repository you can also use `dart run native_api_bindgen <command>`.)
+(Or from pub.dev: `dart pub global activate native_api_bindgen`. Inside this repository you can also use `dart run native_api_bindgen <command>`.)
 
 ## 2. Check your machine
 
