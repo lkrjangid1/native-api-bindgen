@@ -17,7 +17,7 @@ Versions are shared by every package. Beta releases use `X.Y.Z-beta.N`.
    - runs `release-check`;
    - compiles `native-api-bindgen` with `dart compile exe` for `macos-arm64`, `macos-x64`, `linux-x64` and `linux-arm64`;
    - attaches the `.tar.gz` archives and their `.sha256` files to a GitHub Release (marked as a pre-release when the tag contains `-`);
-   - writes `Formula/native-api-bindgen.rb` in [`lkrjangid1/homebrew-tap`](https://github.com/lkrjangid1/homebrew-tap) with `tools/homebrew_formula.py`.
+   - writes `Formula/native-api-bindgen.rb` in `lkrjangid1/homebrew-tap` with `tools/homebrew_formula.py`.
 
 ## Homebrew tap: one-time setup
 
