@@ -4,6 +4,10 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 
 ## [Unreleased]
 
+## [0.1.0-beta.1] - 2026-10-06
+
+First public beta, published to pub.dev. APIs and generated output may still change between beta releases.
+
 ### Added
 - Monorepo foundation: Native IR, core (config, diagnostics, logging, path guard, license audit), CLI.
 - Android SDK discovery and pure-Dart `android.jar` parser with `api-versions.xml` / `annotations.zip` enrichment.

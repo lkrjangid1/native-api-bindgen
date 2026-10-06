@@ -12,10 +12,10 @@ abstract final class ProjectInfo {
   static const cliPackage = 'native_api_bindgen';
 
   /// Generator version (SemVer). Keep in sync with package pubspecs.
-  static const generatorVersion = '0.1.0-dev.1';
+  static const generatorVersion = '0.1.0-beta.1';
 
   /// Version of the runtime contract generated code expects.
-  static const runtimeVersion = '0.1.0-dev.1';
+  static const runtimeVersion = '0.1.0-beta.1';
 
   /// IR schema version.
   static const irSchema = irSchemaVersion;

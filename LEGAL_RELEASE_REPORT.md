@@ -1,6 +1,6 @@
 # Legal release report (regenerate before each public release)
 
-> Not legal advice. Items marked LEGAL_REVIEW_REQUIRED have not been reviewed by counsel. Last updated 2026-10-05 for 0.1.0-dev.1 (unreleased).
+> Not legal advice. Items marked LEGAL_REVIEW_REQUIRED have not been reviewed by counsel. Last updated 2026-10-05 for 0.1.0-beta.1 (2026-10-06).
 
 | Item | Status | Notes |
 |---|---|---|

@@ -1,14 +1,16 @@
 name: native_api_android
 description: Android SDK discovery and a pure-Dart android.jar class-file parser producing native-api-bindgen IR.
-version: 0.1.0-dev.1
+version: 0.1.0-beta.1
+repository: https://github.com/lkrjangid1/native-api-bindgen/tree/main/packages/native_api_android
+issue_tracker: https://github.com/lkrjangid1/native-api-bindgen/issues
 resolution: workspace
 
 environment:
   sdk: ^3.9.0
 
 dependencies:
-  native_api_core: ^0.1.0-dev.1
-  native_api_ir: ^0.1.0-dev.1
+  native_api_core: ^0.1.0-beta.1
+  native_api_ir: ^0.1.0-beta.1
   path: ^1.9.0
   xml: ^6.5.0
 

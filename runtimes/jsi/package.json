@@ -1,6 +1,6 @@
 {
   "name": "native-api-bindgen-runtime",
-  "version": "0.1.0-dev.1",
+  "version": "0.1.0-beta.1",
   "description": "Runtime of native-api-bindgen for React Native (New Architecture): JSI host objects over JNI (Android) and Objective-C++ (iOS). Generated bindings embed a copy; this package is for apps that prefer a dependency.",
   "license": "Apache-2.0",
   "keywords": ["react-native", "jsi", "jni", "objective-c", "bindings", "turbomodule"],

@@ -1177,7 +1177,7 @@ $header
 #   "ios": {"modulesProvider": {"NativeApiBindgen": "NabModuleProvider"}}
 Pod::Spec.new do |s|
   s.name = 'NativeApiBindings'
-  s.version = '${ProjectInfo.runtimeVersion.replaceAll('-dev.', '.')}'
+  s.version = '${ProjectInfo.runtimeVersion.replaceAll(RegExp(r'-[a-z]+\.'), '.')}'
   s.summary = 'native-api-bindgen bindings generated from the local iOS SDK (local-only).'
   s.homepage = 'https://example.invalid/native-api-bindings'
   s.license = {:type => 'Apache-2.0'}

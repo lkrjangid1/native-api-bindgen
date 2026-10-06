@@ -13,7 +13,7 @@ ApiModule _sample() {
   return ApiModule(
     platform: ApiPlatform.android,
     sdkVersion: '36',
-    generatorVersion: '0.1.0-dev.1',
+    generatorVersion: '0.1.0-beta.1',
     sourceRevision: '2',
     types: [
       ApiType(

@@ -247,7 +247,7 @@ final class SwiftAdapterGenerator {
       ..writeln('Pod::Spec.new do |s|')
       ..writeln("  s.name = 'NativeApiSwiftAdapters'")
       ..writeln(
-        "  s.version = '${ProjectInfo.runtimeVersion.replaceAll('-dev.', '.')}'",
+        "  s.version = '${ProjectInfo.runtimeVersion.replaceAll(RegExp(r'-[a-z]+\.'), '.')}'",
       )
       ..writeln(
         "  s.summary = 'Generated @objc adapters for Swift-only APIs (local-only).'",

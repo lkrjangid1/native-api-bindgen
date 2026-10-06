@@ -1,5 +1,5 @@
 # Changelog
 
-## 0.1.0-dev.1 (unreleased)
+## 0.1.0-beta.1 (2026-10-06)
 
 - Initial development version of `native_api_bindgen`. Project-wide history: the repository `CHANGELOG.md`.

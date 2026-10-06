@@ -1,14 +1,16 @@
 name: native_api_generator
 description: Target-independent generation services for native-api-bindgen — type mapping, identifier escaping, overload naming, deterministic output.
-version: 0.1.0-dev.1
+version: 0.1.0-beta.1
+repository: https://github.com/lkrjangid1/native-api-bindgen/tree/main/packages/native_api_generator
+issue_tracker: https://github.com/lkrjangid1/native-api-bindgen/issues
 resolution: workspace
 
 environment:
   sdk: ^3.9.0
 
 dependencies:
-  native_api_core: ^0.1.0-dev.1
-  native_api_ir: ^0.1.0-dev.1
+  native_api_core: ^0.1.0-beta.1
+  native_api_ir: ^0.1.0-beta.1
   path: ^1.9.0
 
 dev_dependencies:

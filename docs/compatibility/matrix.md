@@ -21,7 +21,7 @@ Only versions **actually exercised** are listed. "Tested" means automated tests 
 | Swift (Layer 2 adapters) | Swift 6.4 (Xcode 27.0), CocoaPods 1.16.2 | fixture adapters (incl. collections, raw-value enums, throws, async): 6 unit/golden tests + 4 Flutter integration tests on the iOS 26.4 simulator; WeatherKit/TipKit/Charts adapters type-check |
 | React Native on iOS | 0.87.1 (New Architecture, Hermes), CocoaPods 1.16.2 | release build for the iOS 26.4 simulator; 16 self-tests (`tools/run_rn_ios_tests.sh`; incl. blocks, protocols in JS, NSData, native view) |
 | React Native on Android | 0.87.1 (New Architecture, Hermes) | RN example release build (R8); 17 self-tests on the API 37 emulator (incl. suspend → Promise, `Uint8Array`, native view); Jest runtime tests |
-| `native_api_ui` (Flutter plugin) | 0.1.0-dev.1 | native views on the Android emulator and iOS simulator |
+| `native_api_ui` (Flutter plugin) | 0.1.0-beta.1 | native views on the Android emulator and iOS simulator |
 | Node / TypeScript | 25.9.0 / 6.0.3 | `tsc --strict` on generated output (fixtures, slice, full android-36 SDK) |
 
 ## Known constraints

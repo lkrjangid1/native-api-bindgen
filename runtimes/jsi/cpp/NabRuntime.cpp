@@ -1074,7 +1074,7 @@ class Root : public jsi::HostObject {
 
   jsi::Value builtin(jsi::Runtime& rt, const std::string& n) {
     using V = jsi::Value;
-    if (n == "version") return jsi::String::createFromAscii(rt, "0.1.0-dev.1");
+    if (n == "version") return jsi::String::createFromAscii(rt, "0.1.0-beta.1");
     if (n == "release") {
       return fn(rt, "release", [](jsi::Runtime& rt, const V&, const V* a, std::size_t c) -> V {
         auto h = c > 0 ? handleOf(rt, a[0]) : nullptr;

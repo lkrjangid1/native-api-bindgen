@@ -962,7 +962,7 @@ class Root : public jsi::HostObject {
   }
 
   jsi::Value builtin(jsi::Runtime& rt, const std::string& n) {
-    if (n == "version") return jsi::String::createFromAscii(rt, "0.1.0-dev.1");
+    if (n == "version") return jsi::String::createFromAscii(rt, "0.1.0-beta.1");
     if (n == "platform") return jsi::String::createFromAscii(rt, "ios");
     if (n == "release") {
       return fn(rt, "release", [](jsi::Runtime& rt, const V&, const V* a, std::size_t c) -> V {

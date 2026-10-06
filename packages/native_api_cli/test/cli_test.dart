@@ -49,7 +49,7 @@ void main() {
   test('--version and --json', () async {
     final r = await cli(['--json', '--version']);
     expect(r.code, ExitCodes.ok);
-    expect(jsonDecode(r.out), {'version': '0.1.0-dev.1'});
+    expect(jsonDecode(r.out), {'version': '0.1.0-beta.1'});
   });
 
   test('init writes safe defaults once', () async {
