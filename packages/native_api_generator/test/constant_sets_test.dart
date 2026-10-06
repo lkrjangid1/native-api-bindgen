@@ -8,7 +8,9 @@ import 'package:test/test.dart';
 void main() {
   final module = ApiModule.fromJson(
     jsonDecode(
-          File('../../tests/golden/ir/fixtures_basic.json').readAsStringSync(),
+          File(
+            '${_repoRoot()}/tests/golden/ir/fixtures_basic.json',
+          ).readAsStringSync(),
         )
         as Map<String, Object?>,
   );
@@ -43,4 +45,19 @@ void main() {
     expect(sets.forParameter('$owner#setMode(int)', 1), isNull);
     expect(sets.unresolved, 0);
   });
+}
+
+/// Works from the package directory and from the repository root
+/// (`dart test packages`, as CI runs it).
+String _repoRoot() {
+  var dir = Directory.current.absolute;
+  while (!File(
+    '${dir.path}/tests/golden/ir/fixtures_basic.json',
+  ).existsSync()) {
+    if (dir.parent.path == dir.path) {
+      throw StateError('repository root not found from ${Directory.current}');
+    }
+    dir = dir.parent;
+  }
+  return dir.path;
 }
