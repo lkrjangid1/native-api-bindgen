@@ -3,7 +3,7 @@ platform:
   ios:
     sdk: auto            # iphonesimulator via xcrun
     minVersion: "15.0"   # = the app deployment target; newer APIs get runtime guards
-    frameworks: [Foundation, UIKit]
+    frameworks: [Foundation, UIKit, AVFAudio]
     classes:
       - UIDevice
       - UIView
@@ -13,6 +13,27 @@ platform:
       - NSFileManager
       - NSOperationQueue
       - UILabel
+      # Showcase tasks (lib/showcase.dart)
+      - UIApplication
+      - UIScene
+      - UIWindowScene
+      - UIWindow
+      - UIActivityViewController
+      - UIPopoverPresentationController
+      - UIPasteboard
+      - UIFeedbackGenerator
+      - UIImpactFeedbackGenerator
+      - UINotificationFeedbackGenerator
+      - NSUserDefaults
+      - NSURL
+      - NSNumber
+      - NSValue
+      - NSSet
+      - NSArray
+      - NSDictionary
+      - AVSpeechSynthesizer
+      - AVSpeechUtterance
+      - AVSpeechSynthesisVoice
     depth: 0
     swift:                 # Swift-only APIs get generated @objc adapters (Layer 2)
       adaptersDir: ios/NativeApiSwiftAdapters

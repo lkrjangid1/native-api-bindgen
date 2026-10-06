@@ -346,6 +346,17 @@ NativeView.ios(view: ios.UILabel.new$()..text = 'Hi'.toNSString());
 <NativeView view={label} style={{ width: 200, height: 48 }} />
 ```
 
+The example apps do real tasks this way on both platforms and both frameworks:
+- a live device dashboard;
+- text-to-speech with a native callback;
+- the share sheet and the clipboard;
+- a persistent note;
+- haptics behind an availability guard;
+- opening the location settings or the app's permission page;
+- opening URLs.
+
+See each app's README for the full task list and the APIs behind each task.
+
 Full apps with on-device test suites:
 
 - [examples/flutter/android_slice](examples/flutter/android_slice)

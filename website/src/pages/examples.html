@@ -1,54 +1,109 @@
 <!--
 title: Examples
-description: Example code for native-api-bindgen in Flutter and React Native on Android and iOS: calls, callbacks, Kotlin coroutines, blocks, Swift APIs and native views.
+description: Real tasks with native-api-bindgen in Flutter and React Native on Android and iOS: device dashboard, text-to-speech, share sheet, clipboard and haptics.
 -->
 <h1>Examples</h1>
-<p class="lead">From the example apps in the repository (<code>examples/flutter/android_slice</code>, <code>examples/flutter/ios_slice</code>, <code>examples/react-native/slice</code>), each with an on-device test suite.</p>
+<p class="lead">The example apps do real work through generated bindings, with no plugin and no hand-written native code: a live device dashboard, text-to-speech, the share sheet, the clipboard, a persistent note, haptics and opening URLs. The same tasks run in Flutter and React Native on Android and iOS, and every task is covered by an on-device test.</p>
 
-<h2>Flutter on Android</h2>
-<pre><code>final uri = Uri.parse('https://example.com/p?q=1'.toJString())!;
-print(uri.scheme);                           // bean property over getScheme()
+<table>
+  <tr><th>Task</th><th>Android APIs</th><th>iOS APIs</th></tr>
+  <tr><td>Device dashboard</td><td>battery broadcast + <code>BatteryManager</code>, <code>ActivityManager.MemoryInfo</code>, <code>StatFs</code>, <code>ConnectivityManager</code></td><td><code>UIDevice</code>, <code>NSProcessInfo</code>, <code>NSFileManager</code></td></tr>
+  <tr><td>Speak text</td><td><code>TextToSpeech</code> + an <code>OnInitListener</code> written in Dart or JS</td><td><code>AVSpeechSynthesizer</code></td></tr>
+  <tr><td>Share text</td><td><code>ACTION_SEND</code> + <code>Intent.createChooser</code></td><td><code>UIActivityViewController</code></td></tr>
+  <tr><td>Copy and paste</td><td><code>ClipboardManager</code> + <code>ClipData</code></td><td><code>UIPasteboard</code></td></tr>
+  <tr><td>Persistent note</td><td><code>SharedPreferences</code></td><td><code>NSUserDefaults</code></td></tr>
+  <tr><td>Feedback</td><td><code>Vibrator</code> + <code>VibrationEffect</code> (API 26+, runtime-guarded)</td><td><code>UIImpactFeedbackGenerator</code>, <code>UINotificationFeedbackGenerator</code></td></tr>
+  <tr><td>Location settings</td><td><code>Settings.ACTION_LOCATION_SOURCE_SETTINGS</code>; the app's permission page via <code>ACTION_APPLICATION_DETAILS_SETTINGS</code> + <code>package:</code> URI</td><td>the app's page in Settings (<code>UIApplicationOpenSettingsURLString</code>), where its location permission is shown</td></tr>
+  <tr><td>Open a URL</td><td><code>ACTION_VIEW</code> + <code>startActivity</code></td><td><code>openURL:options:completionHandler:</code> (block → Dart / JS)</td></tr>
+</table>
+<p>Apps: <code>examples/flutter/android_slice</code>, <code>examples/flutter/ios_slice</code> and <code>examples/react-native/slice</code> (Android and iOS).</p>
 
-final intent = Intent()
-  ..setFlags(Intent$Flag.FLAG_ACTIVITY_NEW_TASK | Intent$Flag.FLAG_ACTIVITY_CLEAR_TOP);
+<h2>Device dashboard</h2>
+<p>Flutter on Android: battery from the sticky broadcast, memory, free storage and the active network.</p>
+<pre><code>final battery = ctx.registerReceiver(
+    null, IntentFilter.new$String(Intent.ACTION_BATTERY_CHANGED.toJString()))!;
+final level = battery.getIntExtra(BatteryManager.EXTRA_LEVEL.toJString(), -1);
 
-// A Java interface implemented in Dart.
-final handler = Handler.new$Looper(Looper.getMainLooper()!);
-handler.post(Runnable.implement($Runnable(run: () => print('on the main looper'))));
+final am = ctx.getSystemService(Context.ACTIVITY_SERVICE.toJString())!.as(ActivityManager.type);
+final mem = ActivityManager_MemoryInfo();
+am.getMemoryInfo(mem);                                  // mem.availMem, mem.totalMem
 
-// Kotlin: suspend -> Future, Flow -> Stream.
+final fs = StatFs(Environment.getDataDirectory()!.getAbsolutePath());
+print('${fs.getAvailableBytes()} of ${fs.getTotalBytes()} bytes free');</code></pre>
+<p>Flutter on iOS:</p>
+<pre><code>final device = ios.UIDevice.currentDevice..batteryMonitoringEnabled = true;
+final info = ios.NSProcessInfo.processInfo;
+print('${device.batteryLevel} · ${info.thermalState} · ${info.physicalMemory} bytes');</code></pre>
+
+<h2>Text-to-speech with a callback</h2>
+<p>Android reports that the engine is ready through <code>TextToSpeech.OnInitListener</code>, a Java interface implemented here in JavaScript (React Native):</p>
+<pre><code>const engine = TextToSpeech.new(applicationContext(), TextToSpeech_OnInitListener.implement(
+  { onInit: status =&gt; {
+      if (status === TextToSpeech.SUCCESS)
+        engine.speak$CharSequence$int$Bundle$String(text, TextToSpeech.QUEUE_FLUSH, null, 'id');
+  } },
+  { async: ['onInit'] },
+));</code></pre>
+<p>iOS (React Native):</p>
+<pre><code>const utterance = AVSpeechUtterance.speechUtteranceWithString(text);
+utterance.voice = AVSpeechSynthesisVoice.voiceWithLanguage(AVSpeechSynthesisVoice.currentLanguageCode());
+synth.speakUtterance(utterance);</code></pre>
+
+<h2>Share sheet</h2>
+<p>Flutter on iOS: find the key window through the connected scenes, then present <code>UIActivityViewController</code>.</p>
+<pre><code>final sheet = ios.UIActivityViewController.alloc()
+    .initWithActivityItems(objc.NSArray.of([text.toNSString()]));
+sheet.popoverPresentationController?.sourceView = root.view;   // iPad
+await root.presentViewControllerAsync(sheet, animated: true);</code></pre>
+<p>React Native on Android:</p>
+<pre><code>const send = Intent.new$String(Intent.ACTION_SEND)
+  .setType('text/plain')
+  .putExtra$String$String(Intent.EXTRA_TEXT, text);
+currentActivity()!.startActivity(Intent.createChooser(send, 'Share via')!);</code></pre>
+
+<h2>Clipboard and a persistent note</h2>
+<pre><code>// Flutter on Android
+clipboard.setPrimaryClip(ClipData.newPlainText('label'.toJString(), text.toJString())!);
+prefs.edit()!.putString('note'.toJString(), note.toJString())!.apply();
+
+// React Native on iOS: setObject:forKey: takes `id`, so wrap the string
+UIPasteboard.generalPasteboard.string_ = text;
+NSUserDefaults.standardUserDefaults.setObject(nsString(note), 'showcase.note');</code></pre>
+
+<h2>Location settings</h2>
+<p>Flutter on Android: open the system Location page, or this app's own settings page, where location permission is granted.</p>
+<pre><code>activity.startActivity(Intent.new$String(Settings.ACTION_LOCATION_SOURCE_SETTINGS.toJString()));
+
+activity.startActivity(Intent.new$String$Uri(
+  Settings.ACTION_APPLICATION_DETAILS_SETTINGS.toJString(),
+  Uri.parse('package:${ctx.getPackageName()!.toDartString()}'.toJString()),
+));</code></pre>
+
+<h2>APIs newer than your minimum SDK</h2>
+<p><code>VibrationEffect</code> is API 26+, newer than the example's <code>minApi: 24</code>. The generated call checks the device and throws instead of crashing:</p>
+<pre><code>try {
+  vibrator.vibrate$VibrationEffect(VibrationEffect.createOneShot(60, VibrationEffect.DEFAULT_AMPLITUDE));
+} on NativeApiUnavailableException {
+  vibrator.vibrate(60);                                  // legacy API on older devices
+}</code></pre>
+
+<h2>More binding features</h2>
+<pre><code>// Kotlin: suspend -&gt; Future / Promise, Flow -&gt; Stream
 final greeting = await greeter.greetLater(20);
-await for (final i in greeter.countTo(3)) print(i);</code></pre>
+await for (final i in greeter.countTo(3)) print(i);
 
-<h2>Flutter on iOS</h2>
-<pre><code>final device = ios.UIDevice.currentDevice;
-print(device.systemName.toDartString());
-
+// Objective-C: NSError ** -&gt; exception, completion handler -&gt; Future
 try {
   fileManager.contentsOfDirectoryAtPath('/missing'.toNSString());
 } on ios.NativeObjCError catch (e) {
-  print(e.domain);                          // NSCocoaErrorDomain
+  print(e.domain);                                       // NSCocoaErrorDomain
 }
 
-// Blocks: completion handler as a Future.
-final finished = await ios.UIView.animateWithDuration$animations$completionAsync(
-    0.2, animations: () {});
-
-// A native view in the widget tree (package native_api_ui).
-NativeView.ios(view: ios.UILabel.new$()..text = 'Hello'.toNSString());</code></pre>
-
-<h2>React Native</h2>
-<pre><code>// Android
-const intent = Intent.new$String$Uri(Intent.ACTION_VIEW, Uri.parse('https://example.com'));
-const copy = Arrays.copyOf(new Uint8Array([1, 2, 3]), 2);   // byte[] as Uint8Array
-const name = await greeter.greetLater(20n);                 // Kotlin suspend -> Promise
-
-// iOS
-const sorted = views.sortedArrayUsingComparator((a, b) =>
-  a!.as(UIView).tag < b!.as(UIView).tag ? -1n : 1n);        // block from JS
+// Blocks and protocols written in JavaScript
 fileManager.delegate = NSFileManagerDelegate.implement({
-  fileManager$shouldRemoveItemAtPath: (manager, path) => false,
-});                                                         // protocol in JS
+  fileManager$shouldRemoveItemAtPath: () =&gt; false,
+});
 
-// Both platforms: show a native view.
+// A native view in the widget tree / component tree
+NativeView.ios(view: ios.UILabel.new$()..text = 'Hello'.toNSString());
 &lt;NativeView view={label} style={{ width: 200, height: 48 }} /&gt;</code></pre>

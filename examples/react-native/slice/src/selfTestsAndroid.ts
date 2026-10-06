@@ -27,6 +27,7 @@ import {
 } from '../native-api-bindings';
 
 import { benchmarks } from './bench';
+import * as showcase from './showcase/android';
 import { showInTestHost } from './testHost';
 import type { TestResult } from './testResult';
 
@@ -103,7 +104,8 @@ const tests: Array<[string, () => void | Promise<void>]> = [
     () => {
       const intent = Intent.new();
       intent.setFlags(
-        Intent$Flag.FLAG_ACTIVITY_NEW_TASK | Intent$Flag.FLAG_ACTIVITY_CLEAR_TOP,
+        Intent$Flag.FLAG_ACTIVITY_NEW_TASK |
+          Intent$Flag.FLAG_ACTIVITY_CLEAR_TOP,
       );
       expectEqual(
         intent.getFlags(),
@@ -121,7 +123,11 @@ const tests: Array<[string, () => void | Promise<void>]> = [
       expectEqual(Array.from(copy).join(), '1,2,255', 'bytes');
       const view = new Uint8Array([9, 8, 7, 6]).subarray(1, 3);
       expectEqual(Array.from(Arrays.copyOf(view, 2)).join(), '8,7', 'subarray');
-      expectEqual(Array.from(Arrays.copyOf([5, 6], 2)).join(), '5,6', 'number[]');
+      expectEqual(
+        Array.from(Arrays.copyOf([5, 6], 2)).join(),
+        '5,6',
+        'number[]',
+      );
     },
   ],
 
@@ -180,7 +186,7 @@ const tests: Array<[string, () => void | Promise<void>]> = [
         throw new Error(`expected NativeJavaError, got ${String(failed)}`);
       }
       const all = await Promise.all(
-        Array.from({length: 20}, (_, i) => g.greetLater(BigInt(i % 5))),
+        Array.from({ length: 20 }, (_, i) => g.greetLater(BigInt(i % 5))),
       );
       expectEqual(new Set(all).size, 1, 'concurrent results');
     },
@@ -348,6 +354,45 @@ const tests: Array<[string, () => void | Promise<void>]> = [
       } finally {
         AndroidApi.debugOverrideFullVersion = undefined;
       }
+    },
+  ],
+
+  [
+    'Showcase: device status (battery, memory, storage, network)',
+    () => {
+      const s = showcase.deviceStatus();
+      if (
+        s.batteryPercent === null ||
+        s.batteryPercent < 0 ||
+        s.batteryPercent > 100
+      )
+        throw new Error(`battery ${s.batteryPercent}`);
+      if (!(s.totalMemBytes > s.availMemBytes && s.availMemBytes > 0))
+        throw new Error(`memory ${s.availMemBytes}/${s.totalMemBytes}`);
+      if (!(s.totalStorageBytes > s.freeStorageBytes))
+        throw new Error(`storage ${s.freeStorageBytes}/${s.totalStorageBytes}`);
+      if (s.network.length === 0) throw new Error('network');
+    },
+  ],
+
+  [
+    'Showcase: clipboard and SharedPreferences round trips',
+    () => {
+      showcase.copy('nab clipboard ✓');
+      expectEqual(showcase.paste(), 'nab clipboard ✓', 'clipboard');
+      const note = `note ${Date.now()}`;
+      showcase.saveNote(note);
+      expectEqual(showcase.loadNote(), note, 'note');
+    },
+  ],
+
+  [
+    'Showcase: guarded VibrationEffect, TextToSpeech with a JS OnInitListener',
+    async () => {
+      const r = showcase.vibrate();
+      if (!r.startsWith('VibrationEffect') && !r.startsWith('no vibrator'))
+        throw new Error(r);
+      await withTimeout(showcase.speak('native API bindgen'), 20000);
     },
   ],
 

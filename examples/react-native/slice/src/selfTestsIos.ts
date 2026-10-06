@@ -32,6 +32,7 @@ import {
   type CGRect,
 } from '../native-api-bindings/ios';
 import { benchmarks } from './bench';
+import * as showcase from './showcase/ios';
 import { showInTestHost } from './testHost';
 import type { TestResult } from './testResult';
 
@@ -194,7 +195,8 @@ const tests: Array<[string, () => void | Promise<void>]> = [
       // Escaping blocks on background threads: posted to JS.
       const queue = NSOperationQueue.new$();
       const done = new Set<number>();
-      for (let i = 0; i < 5; i++) queue.addOperationWithBlock(() => done.add(i));
+      for (let i = 0; i < 5; i++)
+        queue.addOperationWithBlock(() => done.add(i));
       queue.waitUntilAllOperationsAreFinished();
       for (let tries = 0; done.size < 5 && tries < 100; tries++) {
         await new Promise<void>(r => setTimeout(() => r(), 10));
@@ -388,6 +390,44 @@ const tests: Array<[string, () => void | Promise<void>]> = [
         const o = NSProcessInfo.processInfo;
         o.release();
       }
+    },
+  ],
+  [
+    'Showcase: device status (system, memory, CPUs, storage)',
+    () => {
+      const s = showcase.deviceStatus();
+      if (!s.system.startsWith('iOS ')) throw new Error(s.system);
+      if (s.physicalMemoryBytes < 2 ** 30) throw new Error('memory');
+      if (s.processors < 1) throw new Error('processors');
+      if (
+        s.totalStorageBytes === null ||
+        s.freeStorageBytes === null ||
+        !(s.totalStorageBytes > s.freeStorageBytes)
+      )
+        throw new Error(`storage ${s.freeStorageBytes}/${s.totalStorageBytes}`);
+    },
+  ],
+
+  [
+    'Showcase: pasteboard and NSUserDefaults (nsString) round trips',
+    () => {
+      showcase.copy('nab pasteboard ✓');
+      expectEqual(showcase.paste(), 'nab pasteboard ✓', 'pasteboard');
+      const note = `note ${Date.now()}`;
+      showcase.saveNote(note);
+      expectEqual(showcase.loadNote(), note, 'note');
+    },
+  ],
+
+  [
+    'Showcase: haptics and AVSpeechSynthesizer',
+    async () => {
+      await showcase.haptics();
+      showcase.speak('native API bindgen');
+      for (let i = 0; i < 40 && !showcase.speaking(); i++) {
+        await new Promise<void>(r => setTimeout(r, 100));
+      }
+      expectEqual(showcase.speaking(), true, 'speaking');
     },
   ],
 ];

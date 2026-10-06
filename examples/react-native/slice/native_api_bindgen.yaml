@@ -20,6 +20,30 @@ platform:
       - android.view.View
       - android.widget.TextView
       - com.example.kfixtures.Greeter   # Kotlin library class (suspend functions)
+      # Showcase tasks (src/showcase/android.ts)
+      - android.content.IntentFilter
+      - android.os.BatteryManager
+      - android.app.ActivityManager
+      - android.app.ActivityManager.MemoryInfo
+      - android.os.StatFs
+      - android.os.Environment
+      - java.io.File
+      - android.net.ConnectivityManager
+      - android.net.Network
+      - android.net.NetworkCapabilities
+      - android.content.ClipboardManager
+      - android.content.ClipData
+      - android.content.ClipData.Item
+      - android.content.SharedPreferences
+      - android.content.SharedPreferences.Editor
+      - android.os.Vibrator
+      - android.os.VibrationEffect
+      - android.speech.tts.TextToSpeech
+      - android.speech.tts.TextToSpeech.OnInitListener
+      - android.widget.Toast
+      - android.os.Build
+      - java.util.Locale
+      - android.provider.Settings
     depth: 0
     libraries:
       - ../../../fixtures/kotlin/basic/build/libs/kfixtures.jar
@@ -27,7 +51,7 @@ platform:
   ios:
     sdk: auto
     minVersion: "15.1"   # React Native 0.87 minimum; newer APIs get runtime guards
-    frameworks: [Foundation, UIKit]
+    frameworks: [Foundation, UIKit, AVFAudio]
     classes:
       - UIDevice
       - UIView
@@ -42,6 +66,25 @@ platform:
       - NSCacheDelegate
       - NSURL
       - UILabel
+      # Showcase tasks (src/showcase/ios.ts)
+      - UIApplication
+      - UIScene
+      - UIWindowScene
+      - UIWindow
+      - UIActivityViewController
+      - UIPopoverPresentationController
+      - UIPasteboard
+      - UIFeedbackGenerator
+      - UIImpactFeedbackGenerator
+      - UINotificationFeedbackGenerator
+      - NSUserDefaults
+      - NSNumber
+      - NSValue
+      - NSSet
+      - NSDictionary
+      - AVSpeechSynthesizer
+      - AVSpeechUtterance
+      - AVSpeechSynthesisVoice
     depth: 0
 
 targets:

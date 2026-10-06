@@ -1058,6 +1058,13 @@ class Root : public jsi::HostObject {
         return V::undefined();
       });
     }
+    if (n == "stringObject") {
+      // stringObject(string) -> NSString handle, for `id`-typed parameters.
+      return fn(rt, "stringObject", [](jsi::Runtime& rt, const V&, const V* a, std::size_t c) -> V {
+        if (c == 0 || !a[0].isString()) typeError(rt, "stringObject(string)");
+        return wrap(rt, toNSString(rt, a[0]));
+      });
+    }
     if (n == "dataFromBytes") {
       // dataFromBytes(ArrayBuffer) -> NSData handle (one copy).
       return fn(rt, "dataFromBytes", [](jsi::Runtime& rt, const V&, const V* a, std::size_t c) -> V {

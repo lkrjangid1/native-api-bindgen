@@ -6,7 +6,6 @@ import 'package:flutter/widgets.dart'
     show Center, Directionality, SizedBox, TextDirection;
 import 'package:integration_test/integration_test.dart';
 import 'package:native_api_ui/native_api_ui.dart';
-import 'package:ios_slice/main.dart';
 import 'package:ios_slice/slice.dart';
 import 'package:ios_slice/src/generated/apple.dart' as ios;
 import 'package:objective_c/objective_c.dart' as objc;
@@ -339,12 +338,5 @@ void main() {
         isFalse,
       );
     });
-  });
-
-  testWidgets('app renders values from the bindings', (tester) async {
-    await tester.pumpWidget(const SliceApp());
-    expect(find.text('iOS'), findsOneWidget);
-    expect(find.text('3'), findsOneWidget);
-    expect(find.textContaining('NSCocoaErrorDomain'), findsOneWidget);
   });
 }

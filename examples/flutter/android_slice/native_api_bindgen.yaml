@@ -19,6 +19,30 @@ platform:
       - android.view.View
       - android.widget.TextView
       - com.example.kfixtures.Greeter   # Kotlin library class (suspend functions)
+      # Showcase tasks (lib/src/showcase.dart)
+      - android.content.IntentFilter
+      - android.os.BatteryManager
+      - android.app.ActivityManager
+      - android.app.ActivityManager.MemoryInfo
+      - android.os.StatFs
+      - android.os.Environment
+      - java.io.File
+      - android.net.ConnectivityManager
+      - android.net.Network
+      - android.net.NetworkCapabilities
+      - android.content.ClipboardManager
+      - android.content.ClipData
+      - android.content.ClipData.Item
+      - android.content.SharedPreferences
+      - android.content.SharedPreferences.Editor
+      - android.os.Vibrator
+      - android.os.VibrationEffect
+      - android.speech.tts.TextToSpeech
+      - android.speech.tts.TextToSpeech.OnInitListener
+      - android.widget.Toast
+      - android.os.Build
+      - java.util.Locale
+      - android.provider.Settings
     depth: 0
     libraries:
       - ../../../fixtures/kotlin/basic/build/libs/kfixtures.jar

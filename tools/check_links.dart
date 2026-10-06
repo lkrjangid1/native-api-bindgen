@@ -11,6 +11,21 @@ final _link = RegExp(r'https?://[^\s)<>`"\]]+');
 /// illustrative URLs, not links.
 final _code = RegExp(r'<pre[\s\S]*?</pre>|^```[\s\S]*?^```', multiLine: true);
 
+/// npmjs.com answers automated requests with 403; check its package pages
+/// through the registry API instead.
+Uri _probe(String url) {
+  final uri = Uri.parse(url);
+  final segments = uri.pathSegments;
+  if (uri.host == 'www.npmjs.com' &&
+      segments.length >= 2 &&
+      segments.first == 'package') {
+    return Uri.parse(
+      'https://registry.npmjs.org/${segments.skip(1).join('/')}',
+    );
+  }
+  return uri;
+}
+
 Future<void> main(List<String> args) async {
   final roots = args.isEmpty ? ['README.md', 'docs'] : args;
   final links = <String, Set<String>>{};
@@ -40,7 +55,7 @@ Future<void> main(List<String> args) async {
     String? error;
     try {
       final req = await client
-          .getUrl(Uri.parse(url))
+          .getUrl(_probe(url))
           .timeout(const Duration(seconds: 20));
       req.followRedirects = true;
       final res = await req.close().timeout(const Duration(seconds: 20));

@@ -9,18 +9,18 @@ Only versions **actually exercised** are listed. "Tested" means automated tests 
 | `package:jni` / `jni_flutter` | 1.0.3 / 1.0.3 | generated bindings compile and run (host JVM + Android emulator) |
 | Android platform parsed (full android.jar) | 36, 37.2 | full-jar extraction; 36 also full Flutter generation + `dart analyze` |
 | Android platforms in diff | 35 → 36 | `diff android` |
-| Android device (emulator) | API 37 (`Pixel_7` AVD, arm64) | 19 Flutter integration tests (incl. native view, Flow, typed constants, bytes) |
+| Android device (emulator) | API 37 (`Pixel_7` AVD, arm64) | 26 Flutter integration tests (19 binding features incl. native view, Flow, typed constants, bytes; 7 showcase tasks: device status, clipboard, SharedPreferences, vibration, text-to-speech, settings intents, UI) |
 | Generated `minApi` guards | 24 | guard tests (device + host JVM) |
 | Minor SDK versions | 36.1 availability (fixture), `SDK_INT_FULL` path | unit + host-JVM tests |
 | JDK | OpenJDK 25.0.2 (fixtures compiled with `--release 17`) | fixture, golden, host-JVM runtime tests |
 | CMake (host JNI helper) | 3.22.1 (from Android SDK) | `tools/run_jvm_runtime_tests.sh` |
 | Xcode / iOS SDK | 27.0 / iPhoneSimulator 27.0 | libclang extraction; Foundation + UIKit full generation + `dart analyze` |
-| iOS runtime (simulator) | 26.4 (iPhone 17) | 22 Flutter integration tests (`examples/flutter/ios_slice`, deployment target 15.0; incl. blocks, main-actor check, native view, Swift adapters). iOS 27.0 simulators: React Native template apps without UIScene adoption do not launch (not a binding issue) |
+| iOS runtime (simulator) | 26.4 (iPhone 17) | 28 Flutter integration tests (`examples/flutter/ios_slice`; 21 binding features and 7 showcase tasks, deployment target 15.0; incl. blocks, main-actor check, native view, Swift adapters). iOS 27.0 simulators: React Native template apps without UIScene adoption do not launch (not a binding issue) |
 | `package:objective_c` | 9.5.0 | generated iOS bindings compile and run |
 | Kotlin (fixture library) | Kotlin 2.4.20, kotlinx-coroutines 1.10.2, Gradle 9.6.0 | suspend, `Flow`, `kotlin.Metadata`: 32 host-JVM tests (`tools/run_jvm_runtime_tests.sh`, incl. Java fixtures), 3 Flutter integration tests and React Native suspend → Promise on the API 37 emulator; metadata decoding validated on kotlin-stdlib 2.4.20 and kotlinx-coroutines-core 1.10.2 |
 | Swift (Layer 2 adapters) | Swift 6.4 (Xcode 27.0), CocoaPods 1.16.2 | fixture adapters (incl. collections, raw-value enums, throws, async): 6 unit/golden tests + 4 Flutter integration tests on the iOS 26.4 simulator; WeatherKit/TipKit/Charts adapters type-check |
-| React Native on iOS | 0.87.1 (New Architecture, Hermes), CocoaPods 1.16.2 | release build for the iOS 26.4 simulator; 16 self-tests (`tools/run_rn_ios_tests.sh`; incl. blocks, protocols in JS, NSData, native view) |
-| React Native on Android | 0.87.1 (New Architecture, Hermes) | RN example release build (R8); 17 self-tests on the API 37 emulator (incl. suspend → Promise, `Uint8Array`, native view); Jest runtime tests |
+| React Native on iOS | 0.87.1 (New Architecture, Hermes), CocoaPods 1.16.2 | release build for the iOS 26.4 simulator; 19 self-tests (`tools/run_rn_ios_tests.sh`; incl. showcase tasks, blocks, protocols in JS, NSData, native view) |
+| React Native on Android | 0.87.1 (New Architecture, Hermes) | RN example release build (R8); 20 self-tests on the API 37 emulator (incl. showcase tasks, suspend → Promise, `Uint8Array`, native view); Jest runtime tests |
 | `native_api_ui` (Flutter plugin) | 0.1.0-beta.1 | native views on the Android emulator and iOS simulator |
 | Node / TypeScript | 25.9.0 / 6.0.3 | `tsc --strict` on generated output (fixtures, slice, full android-36 SDK) |
 

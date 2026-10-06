@@ -224,14 +224,14 @@ packages:
       path: "../../../runtimes/dart/native_api_runtime"
       relative: true
     source: path
-    version: "0.1.0-dev.1"
+    version: "0.1.0-beta.1"
   native_api_ui:
     dependency: "direct main"
     description:
       path: "../../../runtimes/flutter/native_api_ui"
       relative: true
     source: path
-    version: "0.1.0-dev.1"
+    version: "0.1.0-beta.1"
   objective_c:
     dependency: transitive
     description:

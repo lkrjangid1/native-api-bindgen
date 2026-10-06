@@ -127,7 +127,7 @@ Measured with Xcode 27.0 (`packages/native_api_ios/tool/swift_sdk_report.dart`, 
 
 ## Tested (2026-10-05, maintainer machine)
 
-- React Native 0.87.1 (`examples/react-native/slice`, release build with bundled JS): **12/12 self-tests passing** on the same iPhone 17 / iOS 26.4 simulator (`tools/run_rn_ios_tests.sh`). All of Foundation + UIKit as React Native bindings: 15,401 bound members, TypeScript type-checks with zero errors, C++ tables compile with `-Werror`.
+- React Native 0.87.1 (`examples/react-native/slice`, release build with bundled JS): **19/19 self-tests passing**, including the showcase tasks on the same iPhone 17 / iOS 26.4 simulator (`tools/run_rn_ios_tests.sh`). All of Foundation + UIKit as React Native bindings: 15,401 bound members, TypeScript type-checks with zero errors, C++ tables compile with `-Werror`.
 
 - Xcode 27.0, iPhoneSimulator SDK 27.0; `examples/flutter/ios_slice` integration tests: **12/12 passing** on an iPhone 17 simulator running iOS 26.4 (`flutter test integration_test -d <udid>`). The availability-guard test calls an iOS 27.0 API on the iOS 26.4 runtime and expects `OsVersionError`.
 - Foundation + UIKit generated entirely: 1,527 types, 14,362 bound members, extraction + emission ≈ 0.5–0.6 s, `dart analyze`: 0 issues (`packages/native_api_flutter_ios/tool/gen_sdk.dart`). Only the example's APIs are runtime-tested.

@@ -4,6 +4,17 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 
 ## [Unreleased]
 
+### Added
+- Example apps now do real tasks through generated bindings, the same set in Flutter and React Native on Android and iOS:
+  - a live device dashboard (battery, memory, storage, network or thermal state);
+  - text-to-speech (`TextToSpeech` with an `OnInitListener` implemented in Dart/JS; `AVSpeechSynthesizer`);
+  - the share sheet, the clipboard and a note that persists across restarts (`SharedPreferences`, `NSUserDefaults`);
+  - haptics (`VibrationEffect`, guarded for API < 26; `UIImpactFeedbackGenerator`) and opening URLs;
+  - opening the location settings: Android's Location page (`Settings.ACTION_LOCATION_SOURCE_SETTINGS`) and the app's permission page (`ACTION_APPLICATION_DETAILS_SETTINGS`); on iOS, the app's page in Settings.
+
+  Each task has an on-device test: `integration_test/showcase_test.dart` (Flutter) and the "Showcase" self-tests (React Native).
+- React Native iOS runtime: `nsString(text)` creates an `NSString` object for `id`-typed parameters, such as `-[NSUserDefaults setObject:forKey:]` and `NSArray` items.
+
 ## [0.1.0-beta.1] - 2026-10-06
 
 First public beta, published to pub.dev. APIs and generated output may still change between beta releases.

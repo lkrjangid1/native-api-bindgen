@@ -22,6 +22,7 @@ interface ObjCRoot {
   iosVersion(): string;
   string(h: Handle): string | null;
   log(message: string): void;
+  stringObject(text: string): Handle;
   dataFromBytes(buffer: ArrayBuffer): Handle;
   bytesOfData(h: Handle): ArrayBuffer;
   arrayItems(h: Handle): Handle[];
@@ -128,6 +129,15 @@ export class ObjCObject {
     }
     return new cls(this.$h);
   }
+}
+
+/**
+ * A new `NSString` object for [text]. Parameters typed `NSString *` take
+ * JavaScript strings directly; use this where the native type is `id` (for
+ * example `-[NSUserDefaults setObject:forKey:]` or `NSArray` items).
+ */
+export function nsString(text: string): ObjCObject {
+  return new ObjCObject(objc().stringObject(text));
 }
 
 /** A new `NSData` holding a copy of [bytes]. */
