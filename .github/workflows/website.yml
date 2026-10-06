@@ -44,7 +44,7 @@ jobs:
         # Fails until Settings → Pages → Source is set to "GitHub Actions";
         # the site is still built and checked, just not deployed.
         continue-on-error: true
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
       - name: Build (fails on broken internal links, duplicate titles, size budgets)
         run: dart run tools/build_website.dart
         env:
