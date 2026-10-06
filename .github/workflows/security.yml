@@ -15,14 +15,17 @@ jobs:
   fuzz-and-deps:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: "21"
-      - uses: dart-lang/setup-dart@v1
+      # package:jni (used by native_api_runtime) requires the Flutter SDK, so
+      # use Flutter's bundled Dart rather than a standalone Dart SDK.
+      - uses: subosito/flutter-action@v2
         with:
-          sdk: stable
+          channel: stable
+          cache: true
       - run: dart pub get
       - name: Parser fuzz tests
         run: dart test packages/native_api_android/test/fuzz_test.dart packages/native_api_ir/test/fuzz_test.dart

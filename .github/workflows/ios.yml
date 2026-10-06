@@ -14,10 +14,13 @@ jobs:
     name: Objective-C extraction, goldens, Foundation+UIKit compile check
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: dart-lang/setup-dart@v1
+      - uses: actions/checkout@v5
+      # package:jni (used by native_api_runtime) requires the Flutter SDK, so
+      # use Flutter's bundled Dart rather than a standalone Dart SDK.
+      - uses: subosito/flutter-action@v2
         with:
-          sdk: stable
+          channel: stable
+          cache: true
       - run: dart pub get
       - run: dart run native_api_bindgen doctor || true
       - run: dart test packages/native_api_ios packages/native_api_flutter_ios
@@ -33,10 +36,11 @@ jobs:
     name: Flutter iOS example on a simulator
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+          cache: true
       - run: dart pub get
       - name: Generate bindings for the example
         run: dart run native_api_bindgen --project examples/flutter/ios_slice generate ios
