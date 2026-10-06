@@ -94,7 +94,7 @@ jobs:
           cache: true
       - run: dart pub get
       - run: dart run native_api_bindgen --project examples/react-native/slice generate react-native-ios
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: rn-ios-bindings
           path: examples/react-native/slice/native-api-bindings
