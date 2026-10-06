@@ -3,7 +3,23 @@
   "version": "0.1.0-beta.1",
   "description": "Runtime of native-api-bindgen for React Native (New Architecture): JSI host objects over JNI (Android) and Objective-C++ (iOS). Generated bindings embed a copy; this package is for apps that prefer a dependency.",
   "license": "Apache-2.0",
-  "keywords": ["react-native", "jsi", "jni", "objective-c", "bindings", "turbomodule"],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lkrjangid1/native-api-bindgen.git",
+    "directory": "runtimes/jsi"
+  },
+  "homepage": "https://github.com/lkrjangid1/native-api-bindgen#readme",
+  "bugs": {
+    "url": "https://github.com/lkrjangid1/native-api-bindgen/issues"
+  },
+  "keywords": [
+    "react-native",
+    "jsi",
+    "jni",
+    "objective-c",
+    "bindings",
+    "turbomodule"
+  ],
   "files": [
     "ts/**",
     "cpp/**",
@@ -18,5 +34,9 @@
     "react": "*",
     "react-native": ">=0.76"
   },
-  "private": false
+  "private": false,
+  "publishConfig": {
+    "access": "public",
+    "tag": "beta"
+  }
 }

@@ -11,6 +11,14 @@ of these sources, so most apps do not need this package. The Java helpers
 `NabNativeViewManager`, `NabUiPackage`) are part of the generated library's
 `android/java` directory.
 
+```bash
+npm install native-api-bindgen-runtime@beta
+```
+
+The generator is the Dart CLI [`native_api_bindgen`](https://pub.dev/packages/native_api_bindgen)
+(`dart pub global activate native_api_bindgen`). Docs, examples and issues:
+https://github.com/lkrjangid1/native-api-bindgen
+
 - License: Apache-2.0
-- Status: experimental; tested on an Android emulator and an iOS simulator.
+- Status: beta (`0.1.0-beta.1`); tested on an Android emulator and an iOS simulator.
 - Not affiliated with or endorsed by Google, Apple or Meta.
