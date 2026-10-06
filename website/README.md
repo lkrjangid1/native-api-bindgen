@@ -3,7 +3,7 @@
 Static pages in `src/pages` (HTML fragments with a `title`/`description` header) and `src/assets` (`style.css` with light/dark themes, `site.js` for the theme toggle and copy buttons). Every Markdown file in `docs/` is also published under `docs/` on the site with a sidebar, table of contents and previous/next links; the sidebar order is `docGroups` in `tools/website/docs.dart` (unlisted files appear under "More"). Build:
 
 ```sh
-dart run tools/build_website.dart [--site-url https://<host>/<base>]
+dart run tools/build_website.dart [--site-url https://lkrjangid1.github.io/native-api-bindgen-docs/]
 ```
 
 Preview locally (serve the **build** output, not `src/pages` — the source pages are fragments without `<head>`, styles or images):
