@@ -10,11 +10,54 @@ permissions:
 jobs:
   verify:
     uses: ./.github/workflows/release-check.yml
-  release:
+
+  # Native CLI binaries (`dart compile exe`) for GitHub Releases and Homebrew.
+  binaries:
     needs: verify
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: macos-15, target: macos-arm64 }
+          - { os: macos-15-intel, target: macos-x64 }
+          - { os: ubuntu-24.04, target: linux-x64 }
+          - { os: ubuntu-24.04-arm, target: linux-arm64 }
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+      # package:jni (used by native_api_runtime) requires the Flutter SDK, so
+      # use Flutter's bundled Dart rather than a standalone Dart SDK.
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.41.9
+          cache: true
+      - run: dart pub get
+      - name: Compile and package
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          name="native-api-bindgen-${version}-${{ matrix.target }}"
+          mkdir -p "dist/$name"
+          dart compile exe packages/native_api_cli/bin/native_api_bindgen.dart -o "dist/$name/native-api-bindgen"
+          "dist/$name/native-api-bindgen" --version
+          cp LICENSE NOTICE "dist/$name/"
+          tar -C dist -czf "dist/$name.tar.gz" "$name"
+          python3 -c "import hashlib,sys; p=sys.argv[1]; print(hashlib.sha256(open(p,'rb').read()).hexdigest() + '  ' + p.split('/')[-1])" "dist/$name.tar.gz" > "dist/$name.tar.gz.sha256"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bin-${{ matrix.target }}
+          path: dist/*.tar.gz*
+
+  release:
+    needs: binaries
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v5
+        with:
+          pattern: bin-*
+          path: dist
+          merge-multiple: true
       - name: Release notes from CHANGELOG
         run: |
           python3 - <<'PY' > notes.md
@@ -27,5 +70,48 @@ jobs:
       - uses: softprops/action-gh-release@v2
         with:
           body_path: notes.md
-# Publishing to pub.dev is intentionally manual until LEGAL_RELEASE_REPORT.md
-# has no open LEGAL_REVIEW_REQUIRED items.
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          files: dist/*
+
+  # Updates Formula/native-api-bindgen.rb in lkrjangid1/homebrew-tap. Needs a
+  # HOMEBREW_TAP_TOKEN secret (fine-grained token, contents: write on the tap
+  # repository); skipped with a warning without it.
+  homebrew:
+    needs: release
+    runs-on: ubuntu-latest
+    env:
+      TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v5
+        with:
+          pattern: bin-*
+          path: dist
+          merge-multiple: true
+      - name: Check token
+        id: token
+        run: |
+          if [ -z "$TAP_TOKEN" ]; then
+            echo "::warning::HOMEBREW_TAP_TOKEN is not set; the Homebrew tap was not updated."
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v5
+        if: steps.token.outputs.ok == 'true'
+        with:
+          repository: lkrjangid1/homebrew-tap
+          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          path: tap
+      - name: Write formula and push
+        if: steps.token.outputs.ok == 'true'
+        run: |
+          mkdir -p tap/Formula
+          python3 tools/homebrew_formula.py "${GITHUB_REF_NAME#v}" dist > tap/Formula/native-api-bindgen.rb
+          cd tap
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Formula/native-api-bindgen.rb
+          git diff --cached --quiet || git commit -m "native-api-bindgen ${GITHUB_REF_NAME#v}"
+          git push
+# Publishing to pub.dev and npm stays manual (see docs/releasing.md).

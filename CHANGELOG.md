@@ -8,6 +8,8 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 
 First public beta, published to pub.dev. APIs and generated output may still change between beta releases.
 
+- Distribution: Dart packages on pub.dev, `native-api-bindgen-runtime` on npm, prebuilt CLI binaries (macOS arm64/x64, Linux x64/arm64) on GitHub Releases and a Homebrew tap (`brew install lkrjangid1/tap/native-api-bindgen`). See `docs/releasing.md`.
+
 ### Added
 - Monorepo foundation: Native IR, core (config, diagnostics, logging, path guard, license audit), CLI.
 - Android SDK discovery and pure-Dart `android.jar` parser with `api-versions.xml` / `annotations.zip` enrichment.

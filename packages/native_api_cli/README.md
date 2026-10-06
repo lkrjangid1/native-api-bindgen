@@ -29,6 +29,9 @@ No MethodChannel, no hand-written plugin per API, no copied SDK files.
 
 ```bash
 dart pub global activate native_api_bindgen
+# or, a prebuilt binary for macOS / Linux:
+brew install lkrjangid1/tap/native-api-bindgen
+
 native-api-bindgen doctor      # shows the Android SDK, JDK, Xcode and libclang it found
 ```
 

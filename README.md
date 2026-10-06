@@ -176,10 +176,12 @@ Details: [docs/android](docs/android/README.md), [docs/ios](docs/ios/README.md),
 
 ### Install the CLI
 
-From [pub.dev](https://pub.dev/packages/native_api_bindgen):
+From [pub.dev](https://pub.dev/packages/native_api_bindgen) or Homebrew (macOS / Linux, prebuilt binary):
 
 ```bash
 dart pub global activate native_api_bindgen
+# or
+brew install lkrjangid1/tap/native-api-bindgen
 native-api-bindgen doctor        # shows the SDKs, JDK, Xcode and libclang it found
 ```
 
