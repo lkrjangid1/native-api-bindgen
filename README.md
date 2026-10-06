@@ -9,8 +9,8 @@
 </p>
 
 <p align="center">
-  <a href="website/build/index.html">Website</a> ·
-  <a href="docs/getting-started">Get started</a> ·
+  <a href="https://lkrjangid1.github.io/native-api-bindgen-docs/">Website</a> ·
+  <a href="https://lkrjangid1.github.io/native-api-bindgen-docs/docs/getting-started/index.html">Get started</a> ·
   <a href="CONTRIBUTING.md">Contribute</a> ·
   <a href="SECURITY.md">Security</a> ·
   <a href="LICENSE">Apache-2.0 licence</a>
