@@ -19,7 +19,7 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v7
         with:
           node-version: "22"
       # package:jni (used by native_api_runtime) requires the Flutter SDK, so
@@ -57,7 +57,7 @@ jobs:
           # The default also installs the obsolete "tools" package, which
           # sdkmanager no longer finds.
           packages: platform-tools
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v7
         with:
           node-version: "22"
       # package:jni (used by native_api_runtime) requires the Flutter SDK, so
@@ -110,7 +110,7 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v7
         with:
           node-version: "22"
       # package:jni (used by native_api_runtime) requires the Flutter SDK, so
