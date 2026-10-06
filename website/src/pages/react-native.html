@@ -22,6 +22,7 @@ description: Generated TypeScript bindings for React Native's New Architecture, 
   <li>Android: include the generated CMake fragment and provide the module in <code>OnLoad.cpp</code>.</li>
   <li>iOS: <code>pod 'NativeApiBindings', :path =&gt; '../native-api-bindings'</code>.</li>
 </ul>
+<p>The generated library embeds the runtime. To depend on it instead, install <code>native-api-bindgen-runtime</code> from <a href="https://www.npmjs.com/package/native-api-bindgen-runtime">npm</a> (<code>npm install native-api-bindgen-runtime@beta</code>).</p>
 <p>The repository's <code>examples/react-native/slice</code> app does all of this and runs 12 self-tests on each platform.</p>
 
 <h2>Measured</h2>

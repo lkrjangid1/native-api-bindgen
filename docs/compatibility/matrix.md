@@ -1,6 +1,6 @@
 # Compatibility matrix
 
-Only versions **actually exercised** are listed. "Tested" means automated tests ran against that version on 2026-10-05 on the maintainer machine (macOS 27.2 arm64). CI workflows exist (`.github/workflows`) but have not run yet because the repository has no remote (`tools/ci_local.sh` runs the platform-independent steps locally); this table will be generated from CI once they do.
+Only versions **actually exercised** are listed. "Tested" means automated tests ran against that version on 2026-10-05 on the maintainer machine (macOS 27.2 arm64). CI runs the same checks on GitHub Actions (`.github/workflows`); `tools/ci_local.sh` runs the platform-independent steps locally.
 
 | Component | Tested | How |
 |---|---|---|
@@ -23,6 +23,14 @@ Only versions **actually exercised** are listed. "Tested" means automated tests 
 | React Native on Android | 0.87.1 (New Architecture, Hermes) | RN example release build (R8); 17 self-tests on the API 37 emulator (incl. suspend → Promise, `Uint8Array`, native view); Jest runtime tests |
 | `native_api_ui` (Flutter plugin) | 0.1.0-beta.1 | native views on the Android emulator and iOS simulator |
 | Node / TypeScript | 25.9.0 / 6.0.3 | `tsc --strict` on generated output (fixtures, slice, full android-36 SDK) |
+
+## Published packages
+
+| Channel | Package | Version |
+|---|---|---|
+| pub.dev | `native_api_bindgen` (CLI), `native_api_runtime`, `native_api_ui`, and `native_api_ir`, `native_api_core`, `native_api_generator`, `native_api_android`, `native_api_ios`, `native_api_flutter_android`, `native_api_flutter_ios`, `native_api_react_native_android`, `native_api_react_native_ios` | 0.1.0-beta.1 |
+| npm | `native-api-bindgen-runtime` (dist-tags `beta`, `latest`) | 0.1.0-beta.1 |
+| GitHub Releases / Homebrew | `native-api-bindgen` binaries: macOS arm64/x64, Linux x64/arm64; `brew install lkrjangid1/tap/native-api-bindgen` | from tag `v0.1.0-beta.1` |
 
 ## Known constraints
 

@@ -1,6 +1,6 @@
 # React Native
 
-> Experimental. New Architecture only (TurboModules/JSI). Android (Java APIs) and iOS (Objective-C APIs) share one bindings library and one pure C++ Turbo Module.
+> Beta (`0.1.0-beta.1`). New Architecture only (TurboModules/JSI). Android (Java APIs) and iOS (Objective-C APIs) share one bindings library and one pure C++ Turbo Module.
 
 `native-api-bindgen generate react-native` writes a self-contained bindings library (default `native-api-bindings/`) into your app for every configured platform (`react-native-android` / `react-native-ios` select one). iOS generation needs macOS with Xcode; elsewhere it is skipped with a warning.
 
@@ -13,6 +13,8 @@
 | `cpp/runtime/`, `src/runtime.ts`, `android/java/…` | the runtime (copied, Apache-2.0) |
 | `specs/NativeApiBindgen.ts` | Codegen spec of the single pure C++ Turbo Module that installs `global.__nab` |
 | `native-api-bindings.cmake`, `android/proguard-rules.pro` | build integration |
+
+The runtime is embedded in the generated library. Apps that prefer a dependency can install it from npm instead: `npm install native-api-bindgen-runtime@beta` ([native-api-bindgen-runtime](https://www.npmjs.com/package/native-api-bindgen-runtime)).
 
 One-time app integration is described in the generated `README.md` (codegenConfig, CMake + `OnLoad.cpp` per reactnative.dev "pure C++ modules", Gradle source set, `NabContext.init(this)`). `examples/react-native/slice` is a complete working app.
 

@@ -441,7 +441,7 @@ ${pageUrl == null ? '' : '  <meta property="og:url" content="$pageUrl">\n'}  <me
   <header class="site-header">
     <div class="wrap bar">
       <a class="brand" href="$base./"${isHome ? ' aria-current="page"' : ''}><img src="${base}icon.svg" alt="" width="30" height="30"><span>native-api-bindgen</span></a>
-      <span class="badge" title="APIs, output and configuration may change">Experimental</span>
+      <span class="badge" title="0.1.0-beta.1: APIs, output and configuration may change">Beta</span>
       <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-label="Open menu">
       <label for="nav-toggle" class="nav-burger" aria-hidden="true"><span></span><span></span><span></span></label>
       <div class="nav-wrap">

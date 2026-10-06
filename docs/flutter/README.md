@@ -5,4 +5,15 @@ Generated code uses only the officially supported Dart↔Java interop path: [`pa
 - Each Java type → Dart extension type over `JObject` (zero-cost, tree-shakable, no registry).
 - Strict-native mode (default) keeps JNI types visible (`JString`, `JIntArray`); `ergonomic-dart` maps `String` to Dart `String` with automatic conversion/release.
 - Lifecycle, callbacks and threading: see `docs/architecture/lifecycle.md`.
-- iOS (Objective-C via `package:objective_c`) is not implemented yet.
+- iOS: Dart bindings over [`package:objective_c`](https://pub.dev/packages/objective_c); see `docs/ios/README.md`.
+
+Runtime dependencies (pub.dev):
+
+```yaml
+dependencies:
+  jni: ^1.0.3
+  jni_flutter: ^1.0.3
+  objective_c: 9.5.0
+  native_api_runtime: ^0.1.0-beta.1
+  native_api_ui: ^0.1.0-beta.1     # optional: native views
+```

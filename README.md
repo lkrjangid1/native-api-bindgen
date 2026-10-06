@@ -187,6 +187,18 @@ native-api-bindgen doctor        # shows the SDKs, JDK, Xcode and libclang it fo
 
 From a clone: `dart pub get && dart pub global activate --source path packages/native_api_cli`.
 
+### Published packages
+
+| Where | Package | Use |
+|---|---|---|
+| [pub.dev](https://pub.dev/packages/native_api_bindgen) | `native_api_bindgen` | the CLI |
+| [pub.dev](https://pub.dev/packages/native_api_runtime) | `native_api_runtime` | runtime of generated Dart code (add to your Flutter app) |
+| [pub.dev](https://pub.dev/packages/native_api_ui) | `native_api_ui` | optional: native views in the widget tree |
+| [npm](https://www.npmjs.com/package/native-api-bindgen-runtime) | `native-api-bindgen-runtime` | optional: the React Native runtime as a dependency (generated bindings embed a copy) |
+| Homebrew / GitHub Releases | `lkrjangid1/tap/native-api-bindgen` | prebuilt CLI for macOS (arm64, x64) and Linux (x64, arm64) |
+
+All at `0.1.0-beta.1`. Release process: [docs/releasing.md](docs/releasing.md).
+
 ### Configure and generate
 
 ```bash

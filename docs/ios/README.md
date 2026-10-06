@@ -1,6 +1,6 @@
 # iOS / Apple (Flutter)
 
-Status: **experimental**. Flutter and React Native on iOS work end to end for Objective-C APIs from Foundation and UIKit (see below for what has been tested). React Native details: `docs/react-native/README.md`.
+Status: **beta** (`0.1.0-beta.1`). Flutter and React Native on iOS work end to end for Objective-C APIs from Foundation and UIKit (see below for what has been tested). React Native details: `docs/react-native/README.md`.
 
 ## How it works
 

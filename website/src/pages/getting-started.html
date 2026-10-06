@@ -6,8 +6,14 @@ description: Install the native-api-bindgen CLI, select the Android or iOS APIs 
 <p class="lead">You need the platform SDKs you already use for app development: the Android SDK (with a platform such as <code>android-36</code>) and/or Xcode on macOS. The tool never downloads SDK components.</p>
 
 <h2>1. Install</h2>
-<p>From a checkout of the repository (packages are not published yet):</p>
-<pre><code>dart pub global activate --source path packages/native_api_cli
+<p>The CLI is published as a Dart package and as a prebuilt binary. Current release: <code>0.1.0-beta.1</code> (beta).</p>
+<table>
+  <tr><th>From</th><th>Command</th><th>Needs</th></tr>
+  <tr><td><a href="https://pub.dev/packages/native_api_bindgen">pub.dev</a></td><td><code>dart pub global activate native_api_bindgen</code></td><td>Dart 3.9+ (Flutter's Dart works)</td></tr>
+  <tr><td>Homebrew</td><td><code>brew install lkrjangid1/tap/native-api-bindgen</code></td><td>macOS (arm64, x64) or Linux (x64, arm64)</td></tr>
+  <tr><td>Source</td><td><code>dart pub global activate --source path packages/native_api_cli</code></td><td>a clone of the repository</td></tr>
+</table>
+<pre><code>native-api-bindgen --version
 native-api-bindgen doctor</code></pre>
 <p><code>doctor</code> reports the Android SDK, platforms, JDK, Flutter, Xcode, iOS SDK and libclang it finds.</p>
 
@@ -39,6 +45,18 @@ distribution:
 </table>
 <figure><img src="images/cli-terminal.png" alt="Terminal running native-api-bindgen doctor, generate and coverage in an example project." width="1546" height="582" loading="lazy"></figure>
 
-<h2>4. Use</h2>
-<p>Add the runtime dependencies (<code>jni</code>/<code>jni_flutter</code> for Android, <code>objective_c</code> and <code>ffi</code> for iOS) and import the generated library. Complete, tested apps live in <code>examples/</code>: <code>flutter/android_slice</code>, <code>flutter/ios_slice</code> and <code>react-native/slice</code>.</p>
+<h2>4. Add the runtime</h2>
+<p><strong>Flutter</strong>: add the runtimes from pub.dev next to <code>package:jni</code> (Android) and <code>package:objective_c</code> (iOS):</p>
+<pre><code>dependencies:
+  jni: ^1.0.3
+  jni_flutter: ^1.0.3            # Android: application Context / Activity
+  objective_c: 9.5.0             # iOS
+  ffi: ^2.1.3                    # iOS
+  native_api_runtime: ^0.1.0-beta.1
+  native_api_ui: ^0.1.0-beta.1   # optional: show native views</code></pre>
+<p><strong>React Native</strong>: the generated library embeds the runtime, so nothing else is required. Apps that prefer a dependency can use the npm package:</p>
+<pre><code>npm install native-api-bindgen-runtime@beta</code></pre>
+
+<h2>5. Use</h2>
+<p>Import the generated library. Complete, tested apps live in <code>examples/</code>: <code>flutter/android_slice</code>, <code>flutter/ios_slice</code> and <code>react-native/slice</code>.</p>
 <p>Next: <a href="architecture.html">how it works</a>, <a href="flutter.html">Flutter</a>, <a href="react-native.html">React Native</a>.</p>

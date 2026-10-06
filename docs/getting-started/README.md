@@ -1,6 +1,6 @@
 # Getting started (Flutter on Android)
 
-> Experimental. Generated bindings are derived from the Android SDK on your machine and are kept local by default.
+> Beta (`0.1.0-beta.1`). Generated bindings are derived from the Android SDK on your machine and are kept local by default.
 
 ## Prerequisites
 
@@ -10,13 +10,15 @@
 
 ## 1. Install the CLI
 
-```bash
-git clone <this repository> native-api-bindgen
-cd native-api-bindgen && dart pub get
-dart pub global activate --source path packages/native_api_cli   # installs `native-api-bindgen`
-```
+Pick one:
 
-(Or from pub.dev: `dart pub global activate native_api_bindgen`. Inside this repository you can also use `dart run native_api_bindgen <command>`.)
+| From | Command | Needs |
+|---|---|---|
+| [pub.dev](https://pub.dev/packages/native_api_bindgen) | `dart pub global activate native_api_bindgen` | Dart 3.9+ (Flutter's Dart works) |
+| Homebrew | `brew install lkrjangid1/tap/native-api-bindgen` | macOS (arm64, x64) or Linux (x64, arm64) |
+| Source | `dart pub get && dart pub global activate --source path packages/native_api_cli` | a clone of this repository |
+
+Inside this repository you can also use `dart run native_api_bindgen <command>`.
 
 ## 2. Check your machine
 
@@ -38,8 +40,7 @@ Edit `native_api_bindgen.yaml`: list the classes you need under `platform.androi
 dependencies:
   jni: ^1.0.3
   jni_flutter: ^1.0.3        # to obtain the application Context / Activity
-  native_api_runtime:
-    path: <native-api-bindgen>/runtimes/dart/native_api_runtime
+  native_api_runtime: ^0.1.0-beta.1
 ```
 
 ## 5. Generate and use

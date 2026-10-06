@@ -104,6 +104,7 @@ code,pre,kbd{font-family:var(--mono)}
 .code-window .titlebar i{width:.65rem;height:.65rem;border-radius:50%;background:#334155}
 .code-window .titlebar i:nth-child(1){background:#f87171}.code-window .titlebar i:nth-child(2){background:#fbbf24}.code-window .titlebar i:nth-child(3){background:#34d399}
 .code-window .titlebar b{margin-left:auto;font-weight:500}
+#install .code-window{box-shadow:none}
 .code-window pre{margin:0;padding:1rem 1.1rem 1.2rem;background:none;border:0;color:var(--code-ink);font-size:.8rem;line-height:1.7;overflow-x:auto}
 .showcase .side{transform:translateY(1.5rem);opacity:.96}
 .showcase .main{transform:translateY(0)}

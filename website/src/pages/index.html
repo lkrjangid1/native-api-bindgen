@@ -1,6 +1,6 @@
 <!--
 title: native-api-bindgen — bindings for Android and iOS APIs
-description: Generate typed Flutter and React Native bindings for public Android and iOS SDK APIs from the SDKs on your machine. Experimental, Apache-2.0.
+description: Generate typed Flutter and React Native bindings for public Android and iOS SDK APIs from your local SDKs. Beta on pub.dev, npm and Homebrew; Apache-2.0.
 -->
 <section class="hero">
   <div class="wrap">
@@ -12,7 +12,7 @@ description: Generate typed Flutter and React Native bindings for public Android
       <a class="btn" href="docs.html">Read the docs</a>
       <!--repo--><a class="btn" href="{{repo}}">View on GitHub</a><!--/repo-->
     </div>
-    <p class="fine">Experimental. Tested end to end on an Android emulator and an iOS simulator; not yet on physical devices.</p>
+    <p class="fine">Beta <code>0.1.0-beta.1</code> on pub.dev, npm and Homebrew. Tested end to end on an Android emulator and an iOS simulator; not yet on physical devices.</p>
   </div>
   <div class="showcase" aria-label="Example: configuration, Dart and TypeScript">
     <div class="code-window side">
@@ -126,6 +126,32 @@ print(device.systemName.toDartString());</code></pre>
     <div class="grid grid-2" style="margin-top:1.25rem">
       <div class="feature"><p class="tag">App size</p><h3>Generate the whole SDK, pay for one API.</h3><p>A Flutter release APK that uses one Android API is {{size.flutter.one_api_slice_apk}} bytes whether bindings were generated for that API or for all of <code>android.jar</code> — unused bindings are tree-shaken.</p></div>
       <div class="feature"><p class="tag">Keeping up</p><h3>New SDK? Run update.</h3><p><code>native-api-bindgen update</code> regenerates configured targets and <code>diff</code> shows added, removed and deprecated APIs between SDK versions.</p><a class="more" href="versioning.html">Versioning →</a></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="install">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow"><span class="num">05</span>Install</p>
+      <h2>Get it from pub.dev, Homebrew or npm.</h2>
+      <p>The CLI is a Dart package and a prebuilt binary; the runtimes your app depends on are on pub.dev (Flutter) and npm (React Native). Current release: <code>0.1.0-beta.1</code>.</p>
+    </div>
+    <div class="code-window">
+      <div class="titlebar"><i></i><i></i><i></i><b>terminal</b></div>
+<pre><code><span class="tk-c"># CLI from pub.dev (Dart 3.9+)</span>
+dart pub global activate native_api_bindgen
+
+<span class="tk-c"># or the prebuilt CLI from Homebrew (macOS / Linux, no Dart SDK needed)</span>
+brew install lkrjangid1/tap/native-api-bindgen
+
+<span class="tk-c"># optional: the React Native runtime from npm (generated bindings embed a copy)</span>
+npm install native-api-bindgen-runtime@beta</code></pre>
+    </div>
+    <div class="grid grid-3" style="margin-top:1.25rem">
+      <div class="feature"><p class="tag">pub.dev</p><h3>native_api_bindgen</h3><p>The CLI, plus <code>native_api_runtime</code> (guards, errors, coroutines) and <code>native_api_ui</code> (native views) for your Flutter app.</p><a class="more" href="https://pub.dev/packages/native_api_bindgen">pub.dev →</a></div>
+      <div class="feature"><p class="tag">Homebrew</p><h3>lkrjangid1/tap</h3><p>Prebuilt <code>native-api-bindgen</code> binaries for macOS (arm64, x64) and Linux (x64, arm64), built from each GitHub Release.</p><a class="more" href="getting-started.html">Getting started →</a></div>
+      <div class="feature"><p class="tag">npm</p><h3>native-api-bindgen-runtime</h3><p>The React Native runtime (JSI over JNI and Objective-C++) for apps that prefer a dependency to the embedded copy.</p><a class="more" href="https://www.npmjs.com/package/native-api-bindgen-runtime">npm →</a></div>
     </div>
   </div>
 </section>

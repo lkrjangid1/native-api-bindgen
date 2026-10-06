@@ -9,8 +9,7 @@ Everything else stays plugin-free.
 
 ```yaml
 dependencies:
-  native_api_ui:
-    path: <repo>/runtimes/flutter/native_api_ui
+  native_api_ui: ^0.1.0-beta.1   # pub.dev
 ```
 
 ```dart
