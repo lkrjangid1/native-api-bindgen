@@ -25,6 +25,13 @@ jobs:
           flutter-version: 3.41.9
           cache: true
       - run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36"
+      # The runner image ships a partial copy of Flutter's pinned NDK (no
+      # source.properties), which fails AGP with CXX1101. Reinstall it cleanly.
+      - name: Install the NDK Flutter pins
+        run: |
+          rm -rf "$ANDROID_HOME/ndk/28.2.13676358"
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;28.2.13676358" > /dev/null
+          test -f "$ANDROID_HOME/ndk/28.2.13676358/source.properties"
       - run: dart pub get
       - name: Build the Kotlin fixture library
         run: fixtures/kotlin/basic/gradlew -p fixtures/kotlin/basic jar
