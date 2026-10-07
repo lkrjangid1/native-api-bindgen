@@ -423,6 +423,7 @@ String _layout({
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>${_esc(fullTitle)}</title>
   <meta name="description" content="${_esc(description)}">
+  <meta name="google-site-verification" content="Wh3NtRP5KxDYNAeBecAL9ccoGKLN7H6ll8bsdeZUZE4" />
 ${pageUrl == null ? '' : '  <link rel="canonical" href="$pageUrl">\n'}  <meta property="og:type" content="${isHome ? 'website' : 'article'}">
   <meta property="og:title" content="${_esc(fullTitle)}">
   <meta property="og:description" content="${_esc(description)}">
