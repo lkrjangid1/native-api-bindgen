@@ -1,5 +1,7 @@
 # Roadmap
 
+<!-- description: Planned work for native-api-bindgen by phase: Android and iOS API coverage, callbacks, generics, Kotlin and Swift support, and React Native. -->
+
 Items below are **plans**, not features. Completed items are marked with the release that shipped them.
 
 - **Phase 1 — Android Java API generation (Flutter).** Vertical slice working in 0.1.0-beta.1 (2026-10-06): Intent, Uri, Bundle, Context, Activity, Handler, Looper, Runnable/Handler.Callback callbacks verified on an Android emulator. Whole-SDK generation compiles (android-36) but only the slice is runtime-tested.

@@ -67,6 +67,9 @@ class DocPage {
   final String source;
   final String group;
   late String title;
+
+  /// Shorter `<title>` when [title] does not fit a search result.
+  String? seoTitle;
   late String description;
   late String html;
   final toc = <(String, String)>[];
@@ -157,10 +160,18 @@ class DocSet {
     final assets = <String>{};
     for (final page in pages) {
       final raw = File('$docsDir/${page.source}').readAsStringSync();
-      var html = md.markdownToHtml(
-        raw,
-        extensionSet: md.ExtensionSet.gitHubWeb,
-      );
+      // Optional SEO overrides, invisible on GitHub:
+      // <!-- seo-title: ... --> and <!-- description: ... -->.
+      String? override(String key) => RegExp(
+        '<!--\\s*$key:\\s*([\\s\\S]*?)\\s*-->',
+      ).firstMatch(raw)?[1]?.replaceAll(RegExp(r'\s+'), ' ');
+      page.seoTitle = override('seo-title');
+      var html = md
+          .markdownToHtml(raw, extensionSet: md.ExtensionSet.gitHubWeb)
+          .replaceAll(
+            RegExp(r'<!--\s*(?:seo-title|description):[\s\S]*?-->\n?'),
+            '',
+          );
       // Title from the first <h1>, without internal TRD section references.
       final h1 = RegExp(r'<h1[^>]*>([\s\S]*?)</h1>').firstMatch(html);
       final rawTitle = h1 == null ? page.source : h1[1]!;
@@ -168,9 +179,20 @@ class DocSet {
         rawTitle.replaceAll(RegExp(r'\s*\((?:TRD|stage)[^)]*\)'), ''),
       );
       if (h1 != null) html = html.replaceFirst(h1[0]!, '');
-      final firstP = RegExp(r'<p>([\s\S]*?)</p>').firstMatch(html);
-      var description = firstP == null ? '' : clip(plainText(firstP[1]!), 155);
-      if (description.length < 50) {
+      // Description: the opening paragraphs (not disclaimers in blockquotes),
+      // joined until they say enough for a search snippet.
+      final prose = html.replaceAll(
+        RegExp(r'<blockquote>[\s\S]*?</blockquote>'),
+        '',
+      );
+      final intro = StringBuffer();
+      for (final m in RegExp(r'<p>([\s\S]*?)</p>').allMatches(prose)) {
+        if (intro.length >= 110) break;
+        if (intro.isNotEmpty) intro.write(' ');
+        intro.write(plainText(m[1]!));
+      }
+      var description = override('description') ?? clip(intro.toString(), 155);
+      if (description.length < 70) {
         description =
             '${page.title}: native-api-bindgen documentation for generated Flutter and React Native bindings.';
         description = clip(description, 155);

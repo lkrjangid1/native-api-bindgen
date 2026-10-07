@@ -1,5 +1,7 @@
 # Native IR
 
+<!-- description: The Native IR: platform-neutral nodes, types, stable symbol IDs and validation rules that connect the SDK parsers to the Dart and TypeScript generators. -->
+
 Package: `packages/native_api_ir`. Schema version: **1** (`irSchemaVersion`).
 
 The IR is the only contract between parsers and generators. It is platform-neutral (Android today, Apple next), serializes to canonical JSON (sorted keys, sorted members, no timestamps) and round-trips losslessly.

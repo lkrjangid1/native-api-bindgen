@@ -1,5 +1,7 @@
 # Architecture overview
 
+<!-- description: How native-api-bindgen is structured: the IR as single source of truth, the packages, and the data flow from SDK parsing to generated Flutter code. -->
+
 ## Principle
 
 The **Native IR** is the single source of truth. Parsers produce IR; generators consume IR. No generator reads SDK files or documentation directly, and documentation is never a source of signatures.

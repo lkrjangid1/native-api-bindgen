@@ -8,12 +8,16 @@ on:
       - website/**
       - docs/benchmarks/**
       - tools/build_website.dart
+      - tools/website/**
+      - tools/check_seo.dart
       - .github/workflows/website.yml
   pull_request:
     paths:
       - website/**
       - docs/benchmarks/**
       - tools/build_website.dart
+      - tools/website/**
+      - tools/check_seo.dart
   workflow_dispatch:
 
 permissions:
@@ -31,6 +35,9 @@ jobs:
       pages: ${{ steps.pages.outcome }}
     steps:
       - uses: actions/checkout@v5
+        with:
+          # Full history: sitemap.xml lastmod and dateModified come from git.
+          fetch-depth: 0
       # package:jni (used by native_api_runtime) requires the Flutter SDK, so
       # use Flutter's bundled Dart rather than a standalone Dart SDK.
       - uses: subosito/flutter-action@v2
@@ -50,6 +57,10 @@ jobs:
         env:
           NAB_SITE_URL: ${{ steps.pages.outputs.base_url }}
           NAB_REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+      - name: SEO checks on every page
+        run: dart run tools/check_seo.dart website/build
+        env:
+          NAB_SITE_URL: ${{ steps.pages.outputs.base_url }}
       - name: External links
         run: dart run tools/check_links.dart website/build
       - if: steps.pages.outcome == 'success'

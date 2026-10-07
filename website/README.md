@@ -12,4 +12,12 @@ Preview locally (serve the **build** output, not `src/pages` — the source page
 dart run tools/build_website.dart && python3 -m http.server 8000 -d website/build
 ```
 
-Output goes to `website/build` (not committed). `{{key}}` placeholders are filled from `docs/benchmarks/*.json`, so pages only show measured numbers. The build fails on broken internal links, duplicate or over-long titles/descriptions, unbalanced tags, scripts in page bodies, and size budgets. `.github/workflows/website.yml` builds, checks external links and deploys to GitHub Pages.
+Output goes to `website/build` (not committed). `{{key}}` placeholders are filled from `docs/benchmarks/*.json`, so pages only show measured numbers. The build fails on broken internal links, duplicate or over-long titles/descriptions, unbalanced tags, scripts in page bodies, and size budgets.
+
+SEO: every page gets a canonical URL, Open Graph and Twitter card tags (`src/images/og-image.jpg`, 1200×630), JSON-LD (TechArticle + BreadcrumbList; WebSite and SoftwareApplication on the home page) and a `lastmod` in `sitemap.xml` from git history; the build also writes `404.html` (noindex) and `llms.txt`. A doc page's search title and description can be set with `<!-- seo-title: ... -->` and `<!-- description: ... -->` under its `# heading` (invisible on GitHub). PNGs under `images/` are served as WebP when `src/images/<name>.webp` exists. Check every page:
+
+```sh
+dart run tools/check_seo.dart website/build [--site-url https://lkrjangid1.github.io/native-api-bindgen-docs/]
+```
+
+`.github/workflows/website.yml` builds, runs the SEO checks, checks external links and deploys to GitHub Pages.

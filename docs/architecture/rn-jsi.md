@@ -1,5 +1,8 @@
 # React Native target: TypeScript → JSI → C++ → JNI / Objective-C
 
+<!-- seo-title: React Native over JSI: TypeScript to JNI and Objective-C -->
+<!-- description: How generated React Native bindings call Android and iOS APIs: TypeScript modules, a JSI host object, a C++ Turbo Module, JNI and NSInvocation. -->
+
 ```
 src/generated/<package>.ts             one TS module per Java package; members call
    Intent.$t()['setData(android.net.Uri)Landroid/content/Intent;'](async, self, ...args)

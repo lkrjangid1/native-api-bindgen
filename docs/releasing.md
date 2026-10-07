@@ -1,5 +1,7 @@
 # Releasing
 
+<!-- description: How native-api-bindgen is released: version bumps, local checks, publishing to pub.dev and npm, GitHub Release binaries and the Homebrew tap. -->
+
 Versions are shared by every package. Beta releases use `X.Y.Z-beta.N`.
 
 1. Bump the version everywhere: `pubspec.yaml` files, `ProjectInfo` in `native_api_core`, `runtimes/jsi/package.json` and the runtime version strings, then regenerate goldens. Add a `## [X.Y.Z-beta.N] - <date>` section to `CHANGELOG.md`.

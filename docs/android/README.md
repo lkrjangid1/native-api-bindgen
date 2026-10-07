@@ -1,5 +1,7 @@
 # Android support
 
+<!-- description: What native-api-bindgen reads from android.jar and api-versions.xml, which Java and Kotlin API shapes it generates, and how hidden APIs are excluded. -->
+
 ## What is read
 
 | Input | Used for |

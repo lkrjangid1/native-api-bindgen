@@ -1,5 +1,7 @@
 # Performance (TRD §35)
 
+<!-- description: Measured call overhead of generated Flutter and React Native bindings versus MethodChannel on Android and iOS, plus byte transfers and callback latency. -->
+
 Measured on 2026-10-05 on the maintainer's Apple-silicon Mac. **Emulator and simulator numbers are not device numbers**; they are useful for relative comparisons on the same machine only. Each value is the median of three runs (raw runs in the JSON files); per-call values are averages over a timed loop after a warm-up.
 
 ## Flutter on Android — profile mode, API 37 arm64 emulator

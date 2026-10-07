@@ -1,5 +1,8 @@
 # Type mapping (Flutter / Dart over `package:jni`)
 
+<!-- seo-title: Type mapping for Flutter and Dart over package:jni -->
+<!-- description: How Java and Kotlin types map to Dart types and JNI arguments in generated Flutter bindings, plus the naming rules for members and overloads. -->
+
 Implemented once in `packages/native_api_generator/lib/src/type_mapping.dart` (`DartJniTypeMapper`). Emitters never hard-code mappings.
 
 | Java | Dart (strict-native, default) | JNI argument | Notes |

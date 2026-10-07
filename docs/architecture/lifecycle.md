@@ -1,5 +1,8 @@
 # Native object lifecycle, callbacks and threading
 
+<!-- seo-title: Object lifecycle, callbacks and threading -->
+<!-- description: How generated bindings own native objects, release them, implement Java callbacks in Dart, and handle threads and API-level availability. -->
+
 ## Ownership
 
 Every generated object is a `package:jni` **global reference** wrapped in a zero-cost extension type.

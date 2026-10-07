@@ -1,5 +1,7 @@
 # Test strategy
 
+<!-- description: How native-api-bindgen is tested: unit, fuzz, fixture, golden and integration tests on emulators and simulators, and where each layer runs. -->
+
 | Layer | What | Where | Runs on |
 |---|---|---|---|
 | Unit | IR IDs, JSON round-trip, validation; config; path guard; logging; class-file & signature parsers; api-versions/annotations parsing; type mapping; identifier escaping; overload naming | `packages/*/test` | any OS (CI ubuntu) |

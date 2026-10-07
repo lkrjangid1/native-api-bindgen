@@ -1,5 +1,7 @@
 # Android legal / attribution policy
 
+<!-- description: How native-api-bindgen uses the Android SDK: inputs, documentation licensing, redistribution of generated bindings, and Android trademark use. -->
+
 > **Not legal advice.** This document describes engineering policy. Organizations should perform their own legal review before commercial redistribution.
 
 - **Inputs** come from the Android SDK Platform package installed by the developer through the official SDK Manager. Use of the SDK is governed by the Android SDK terms (https://developer.android.com/studio/terms). We never download, copy or commit SDK files; CI blocks `android.jar`/class-file blobs.

@@ -1,5 +1,7 @@
 # Compatibility matrix
 
+<!-- description: Versions of Flutter, Dart, React Native, Android SDK, Xcode and JDK that native-api-bindgen has been tested with, plus published packages and limits. -->
+
 Only versions **actually exercised** are listed. "Tested" means automated tests ran against that version on 2026-10-05 on the maintainer machine (macOS 27.2 arm64). CI runs the same checks on GitHub Actions (`.github/workflows`); `tools/ci_local.sh` runs the platform-independent steps locally.
 
 | Component | Tested | How |

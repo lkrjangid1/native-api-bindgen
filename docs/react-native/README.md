@@ -1,5 +1,7 @@
 # React Native
 
+<!-- description: Generating a React Native bindings library for Android and iOS: setup, usage from TypeScript, call semantics, and the size cost. -->
+
 > Beta (`0.1.0-beta.1`). New Architecture only (TurboModules/JSI). Android (Java APIs) and iOS (Objective-C APIs) share one bindings library and one pure C++ Turbo Module.
 
 `native-api-bindgen generate react-native` writes a self-contained bindings library (default `native-api-bindings/`) into your app for every configured platform (`react-native-android` / `react-native-ios` select one). iOS generation needs macOS with Xcode; elsewhere it is skipped with a warning.

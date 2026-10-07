@@ -1,5 +1,7 @@
 # Flutter / Dart policy
 
+<!-- description: Policy for Flutter and Dart: package:jni as a normal pub dependency, the documented Java interop path, no MethodChannel, and trademark notes. -->
+
 > **Not legal advice.** This document describes engineering policy. Organizations should perform their own legal review before commercial redistribution.
 
 - Generated Flutter bindings depend on `package:jni` (BSD-3-Clause, published by the Dart team). It is a normal pub dependency and is not vendored.

@@ -1,5 +1,7 @@
 # Flutter / Dart target
 
+<!-- description: How generated Flutter bindings call Android APIs through package:jni without MethodChannel: generated code shape, runtime, guards and usage. -->
+
 Generated code uses only the officially supported Dart↔Java interop path: [`package:jni`](https://pub.dev/packages/jni) (the runtime used by `jnigen`). There is **no MethodChannel** in the generated API surface. `package:jni_flutter` is used only by apps to obtain the application `Context` / current `Activity`.
 
 - Each Java type → Dart extension type over `JObject` (zero-cost, tree-shakable, no registry).

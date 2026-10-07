@@ -1,5 +1,7 @@
 # Troubleshooting
 
+<!-- description: Fixes for common native-api-bindgen problems: SDK not found, missing methods, unavailable APIs, released objects and callback hangs. -->
+
 | Symptom | Cause / fix |
 |---|---|
 | `E001 SDK_NOT_FOUND` | Set `ANDROID_HOME` or `platform.android.sdk`; install the platform with `sdkmanager "platforms;android-36"`. The tool never downloads SDKs. |

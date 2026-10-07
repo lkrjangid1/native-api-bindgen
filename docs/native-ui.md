@@ -1,5 +1,7 @@
 # Native UI integration layer (TRD §37)
 
+<!-- description: How generated bindings show native Android and iOS views inside Flutter and React Native view trees with native_api_ui and NativeView. -->
+
 Generated bindings create native views like any other object; this layer
 shows them inside the framework's view tree. It is the only part of the
 project that uses the Flutter plugin API / React Native view managers.

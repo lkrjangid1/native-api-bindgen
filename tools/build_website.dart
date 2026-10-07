@@ -7,8 +7,8 @@
 //
 // Usage: dart run tools/build_website.dart [--site-url https://host/base]
 //        [--repo-url https://github.com/owner/repo]
-//   --site-url (or NAB_SITE_URL) enables absolute canonical/Open Graph URLs
-//   and sitemap.xml; without it they are omitted.
+//   --site-url (or NAB_SITE_URL) enables absolute canonical/Open Graph URLs,
+//   sitemap.xml and llms.txt; without them they are omitted.
 //   --repo-url (or NAB_REPO_URL) enables the GitHub button and repository
 //   links (license, security, contributing, "edit this page"); without it
 //   they are omitted rather than pointing at a placeholder.
@@ -64,6 +64,9 @@ const _nav = [
   ('faq', 'FAQ'),
 ];
 
+/// Social preview image (website/src/images), 1200x630.
+const _ogImage = 'images/og-image.jpg';
+
 /// Budgets checked at build time (bytes).
 const _maxHtml = 80 * 1024;
 const _maxCss = 32 * 1024;
@@ -118,6 +121,10 @@ void main(List<String> args) {
     if (!name.endsWith('.png') && !name.endsWith('.svg')) continue;
     f.copySync('${out.path}/images/$name');
   }
+  // Website-only images: WebP variants of docs/images and the social image.
+  for (final f in Directory('$src/images').listSync().whereType<File>()) {
+    f.copySync('${out.path}/images/${f.uri.pathSegments.last}');
+  }
 
   final docs = DocSet.load('$root/docs', repoUrl, problems);
   for (final a in docs.assets) {
@@ -130,28 +137,39 @@ void main(List<String> args) {
     problems.addAll(_unbalanced(html).map((e) => '$path: $e'));
   }
 
+  /// Search-result limits and uniqueness, for every page.
+  void checkMeta(String path, String fullTitle, String description) {
+    if (titles.containsKey(fullTitle)) {
+      problems.add('$path: duplicate title (also ${titles[fullTitle]})');
+    }
+    if (descriptions.containsKey(description)) {
+      problems.add(
+        '$path: duplicate description (also ${descriptions[description]})',
+      );
+    }
+    titles[fullTitle] = path;
+    descriptions[description] = path;
+    if (fullTitle.length > 60) {
+      problems.add(
+        '$path: title longer than 60 characters (${fullTitle.length})',
+      );
+    }
+    if (description.length < 70 || description.length > 160) {
+      problems.add(
+        '$path: description should be 70-160 characters (${description.length})',
+      );
+    }
+  }
+
+  final modified = _lastModified(root);
+
   for (final slug in _pages) {
     final raw = File('$src/pages/$slug.html').readAsStringSync();
     final meta = _frontMatter(raw, slug);
     final title = meta['title']!;
     final description = meta['description']!;
-    if (titles.containsKey(title)) problems.add('duplicate title: $title');
-    if (descriptions.containsKey(description)) {
-      problems.add('duplicate description on $slug');
-    }
-    titles[title] = slug;
-    descriptions[description] = slug;
     final fullTitle = slug == 'index' ? title : '$title — native-api-bindgen';
-    if (fullTitle.length > 60) {
-      problems.add(
-        '$slug: title longer than 60 characters (${fullTitle.length})',
-      );
-    }
-    if (description.length < 50 || description.length > 160) {
-      problems.add(
-        '$slug: description should be 50-160 characters (${description.length})',
-      );
-    }
+    checkMeta('$slug.html', fullTitle, description);
     var body = raw.substring(raw.indexOf('-->') + 3).trim();
     // Repository-only fragments (<!--repo-->...<!--/repo-->, `{{repo}}`).
     body = body.replaceAllMapped(
@@ -178,7 +196,13 @@ void main(List<String> args) {
       description: description,
       main: main,
       siteUrl: siteUrl,
-      jsonLd: _jsonLd(slug, title, description, siteUrl),
+      jsonLd: _jsonLd(
+        slug,
+        title,
+        description,
+        siteUrl,
+        modified['website/src/pages/$slug.html'],
+      ),
     );
     checkPage('$slug.html', html);
     write('$slug.html', html);
@@ -188,21 +212,26 @@ void main(List<String> args) {
     final p = docs.pages[i];
     final prev = i > 0 ? docs.pages[i - 1] : null;
     final next = i + 1 < docs.pages.length ? docs.pages[i + 1] : null;
+    final fullTitle = _docTitle(p);
+    checkMeta(p.out, fullTitle, p.description);
     final html = _layout(
       path: p.out,
       active: 'docs',
-      fullTitle: '${p.title} · native-api-bindgen docs',
+      fullTitle: fullTitle,
       description: p.description,
       main: _docMain(p, docs, prev, next),
       siteUrl: siteUrl,
-      jsonLd: {
-        '@context': 'https://schema.org',
-        '@type': 'TechArticle',
-        'headline': p.title,
-        'description': p.description,
-        if (siteUrl != null) 'url': '$siteUrl/${p.out}',
-        'inLanguage': 'en',
-      },
+      jsonLd: [
+        _article(
+          p.title,
+          p.description,
+          siteUrl == null ? null : '$siteUrl/${p.out}',
+          siteUrl,
+          modified['docs/${p.source}'],
+        ),
+        if (siteUrl != null)
+          _breadcrumbs(siteUrl, [('Docs', 'docs.html'), (p.title, p.out)]),
+      ],
     );
     checkPage(p.out, html);
     write(p.out, html);
@@ -213,10 +242,15 @@ void main(List<String> args) {
     'User-agent: *\nAllow: /\n${siteUrl == null ? '' : 'Sitemap: $siteUrl/sitemap.xml\n'}',
   );
   if (siteUrl != null) {
+    String url(String loc, String? lastmod) =>
+        '  <url><loc>$siteUrl/$loc</loc>${lastmod == null ? '' : '<lastmod>$lastmod</lastmod>'}</url>';
     final urls = [
       for (final p in _pages)
-        '  <url><loc>$siteUrl/${p == 'index' ? '' : '$p.html'}</loc></url>',
-      for (final p in docs.pages) '  <url><loc>$siteUrl/${p.out}</loc></url>',
+        url(
+          p == 'index' ? '' : '$p.html',
+          modified['website/src/pages/$p.html'],
+        ),
+      for (final p in docs.pages) url(p.out, modified['docs/${p.source}']),
     ];
     write(
       'sitemap.xml',
@@ -241,6 +275,65 @@ void main(List<String> args) {
     })}\n',
   );
   write('.nojekyll', '');
+  // GitHub Pages serves 404.html for unknown paths. Links are root-relative
+  // because the page is served at any depth.
+  final notFound = _layout(
+    path: '404.html',
+    active: '',
+    fullTitle: 'Page not found — native-api-bindgen',
+    description:
+        'This page does not exist. Browse the native-api-bindgen documentation or start from the home page.',
+    main:
+        '''
+<section class="page-head">
+  <div class="wrap">
+    <p class="eyebrow">404</p>
+    <h1>Page not found</h1>
+    <p class="lead">The page you asked for does not exist or has moved.</p>
+  </div>
+</section>
+<div class="wrap page-body prose">
+<p><a href="${siteUrl ?? ''}/">Home</a> · <a href="${siteUrl ?? ''}/docs.html">Documentation</a> · <a href="${siteUrl ?? ''}/getting-started.html">Get started</a></p>
+</div>''',
+    siteUrl: siteUrl,
+    jsonLd: const <Object>[],
+    noindex: true,
+    rootBase: siteUrl == null ? null : '$siteUrl/',
+  );
+  write('404.html', notFound);
+  // llms.txt (https://llmstxt.org): a Markdown map of the site for AI tools.
+  if (siteUrl != null) {
+    final b = StringBuffer()
+      ..writeln('# native-api-bindgen')
+      ..writeln()
+      ..writeln(
+        '> Generates typed Flutter (Dart) and React Native (TypeScript) bindings for public Android and iOS platform APIs from the SDKs installed on the developer\'s machine. Apache-2.0, beta (0.1.0-beta.1) on pub.dev, npm and Homebrew.',
+      )
+      ..writeln()
+      ..writeln('## Site')
+      ..writeln();
+    for (final p in _pages) {
+      final meta = _frontMatter(
+        File('$src/pages/$p.html').readAsStringSync(),
+        p,
+      );
+      b.writeln(
+        '- [${meta['title']}]($siteUrl/${p == 'index' ? '' : '$p.html'}): ${meta['description']}',
+      );
+    }
+    String? group;
+    for (final p in docs.pages) {
+      if (p.group != group) {
+        group = p.group;
+        b
+          ..writeln()
+          ..writeln('## Docs: $group')
+          ..writeln();
+      }
+      b.writeln('- [${p.title}]($siteUrl/${p.out}): ${p.description}');
+    }
+    write('llms.txt', b.toString());
+  }
 
   // Every relative href/src in every page must point at a built file.
   for (final path in written.where((p) => p.endsWith('.html'))) {
@@ -341,19 +434,86 @@ $toc
 </div>''';
 }
 
-Object _jsonLd(String slug, String title, String description, String? siteUrl) {
+/// `<title>` for a docs page: the full form when it fits a search result
+/// (60 characters), otherwise shorter forms.
+String _docTitle(DocPage p) {
+  final t = p.seoTitle ?? p.title;
+  for (final candidate in [
+    '$t · native-api-bindgen docs',
+    '$t · native-api-bindgen',
+    t,
+  ]) {
+    if (candidate.length <= 60) return candidate;
+  }
+  return clip(t, 60);
+}
+
+Map<String, Object?> _publisher(String? siteUrl) => {
+  '@type': 'Organization',
+  'name': 'native-api-bindgen',
+  if (siteUrl != null) 'url': '$siteUrl/',
+  if (siteUrl != null)
+    'logo': {'@type': 'ImageObject', 'url': '$siteUrl/icon.svg'},
+};
+
+Map<String, Object?> _article(
+  String headline,
+  String description,
+  String? pageUrl,
+  String? siteUrl,
+  String? modified,
+) => {
+  '@context': 'https://schema.org',
+  '@type': 'TechArticle',
+  'headline': headline,
+  'description': description,
+  'url': ?pageUrl,
+  'mainEntityOfPage': ?pageUrl,
+  if (siteUrl != null) 'image': '$siteUrl/$_ogImage',
+  'dateModified': ?modified,
+  'inLanguage': 'en',
+  'author': _publisher(siteUrl),
+  'publisher': _publisher(siteUrl),
+  if (siteUrl != null)
+    'isPartOf': {
+      '@type': 'WebSite',
+      'name': 'native-api-bindgen',
+      'url': '$siteUrl/',
+    },
+};
+
+Map<String, Object?> _breadcrumbs(
+  String siteUrl,
+  List<(String, String)> trail,
+) => {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  'itemListElement': [
+    for (final (i, (name, path)) in [('Home', ''), ...trail].indexed)
+      {
+        '@type': 'ListItem',
+        'position': i + 1,
+        'name': name,
+        'item': '$siteUrl/$path',
+      },
+  ],
+};
+
+Object _jsonLd(
+  String slug,
+  String title,
+  String description,
+  String? siteUrl,
+  String? modified,
+) {
   final pageUrl = siteUrl == null
       ? null
       : '$siteUrl/${slug == 'index' ? '' : '$slug.html'}';
   if (slug != 'index') {
-    return {
-      '@context': 'https://schema.org',
-      '@type': 'TechArticle',
-      'headline': title,
-      'description': description,
-      'url': ?pageUrl,
-      'inLanguage': 'en',
-    };
+    return [
+      _article(title, description, pageUrl, siteUrl, modified),
+      if (siteUrl != null) _breadcrumbs(siteUrl, [(title, '$slug.html')]),
+    ];
   }
   return [
     {
@@ -362,6 +522,8 @@ Object _jsonLd(String slug, String title, String description, String? siteUrl) {
       'name': 'native-api-bindgen',
       'description': description,
       'url': ?pageUrl,
+      'inLanguage': 'en',
+      'publisher': _publisher(siteUrl),
     },
     {
       '@context': 'https://schema.org',
@@ -378,7 +540,23 @@ Object _jsonLd(String slug, String title, String description, String? siteUrl) {
       ],
       'license': 'https://www.apache.org/licenses/LICENSE-2.0',
       'runtimePlatform': ['Flutter', 'React Native'],
+      'version': '0.1.0-beta.1',
+      'url': ?pageUrl,
       if (_repoUrl != null) 'codeRepository': _repoUrl,
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      'name': 'native-api-bindgen',
+      'description': description,
+      'applicationCategory': 'DeveloperApplication',
+      'operatingSystem': 'macOS, Linux, Windows',
+      'softwareVersion': '0.1.0-beta.1',
+      'license': 'https://www.apache.org/licenses/LICENSE-2.0',
+      'offers': {'@type': 'Offer', 'price': '0', 'priceCurrency': 'USD'},
+      'url': ?pageUrl,
+      if (siteUrl != null) 'image': '$siteUrl/$_ogImage',
+      'downloadUrl': 'https://pub.dev/packages/native_api_bindgen',
     },
   ];
 }
@@ -398,11 +576,37 @@ String _layout({
   required String main,
   required String? siteUrl,
   required Object jsonLd,
+  bool noindex = false,
+  String? rootBase,
 }) {
-  final base = '../' * (path.split('/').length - 1);
-  final pageUrl = siteUrl == null
+  final base = rootBase ?? '../' * (path.split('/').length - 1);
+  final pageUrl = siteUrl == null || noindex
       ? null
       : '$siteUrl/${path == 'index.html' ? '' : path}';
+  final image = siteUrl == null ? null : '$siteUrl/$_ogImage';
+  const imageAlt =
+      'native-api-bindgen: Android and iOS SDK APIs turned into typed Dart and TypeScript bindings';
+  final social = [
+    if (noindex) '<meta name="robots" content="noindex">',
+    if (pageUrl != null) '<link rel="canonical" href="$pageUrl">',
+    '<meta property="og:type" content="${path == 'index.html' ? 'website' : 'article'}">',
+    '<meta property="og:site_name" content="native-api-bindgen">',
+    '<meta property="og:locale" content="en_US">',
+    '<meta property="og:title" content="${_esc(fullTitle)}">',
+    '<meta property="og:description" content="${_esc(description)}">',
+    if (pageUrl != null) '<meta property="og:url" content="$pageUrl">',
+    if (image != null) ...[
+      '<meta property="og:image" content="$image">',
+      '<meta property="og:image:width" content="1200">',
+      '<meta property="og:image:height" content="630">',
+      '<meta property="og:image:alt" content="$imageAlt">',
+    ],
+    '<meta name="twitter:card" content="${image == null ? 'summary' : 'summary_large_image'}">',
+    '<meta name="twitter:title" content="${_esc(fullTitle)}">',
+    '<meta name="twitter:description" content="${_esc(description)}">',
+    if (image != null) '<meta name="twitter:image" content="$image">',
+    if (image != null) '<meta name="twitter:image:alt" content="$imageAlt">',
+  ].map((l) => '  $l\n').join();
   String link(String slug) => '$base$slug.html';
   String cur(String slug) => slug == active ? ' aria-current="page"' : '';
   final platformActive = _platforms.any((p) => p.$1 == active);
@@ -424,19 +628,14 @@ String _layout({
   <title>${_esc(fullTitle)}</title>
   <meta name="description" content="${_esc(description)}">
   <meta name="google-site-verification" content="Wh3NtRP5KxDYNAeBecAL9ccoGKLN7H6ll8bsdeZUZE4" />
-${pageUrl == null ? '' : '  <link rel="canonical" href="$pageUrl">\n'}  <meta property="og:type" content="${isHome ? 'website' : 'article'}">
-  <meta property="og:title" content="${_esc(fullTitle)}">
-  <meta property="og:description" content="${_esc(description)}">
-${pageUrl == null ? '' : '  <meta property="og:url" content="$pageUrl">\n'}  <meta property="og:site_name" content="native-api-bindgen">
-  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+$social  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#0a0f1a" media="(prefers-color-scheme: dark)">
   <meta name="color-scheme" content="light dark">
   <script>try{var t=localStorage.getItem('nab-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
   <link rel="icon" href="${base}icon.svg" type="image/svg+xml">
   <link rel="manifest" href="${base}site.webmanifest">
   <link rel="stylesheet" href="${base}style.css">
-  <script type="application/ld+json">${jsonEncode(jsonLd)}</script>
-</head>
+${jsonLd is List && jsonLd.isEmpty ? '' : '  <script type="application/ld+json">${jsonEncode(jsonLd)}</script>\n'}</head>
 <body${isHome ? ' class="home"' : ''}>
   <a class="skip" href="#content">Skip to content</a>
   <header class="site-header">
@@ -463,7 +662,7 @@ ${repo == null ? '' : '          <a class="icon-btn" href="$repo" aria-label="Gi
     </div>
   </header>
   <main id="content">
-$main
+${_webp(main, base)}
   </main>
 ${_footer(base)}
   <script src="${base}site.js" defer></script>
@@ -493,6 +692,43 @@ ${col('Project', [if (repo != null) '<a href="$repo">GitHub</a>', if (repo != nu
       <p>Android is a trademark of Google LLC. Apple, iOS, Xcode, Objective-C and Swift are trademarks of Apple Inc. Flutter and Dart are trademarks of Google LLC. React and React Native are trademarks of Meta Platforms, Inc.</p>
     </div>
   </footer>''';
+}
+
+/// Serves the WebP variant of a PNG under images/ when one is built, with
+/// the PNG as the fallback.
+String _webp(String html, String base) => html.replaceAllMapped(
+  RegExp(r'<img ([^>]*?)src="((?:\.\./)*images/([\w-]+))\.png"([^>]*)>'),
+  (m) {
+    final webp = File('${_repoRoot()}/website/src/images/${m[3]}.webp');
+    if (!webp.existsSync()) return m[0]!;
+    return '<picture><source srcset="${m[2]}.webp" type="image/webp"><img ${m[1]}src="${m[2]}.png"${m[4]}></picture>';
+  },
+);
+
+/// Last commit date (YYYY-MM-DD) per repository-relative file, for
+/// sitemap.xml and dateModified. Empty when git history is unavailable.
+Map<String, String> _lastModified(String root) {
+  final r = Process.runSync('git', [
+    '-C',
+    root,
+    'log',
+    '--format=@%cs',
+    '--name-only',
+    '--',
+    'website/src/pages',
+    'docs',
+  ]);
+  final out = <String, String>{};
+  if (r.exitCode != 0) return out;
+  String? date;
+  for (final line in (r.stdout as String).split('\n')) {
+    if (line.startsWith('@')) {
+      date = line.substring(1);
+    } else if (line.isNotEmpty && date != null) {
+      out.putIfAbsent(line, () => date!);
+    }
+  }
+  return out;
 }
 
 String _esc(String s) => s

@@ -1,5 +1,7 @@
 # Official source registry
 
+<!-- description: The first-party sources behind each native-api-bindgen parser and generator: local SDK inputs and official Flutter, Android, Apple and React Native docs. -->
+
 Every parser/generator subsystem must name its first-party source. Links were last reviewed 2026-10-05; `tools/check_links.dart` validates them in CI (`website.yml`/`ci.yml` link job).
 
 ## Local machine-readable inputs (authoritative for signatures)

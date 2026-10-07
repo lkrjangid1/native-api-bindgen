@@ -1,5 +1,7 @@
 # Implementation plan
 
+<!-- description: The staged implementation plan for native-api-bindgen and the quality gates every stage passes: format, analyze, unit, golden and integration tests. -->
+
 Mirrors TRD §82. Each stage ends with: format → analyze → unit tests → generation tests → integration tests (where available) → inspect generated output → size check → docs/compatibility update.
 
 | Stage | Content | Status |

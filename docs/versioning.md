@@ -1,5 +1,7 @@
 # Versioning
 
+<!-- description: How native-api-bindgen versions the generator, the IR schema and generated APIs, and what counts as a breaking change. -->
+
 Two independent dimensions:
 
 1. **Project version** — `native-api-bindgen 0.x.y` (SemVer) covers the generator, runtime, IR schema and the *shape* of generated APIs.

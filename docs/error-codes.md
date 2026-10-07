@@ -1,5 +1,7 @@
 # Diagnostic / error codes
 
+<!-- description: Every native-api-bindgen diagnostic code (E001 and up): what it means, why a symbol was skipped, and what to do about it. -->
+
 Codes are stable; never renumber. Each diagnostic carries `code`, `severity` (`info|warning|error`), `symbolId` (when applicable) and `message`.
 
 | Code | Name | Meaning | Typical action |

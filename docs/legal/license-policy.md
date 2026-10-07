@@ -1,5 +1,7 @@
 # License policy
 
+<!-- description: The native-api-bindgen license policy: Apache-2.0 project source, what it does not cover, and how audit-license classifies files and dependencies. -->
+
 > **Not legal advice.** This document describes engineering policy. Organizations should perform their own legal review before commercial redistribution.
 
 - Project source: Apache-2.0 (`LICENSE`). Chosen for its explicit patent grant; the repository owner may choose differently — this is a project/legal decision.

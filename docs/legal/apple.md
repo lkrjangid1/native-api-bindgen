@@ -1,5 +1,7 @@
 # Apple SDK policy
 
+<!-- description: How native-api-bindgen reads Apple SDK headers in place with Xcode, what it never copies, and what the Xcode and Apple SDKs Agreement allows. -->
+
 > **Not legal advice.** This document describes engineering policy. Organizations should perform their own legal review before commercial redistribution.
 
 ## Mechanism (as implemented)

@@ -1,5 +1,7 @@
 # Technical design (stage 1)
 
+<!-- description: Design decisions behind native-api-bindgen: the IR, Android class-file parsing, Flutter Android generation, and what is out of scope. -->
+
 Status: living document. Scope: foundation + Android → Flutter vertical slice.
 
 ## Decisions

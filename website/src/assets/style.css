@@ -270,3 +270,5 @@ h2:hover .anchor,h3:hover .anchor,.anchor:focus{opacity:1}
   .pager .next{grid-column:1}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+
+picture{display:contents}

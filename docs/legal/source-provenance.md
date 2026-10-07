@@ -1,5 +1,7 @@
 # Source provenance
 
+<!-- description: Where every input and output of native-api-bindgen comes from: what is consumed locally, what is redistributed, and the private API policy. -->
+
 > **Not legal advice.** This document describes engineering policy. Organizations should perform their own legal review before commercial redistribution.
 
 ## What is generated, from where

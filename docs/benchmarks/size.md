@@ -1,5 +1,7 @@
 # Binary size
 
+<!-- description: Measured app size impact of generated bindings: Flutter and React Native release APKs, iOS app size, App Bundle and startup time, with method. -->
+
 Measured 2026-10-05 with `tools/measure_size.py --platform 36` (Flutter 3.41.9, `package:jni` 1.0.3, release APK, `--target-platform android-arm64`, macOS arm64 host). Raw data: [`size-2026-10-05-android36.json`](size-2026-10-05-android36.json). Uncompressed entry sizes are read from the APK; APK size is the file size.
 
 | Variant | APK bytes | Δ APK vs baseline | `libapp.so` (Dart AOT) | `libdartjni.so` | `classes*.dex` |

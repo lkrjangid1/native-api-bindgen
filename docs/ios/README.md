@@ -1,5 +1,7 @@
 # iOS / Apple (Flutter)
 
+<!-- description: Generating Flutter bindings for iOS: Objective-C APIs via libclang, main-actor threading, blocks, protocols, and @objc adapters for Swift-only APIs. -->
+
 Status: **beta** (`0.1.0-beta.1`). Flutter and React Native on iOS work end to end for Objective-C APIs from Foundation and UIKit (see below for what has been tested). React Native details: `docs/react-native/README.md`.
 
 ## How it works

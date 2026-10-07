@@ -1,5 +1,8 @@
 # Getting started (Flutter on Android)
 
+<!-- seo-title: Getting started with Flutter on Android -->
+<!-- description: Step by step: install the native-api-bindgen CLI, check your machine, configure the Android APIs you need, and generate and call Flutter bindings. -->
+
 > Beta (`0.1.0-beta.1`). Generated bindings are derived from the Android SDK on your machine and are kept local by default.
 
 ## Prerequisites
